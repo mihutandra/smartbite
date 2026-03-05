@@ -1,0 +1,17 @@
+[run]
+source = app
+omit =
+    */__init__.py
+branch = True
+# NOTE: if adding multiprocessing / async / threads, let coverage know here
+
+[report]
+show_missing = True
+# NOTE: add patterns to exclude (e.g. raise NotImplementedError) here if needed
+
+[html]
+directory = coverage/coverage_html_report
+title = Insurance Backend Coverage Report
+
+[xml]
+output = coverage/coverage_report.xml

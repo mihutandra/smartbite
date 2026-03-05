@@ -1,0 +1,40 @@
+x-env-common: &env-common
+  # Postgres DB URL for SQLAlchemy; stored separately from compose.yaml DB volume to avoid pollution
+  # Sync, for now
+  DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+    # JWT config
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_ALGORITHM: ${JWT_ALGORITHM}
+
+services:
+  test:
+    build:
+      context: .
+      target: test
+    volumes:
+      # Bind volumes read-only, to avoid propagating e.g. __pycache__ back to host
+      - ./app:/base/app:ro  # Include app code to avoid rebuilds
+      - ./tests:/base/tests:ro  # Include tests code to avoid rebuilds
+      - ./alembic:/base/alembic:ro  # Include alembic code to avoid rebuilds
+      - ./coverage:/base/coverage:rw  # Test coverage report output
+    environment:
+      <<: *env-common
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    # No volumes; do not persist test data across runs
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

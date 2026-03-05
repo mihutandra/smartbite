@@ -1,0 +1,16 @@
+# requirements.test.in file for pip-tools for testing
+# Compile together with base: `pip-compile -o requirements.test.txt --generate-hashes requirements.in requirements.test.in`
+
+# Testing
+pytest
+httpx  # For FastAPI TestClient
+pydantic[email]
+
+# Coverage
+coverage  # Actual coverage checker
+pytest-cov  # Wrapper around Coverage.py for smooth use
+
+#Auth
+python-multipart
+PyJWT
+passlib[argon2]
