@@ -1,0 +1,76 @@
+x-env-common: &env-common
+  # Postgres DB URL for SQLAlchemy
+  # Sync, for now
+  DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  # Async version
+  # DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+# JWT config
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_ALGORITHM: ${JWT_ALGORITHM}
+  
+services:
+  main:
+    build:
+      context: .
+      target: main
+    ports:
+      - "8001:8000"
+    # Volume for dev hot-reloading
+    # TODO: figure out how to automatically block this in production
+    volumes:
+      - ./app:/base/app:ro
+    # Reload flag to tell Uvicorn to hot-reload code
+    # TODO: figure out how to automatically block this in production
+    command: --reload
+    environment:
+      <<: *env-common
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  db:
+    image: postgres:18
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_smartbite:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    
+  alembic:
+    build:
+      context: .
+      target: alembic
+    volumes:
+      - ./app:/base/app:ro  # Include app code (read-only) for model reload without --build
+      - ./alembic:/base/alembic:rw  # Allow read-write on Alembic for generated migration scripts
+    environment:
+      <<: *env-common
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - alembic
+
+  test:
+    build:
+      context: .
+      target: test
+    environment:
+      <<: *env-common
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - test
+  
+volumes:
+  pgdata_smartbite:
