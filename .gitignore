@@ -138,7 +138,9 @@ celerybeat.pid
 .env
 .envrc
 .venv
-.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea
 env/
 venv/
