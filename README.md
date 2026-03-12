@@ -2,10 +2,6 @@
 
 SmartBite is a full-stack application built with FastAPI, React Native, and PostgreSQL to reduce food waste by enabling real-time sale of near-expiry supermarket products.
 
-## 🏆 Roles
-| Frontend dev| BIANCA SZEKELY <bianca.szekely@stud.ubbcluj.ro>, MARA-RALUCA VĂLEAN <mara.valean@stud.ubbcluj.ro> |
-| Backend dev | ANA-SABINA TĂTAR <ana.tatar@stud.ubbcluj.ro>, ANDRA-MARIA MIHUȚ <andra.mihut@stud.ubbcluj.ro>, TEODORA-GEORGIANA NEAGU <teodora.neagu@stud.ubbcluj.ro> |
-
 ## 🛠️ Framework
 
 We decided to use Python for Backend with FastAPI, React Native for Frontend, PostgreSQL for database, and Docker to containerize the app.
