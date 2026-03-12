@@ -29,6 +29,7 @@ This is the frontend for Smartbite React Native mobile application built with Ex
    ```
 
 2. **Start the development server**:
+
    ```bash
    npx expo start
    ```
@@ -49,41 +50,21 @@ Expo Go is the easiest way to test your app during development without building 
 - **Emulator/Simulator**: Select options in the terminal to open in Android Studio emulator or iOS Simulator.
 - **Web**: Run `npm run web` to test in a browser (limited functionality).
 - **Development Build**: For advanced features, create a custom dev client with `npx expo run:android` or `npx expo run:ios`.
+- **Running on WSL**: Run `npx expo start --tunnel` so your physical device can reach the dev server
 
 ## Project Structure
 
-- `app/` - Screens and routes (file-based routing with Expo Router)
-- `components/` - Reusable UI components
-- `assets/` - Images, fonts, and other static assets
-- `constants/` - App constants and configuration
-- `hooks/` - Custom React hooks
-- `scripts/` - Utility scripts (e.g., project reset)
-
-## Development
-
-- Edit screens in the `app/` directory.
-- Add components to `components/`.
-- For backend API calls, update endpoints in `constants/` or relevant files.
-- Run `npm run lint` to check code quality.
-
-## Building for Production
-
-When ready to release:
-
-1. Install EAS CLI: `npm install -g @expo/eas-cli`
-2. Build for platforms:
-   - Android: `eas build --platform android`
-   - iOS: `eas build --platform ios`
-3. Submit to app stores using `eas submit`.
-
-## Troubleshooting
-
-- If Expo Go doesn't connect, ensure your device and computer are on the same Wi-Fi network.
-- Clear Expo cache: `npx expo start --clear`
-- Reset project for a clean start: `npm run reset-project`
-
-## Learn More
-
-- [Expo Documentation](https://docs.expo.dev/)
-- [Expo Router Guide](https://docs.expo.dev/router/introduction/)
-- [React Native Docs](https://reactnative.dev/docs/getting-started)
+```
+frontend/
+├── app/            # Route files only — each file maps to a screen (Expo Router)
+│   ├── _layout.tsx     # Root layout, wraps all routes (navigation shell)
+│   └── index.tsx       # Entry screen (maps to "/")
+├── components/     # Reusable UI components shared across screens
+├── hooks/          # Custom React hooks (e.g., useAuth, useFetch)
+├── services/       # API calls and data fetching logic (e.g., api.ts, authService.ts)
+├── utils/          # Pure helper/utility functions (e.g., formatDate, validators)
+├── types/          # Shared TypeScript types and interfaces
+├── constants/      # App-wide constants (e.g., colors, config values, API URLs)
+├── assets/         # Static files: images, fonts, icons
+└── scripts/        # Developer utility scripts (e.g., reset-project.js)
+```
