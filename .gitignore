@@ -8,10 +8,8 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Shared workspace settings
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
+# VS Code
+.vscode/
 
 # Generic logs/temp
 *.log
