@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import UUID, Boolean, Column, ForeignKey, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import relationship
-from backend.app.core.database import Base
+from app.core.database import Base
 
 class SupermarketProduct(Base):
     __tablename__ = "supermarket_products"
