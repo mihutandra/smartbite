@@ -132,7 +132,7 @@ If you change or extend the current model, you should autogenerate a migration t
 1. Make any desired changes to the code (e.g. change a model class, or add a new one)
 2. Run the Alembic Docker service:
 ```powershell
-docker compose -f backend/compose.yaml --profile alembic run --rm alembic revision --autogenerate -m "add something"
+docker compose run --rm alembic revision --autogenerate -m "add/remove X"
 ````
 
 3. Wait until migration is done, then shut down DB service also:
