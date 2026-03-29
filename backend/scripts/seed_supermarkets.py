@@ -1,7 +1,7 @@
 """
 Seed script to populate supermarkets with Romanian data.
-Run this from the backend directory with: python scripts/supermarkets.py
-Or via Docker: docker compose run --rm main python scripts/supermarkets.py
+Run this from the backend directory with: python scripts/seed_supermarkets.py
+Or via Docker: docker compose run --rm main python scripts/seed_supermarkets.py
 """
 import sys
 
