@@ -14,42 +14,11 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-const PASSWORD_RULES = [
-  { key: "length", label: "Cel putin 8 caractere" },
-  { key: "uppercase", label: "O litera mare" },
-  { key: "lowercase", label: "O litera mica" },
-  { key: "number", label: "Un numar" },
-  { key: "special", label: "Un caracter special" },
-] as const;
-
-function getPasswordChecks(password: string) {
-  return {
-    length: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /\d/.test(password),
-    special: /[^A-Za-z0-9]/.test(password),
-  };
-}
-
-export default function RegisterScreen() {
-  const insets = useSafeAreaInsets();
-  const [fullName, setFullName] = useState("");
+export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const passwordChecks = getPasswordChecks(password);
-  const isPasswordStrong = Object.values(passwordChecks).every(Boolean);
-  const isConfirmTouched = confirmPassword.length > 0;
-  const doPasswordsMatch = password === confirmPassword;
-  const isFormValid =
-    fullName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    isPasswordStrong &&
-    doPasswordsMatch;
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.screen}>
@@ -57,8 +26,8 @@ export default function RegisterScreen() {
       <View style={[styles.hero, { paddingTop: insets.top + 18 }]}>
         <View style={styles.heroCircleLarge} />
         <View style={styles.heroCircleSmall} />
-        <Text style={styles.heroTitle}>Alatura-te noua!</Text>
-        <Text style={styles.heroSubtitle}>Creeaza-ti contul SmartBite</Text>
+        <Text style={styles.heroTitle}>Bine ai venit!</Text>
+        <Text style={styles.heroSubtitle}>Conecteaza-te la contul tau SmartBite</Text>
       </View>
 
       <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
@@ -72,21 +41,6 @@ export default function RegisterScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.form}>
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>NUME COMPLET</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="user" size={18} color="#D9BCB0" />
-                  <TextInput
-                    autoCorrect={false}
-                    onChangeText={setFullName}
-                    placeholder="Numele tau"
-                    placeholderTextColor="#D9BCB0"
-                    style={styles.input}
-                    value={fullName}
-                  />
-                </View>
-              </View>
-
               <View style={styles.fieldGroup}>
                 <Text style={styles.label}>EMAIL</Text>
                 <View style={styles.inputWrapper}>
@@ -132,89 +86,15 @@ export default function RegisterScreen() {
                 </View>
               </View>
 
-              <View style={styles.helperBlock}>
-                {PASSWORD_RULES.map((rule) => {
-                  const passed = passwordChecks[rule.key];
-
-                  return (
-                    <View key={rule.key} style={styles.helperRow}>
-                      <Feather
-                        name={passed ? "check-circle" : "circle"}
-                        size={14}
-                        color={passed ? "#3F7D4D" : "#B79C8E"}
-                      />
-                      <Text style={[styles.helperText, passed && styles.helperTextSuccess]}>
-                        {rule.label}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>CONFIRMA PAROLA</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="lock" size={18} color="#D9BCB0" />
-                  <TextInput
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    onChangeText={setConfirmPassword}
-                    placeholder="Confirma parola"
-                    placeholderTextColor="#D9BCB0"
-                    secureTextEntry={!showConfirmPassword}
-                    style={styles.input}
-                    value={confirmPassword}
-                  />
-                  <Pressable
-                    accessibilityLabel={
-                      showConfirmPassword
-                        ? "Ascunde confirmarea parolei"
-                        : "Afiseaza confirmarea parolei"
-                    }
-                    hitSlop={10}
-                    onPress={() => setShowConfirmPassword((current) => !current)}
-                  >
-                    <Feather
-                      name={showConfirmPassword ? "eye-off" : "eye"}
-                      size={18}
-                      color="#D9BCB0"
-                    />
-                  </Pressable>
-                </View>
-              </View>
-
-              {isConfirmTouched ? (
-                <View style={styles.helperRow}>
-                  <Feather
-                    name={doPasswordsMatch ? "check-circle" : "x-circle"}
-                    size={14}
-                    color={doPasswordsMatch ? "#3F7D4D" : "#C4623B"}
-                  />
-                  <Text
-                    style={[
-                      styles.helperText,
-                      doPasswordsMatch ? styles.helperTextSuccess : styles.helperTextError,
-                    ]}
-                  >
-                    {doPasswordsMatch
-                      ? "Parolele se potrivesc."
-                      : "Parolele nu se potrivesc."}
-                  </Text>
-                </View>
-              ) : null}
-
-              <Pressable
-                disabled={!isFormValid}
-                style={[styles.button, !isFormValid && styles.buttonDisabled]}
-              >
-                <Text style={styles.buttonText}>Creeaza cont</Text>
+              <Pressable style={styles.button}>
+                <Text style={styles.buttonText}>Conecteaza-te</Text>
               </Pressable>
 
               <View style={styles.footerTextRow}>
-                <Text style={styles.footerText}>Ai deja cont? </Text>
-                <Link href="/login" asChild>
+                <Text style={styles.footerText}>Nu ai cont? </Text>
+                <Link href="/register" asChild>
                   <Pressable>
-                    <Text style={styles.footerLink}>Conecteaza-te</Text>
+                    <Text style={styles.footerLink}>Inregistreaza-te</Text>
                   </Pressable>
                 </Link>
               </View>
@@ -320,30 +200,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  helperBlock: {
-    marginTop: -6,
-    marginBottom: 18,
-    gap: 8,
-    paddingLeft: 2,
-  },
-  helperRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  helperText: {
-    marginLeft: 8,
-    color: "#8B7A70",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  helperTextSuccess: {
-    color: "#3F7D4D",
-    fontWeight: "700",
-  },
-  helperTextError: {
-    color: "#C4623B",
-    fontWeight: "700",
-  },
   button: {
     marginTop: 6,
     minHeight: 50,
@@ -356,11 +212,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 12,
     elevation: 6,
-  },
-  buttonDisabled: {
-    backgroundColor: "#98BA9E",
-    shadowOpacity: 0.1,
-    elevation: 3,
   },
   buttonText: {
     color: "#FFFFFF",
