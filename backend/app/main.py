@@ -31,7 +31,7 @@ async def domain_error_handler(request: Request, exc: DomainError):
         content=jsonable_encoder(payload),
     )
     
-#app.include_router(auth_router)
+app.include_router(auth_router)
 
 
 

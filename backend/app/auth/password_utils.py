@@ -1,17 +1,11 @@
-from app.services.logger import LoggerService
 from passlib.context import CryptContext
 
-logger = LoggerService(__name__)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-pwd_context = CryptContext(
-    schemes=["argon2"],
-    deprecated="auto"
-)
 
 def hash_password(password: str) -> str:
-    logger.info("Hashing password")
     return pwd_context.hash(password)
 
-def verify_password(password: str, hashed: str) -> bool:
-    logger.info("Verifying password")
-    return pwd_context.verify(password, hashed)
+
+def verify_password(plain_password: str, password_hash: str) -> bool:
+    return pwd_context.verify(plain_password, password_hash)
