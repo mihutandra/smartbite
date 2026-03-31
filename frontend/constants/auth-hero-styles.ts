@@ -1,0 +1,50 @@
+import { StyleSheet } from "react-native";
+
+export const authHeroStyles = StyleSheet.create({
+  hero: {
+    position: "relative",
+    overflow: "hidden",
+    paddingHorizontal: 24,
+    paddingBottom: 28,
+    alignItems: "center",
+    backgroundColor: "#F28B31",
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    shadowColor: "#B86E2B",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  heroCircleLarge: {
+    position: "absolute",
+    top: -32,
+    right: -16,
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    backgroundColor: "rgba(230, 186, 113, 0.45)",
+  },
+  heroCircleSmall: {
+    position: "absolute",
+    bottom: -28,
+    left: -24,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: "rgba(255, 214, 153, 0.28)",
+  },
+  heroTitle: {
+    color: "#FFFFFF",
+    fontSize: 26,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  heroSubtitle: {
+    marginTop: 8,
+    color: "#FFE5C4",
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+});
