@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { authHeroStyles } from "../constants/auth-hero-styles";
 
 const PASSWORD_RULES = [
   { key: "length", label: "Cel putin 8 caractere" },
@@ -239,50 +240,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hero: {
-    position: "relative",
-    overflow: "hidden",
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    alignItems: "center",
-    backgroundColor: "#F28B31",
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    shadowColor: "#B86E2B",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 18,
-    elevation: 6,
+    ...authHeroStyles.hero,
   },
   heroCircleLarge: {
-    position: "absolute",
-    top: -32,
-    right: -16,
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    backgroundColor: "rgba(230, 186, 113, 0.45)",
+    ...authHeroStyles.heroCircleLarge,
   },
   heroCircleSmall: {
-    position: "absolute",
-    bottom: -28,
-    left: -24,
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: "rgba(255, 214, 153, 0.28)",
+    ...authHeroStyles.heroCircleSmall,
   },
   heroTitle: {
-    color: "#FFFFFF",
-    fontSize: 26,
-    fontWeight: "800",
-    textAlign: "center",
+    ...authHeroStyles.heroTitle,
   },
   heroSubtitle: {
-    marginTop: 8,
-    color: "#FFE5C4",
-    fontSize: 13,
-    fontWeight: "600",
-    textAlign: "center",
+    ...authHeroStyles.heroSubtitle,
   },
   content: {
     flexGrow: 1,
