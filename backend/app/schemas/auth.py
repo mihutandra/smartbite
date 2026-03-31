@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
+from app.models.enums import UserType
 
 
 class RegisterRequest(BaseModel):
@@ -22,6 +23,7 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     name: str
+    user_type: UserType
     created_at: datetime
     updated_at: datetime
 

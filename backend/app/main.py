@@ -1,11 +1,20 @@
-from fastapi import FastAPI
-from fastapi import Request
+from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from app.exceptions.exceptions import DomainError
 
+from app.core.database import Base, _engine
+from app.models.user import User
+from app.exceptions.exceptions import DomainError
+from app.routers.auth_router import router as auth_router
+from app.routers.admin_router import router as admin_router
 
 app = FastAPI(title="SmartBite Backend")
+
+Base.metadata.create_all(bind=_engine)
+
+app.include_router(auth_router)
+app.include_router(admin_router)
+
 
 @app.exception_handler(DomainError)
 async def domain_error_handler(request: Request, exc: DomainError):
@@ -30,8 +39,3 @@ async def domain_error_handler(request: Request, exc: DomainError):
         status_code=status_map.get(exc.code, 400),
         content=jsonable_encoder(payload),
     )
-    
-app.include_router(auth_router)
-
-
-

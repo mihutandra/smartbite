@@ -10,7 +10,8 @@ echo "PostgreSQL started"
 # Now run migrations safely
 alembic upgrade head
 
-python scripts/seed_supermarkets.py
-python scripts/seed_products.py
+#TODO: Decomment
+#python scripts/seed_supermarkets.py
+#python scripts/seed_products.py
 
 uvicorn app.main:app --host 0.0.0.0 --port 8000 "$@"
