@@ -7,7 +7,6 @@ class ProductBase(BaseModel):
     name: str
     description: str | None = None
     brand: str | None = None
-    category_id: int | None = None
     image_url: str | None = None
     is_active: bool = True
 
