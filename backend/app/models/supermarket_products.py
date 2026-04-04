@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import UUID, Boolean, Column, Date, ForeignKey, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class SupermarketProduct(Base):
@@ -15,7 +16,7 @@ class SupermarketProduct(Base):
     currency = Column(String, default="RON")
     
     expiration_date = Column(Date, nullable=False) 
-    stock_quantity = Column(Integer, default=0)    
+    stock_quantity = Column(Integer, default=0)    # Track how many are left
     
     store_product_code = Column(String, nullable=True)
     is_available = Column(Boolean, default=True)
@@ -24,4 +25,7 @@ class SupermarketProduct(Base):
     __table_args__ = (
         UniqueConstraint("supermarket_id", "product_id", "expiration_date", name="uq_supermarket_product_batch"),
     )
+    supermarket = relationship("Supermarket", back_populates="supermarket_products")
+    product = relationship("Product", back_populates="supermarket_products")
+    
     
