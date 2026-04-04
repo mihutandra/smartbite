@@ -18,6 +18,7 @@ class Supermarket(Base):
     phone_number = Column(String)
     email = Column(String)
     website = Column(String)
+    logo_url = Column(String)
 
     opening_hours = Column(JSON)
 
