@@ -18,5 +18,7 @@ class SupermarketProductBase(BaseModel):
 
 class SupermarketProductOut(SupermarketProductBase):
     id: UUID
+    product_name: str | None = None
+    supermarket_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -27,5 +27,12 @@ class SupermarketProduct(Base):
     )
     supermarket = relationship("Supermarket", back_populates="supermarket_products")
     product = relationship("Product", back_populates="supermarket_products")
-    
+
+    @property
+    def product_name(self) -> str | None:
+        return self.product.name if self.product else None
+
+    @property
+    def supermarket_name(self) -> str | None:
+        return self.supermarket.name if self.supermarket else None
     
