@@ -17,6 +17,16 @@ def list_supermarket_products(
     return service.list_all(page=page, page_size=page_size)
 
 
+@router.get("/search", response_model=list[SupermarketProductOut])
+def search_supermarket_products(
+    item: str = Query(..., min_length=1),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    service: SupermarketProductService = Depends(get_supermarket_product_service),
+):
+    return service.search_by_product_name(query=item, page=page, page_size=page_size)
+
+
 @router.get("/{supermarket_product_id}", response_model=SupermarketProductOut)
 def get_supermarket_product(
     supermarket_product_id: UUID,
