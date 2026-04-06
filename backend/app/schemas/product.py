@@ -9,6 +9,7 @@ class ProductBase(BaseModel):
     brand: str | None = None
     image_url: str | None = None
     is_active: bool = True
+    category_id: UUID
 
 
 class ProductCreate(ProductBase):
