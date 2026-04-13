@@ -4,6 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from app.exceptions.exceptions import DomainError
 from app.routers.product import router as product_router
+from app.routers.supermarket_product import router as supermarket_product_router
 
 
 app = FastAPI(title="SmartBite Backend")
@@ -34,5 +35,5 @@ async def domain_error_handler(request: Request, exc: DomainError):
     
 #app.include_router(auth_router)
 app.include_router(product_router)
-
+app.include_router(supermarket_product_router)
 
