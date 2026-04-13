@@ -1,5 +1,5 @@
 from uuid import UUID
-from app.exceptions.exceptions import NotFound
+from app.exceptions.exceptions import NotFound, ValidationError
 from app.models.supermarket_products import SupermarketProduct
 from app.repositories.supermarket_product import SupermarketProductRepository
 
@@ -17,3 +17,20 @@ class SupermarketProductService:
         if not supermarket_product:
             raise NotFound(entity="SupermarketProduct", identifier=str(supermarket_product_id))
         return supermarket_product
+
+    def search_by_product_name(
+        self,
+        query: str,
+        page: int,
+        page_size: int,
+    ) -> list[SupermarketProduct]:
+        cleaned_query = query.strip()
+        if not cleaned_query:
+            raise ValidationError(message="Search query cannot be empty", field="q")
+
+        offset = (page - 1) * page_size
+        return self.supermarket_product_repo.search_by_product_name(
+            query=cleaned_query,
+            limit=page_size,
+            offset=offset,
+        )
