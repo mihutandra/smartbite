@@ -1,13 +1,7 @@
 #!/usr/bin/env sh
+set -e
 
-# Wait for database to be ready (assuming Postgres is on host 'db' and port 5432)
-echo "Waiting for postgres connection..."
-while ! nc -z db 5432; do
-  sleep 0.1
-done
-echo "PostgreSQL started"
-
-# Now run migrations safely
+echo "Running migrations..."
 alembic upgrade head
 
 echo "Seeding supermarkets..."

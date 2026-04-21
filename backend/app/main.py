@@ -9,10 +9,6 @@ from app.routers.supermarket import router as supermarket_router
 from app.routers.auth import router as auth_router
 from app.routers.user_admin import router as user_admin_router
 
-from app.routers.product import router as product_router
-from app.routers.supermarket_product import router as supermarket_product_router
-from app.routers.supermarket import router as supermarket_router
-
 app = FastAPI(title="SmartBite Backend")
 
 @app.exception_handler(DomainError)
