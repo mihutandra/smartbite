@@ -4,6 +4,9 @@ FROM python:3.12-slim AS base
 # Set working directory
 WORKDIR /base
 
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
+
 # Install base dependencies
 COPY ./requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r ./requirements.txt

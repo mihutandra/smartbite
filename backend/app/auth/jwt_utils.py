@@ -1,19 +1,21 @@
 import jwt
 from datetime import datetime, timedelta, timezone
+
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+
 from app.core.config import settings
-from app.models.enums import UserType
-from app.services.logger import LoggerService
-from app.exceptions.exceptions import Unauthorized, Forbidden 
+from app.models.enums import UserRole
+import logging
+from app.exceptions.exceptions import Unauthorized, Forbidden
 
-logger = LoggerService(__name__)
+logger = logging.getLogger(__name__)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
-def create_jwt_token(user_id: str, role: UserType | str) -> str:
-    role_value = role.value if isinstance(role, UserType) else role
+def create_jwt_token(user_id: str, role: UserRole | str) -> str:
+    role_value = role.value if isinstance(role, UserRole) else role
 
     payload = {
         "sub": user_id,
@@ -37,7 +39,7 @@ def verify_jwt(token: str = Depends(oauth2_scheme)) -> dict:
         if not user_id or not role:
             raise Unauthorized(message="Invalid token payload")
 
-        allowed_roles = {r.value for r in UserType}
+        allowed_roles = {r.value for r in UserRole}
         if role not in allowed_roles:
             raise Unauthorized(message="Invalid role in token")
 
@@ -50,7 +52,7 @@ def verify_jwt(token: str = Depends(oauth2_scheme)) -> dict:
         raise Unauthorized(message="Invalid token")
 
 
-def require_role(required_role: UserType):
+def require_role(required_role: UserRole):
     required_value = required_role.value
 
     def _role_dependency(user=Depends(verify_jwt)):
@@ -61,5 +63,6 @@ def require_role(required_role: UserType):
     return _role_dependency
 
 
-require_admin = require_role(UserType.ADMIN)
-require_broker = require_role(UserType.BROKER)
+require_admin = require_role(UserRole.ADMIN)
+require_manager = require_role(UserRole.MANAGER)
+require_user = require_role(UserRole.USER)
