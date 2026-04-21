@@ -3,6 +3,9 @@ from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from app.exceptions.exceptions import DomainError
+from app.routers.product import router as product_router
+from app.routers.supermarket_product import router as supermarket_product_router
+from app.routers.supermarket import router as supermarket_router
 from app.routers.auth import router as auth_router
 from app.routers.user_admin import router as user_admin_router
 
@@ -35,6 +38,11 @@ async def domain_error_handler(request: Request, exc: DomainError):
         status_code=status_map.get(exc.code, 400),
         content=jsonable_encoder(payload),
     )
+
+#app.include_router(auth_router)
+app.include_router(product_router)
+app.include_router(supermarket_product_router)
+app.include_router(supermarket_router)
 
 
 app.include_router(auth_router)
