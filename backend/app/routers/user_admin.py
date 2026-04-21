@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.auth.jwt_utils import require_admin
 from app.factories.user import get_auth_service
 from app.schemas.user import UserOut, UserRegisterRequest, UserUpdate
-from app.services.auth_service import AuthService
+from app.services.auth import AuthService
 
 logger = logging.getLogger(__name__)
 

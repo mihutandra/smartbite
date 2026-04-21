@@ -35,6 +35,8 @@ class AuthService:
             role=role,
             phone=payload.phone,
             location=payload.location,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
         )
         created = self.repo.create(user)
         logger.info(f"User registered id={created.id} email={created.email} role={created.role}")
@@ -96,6 +98,10 @@ class AuthService:
             user.phone = user_data.phone
         if user_data.location is not None:
             user.location = user_data.location
+        if user_data.latitude is not None:
+            user.latitude = user_data.latitude
+        if user_data.longitude is not None:
+            user.longitude = user_data.longitude
         updated = self.repo.update(user)
         logger.info(f"User updated id={id}")
         return UserOut.model_validate(updated)

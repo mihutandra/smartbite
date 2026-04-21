@@ -1,8 +1,7 @@
-# app/models/user.py
 from __future__ import annotations
 
 import uuid
-from sqlalchemy import String, DateTime, CheckConstraint, func
+from sqlalchemy import String, DateTime, CheckConstraint, Float, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
@@ -28,6 +27,8 @@ class User(Base):
 
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),

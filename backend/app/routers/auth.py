@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, status
 from app.auth.jwt_utils import verify_jwt
 from app.factories.user import get_auth_service
 from app.schemas.user import TokenOut, UserLoginRequest, UserOut, UserRegisterRequest
-from app.services.auth_service import AuthService
+from app.services.auth import AuthService
 import logging
 
 logger = logging.getLogger(__name__)
