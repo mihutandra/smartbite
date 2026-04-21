@@ -48,8 +48,3 @@ app.include_router(supermarket_router)
 app.include_router(auth_router)
 app.include_router(user_admin_router)
 
-#app.include_router(auth_router)
-app.include_router(product_router)
-app.include_router(supermarket_product_router)
-app.include_router(supermarket_router)
-
