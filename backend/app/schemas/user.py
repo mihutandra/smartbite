@@ -13,7 +13,7 @@ class UserRegisterRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
-    phone: str | None = Field(default=None, max_length=50)
+    phone: str = Field(..., min_length=5, max_length=50)
     location: str | None = Field(default=None, max_length=255)
     latitude: float | None = None
     longitude: float | None = None
