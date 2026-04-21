@@ -33,3 +33,13 @@ class SupermarketRepository:
         result = list(self.session.scalars(stmt).all())
         logger.info("Retrieved %s supermarket(s)", len(result))
         return result
+    
+    def get_details(self, id: UUID) -> Supermarket | None:
+        logger.debug("Fetching supermarket details id=%s", id)
+        stmt = select(Supermarket).where(Supermarket.id == id)
+        result = self.session.scalars(stmt).first()
+        if result:
+            logger.info("Found supermarket details id=%s name=%s", id, result.name)
+        else:
+            logger.warning("Supermarket details id=%s not found", id)
+        return result
