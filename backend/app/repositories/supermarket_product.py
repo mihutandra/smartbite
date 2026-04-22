@@ -30,6 +30,31 @@ class SupermarketProductRepository:
             logger.warning("SupermarketProduct id=%s not found", id)
         return result
 
+    def get_by_supermarket_id(
+            self, supermarket_id: UUID, limit: int, offset: int
+    ) -> list[SupermarketProduct]:
+        logger.debug(
+            "Fetching products for supermarket_id=%s limit=%s offset=%s",
+            supermarket_id, limit, offset,
+        )
+        stmt = (
+            select(SupermarketProduct)
+            .where(SupermarketProduct.supermarket_id == supermarket_id)
+            .where(SupermarketProduct.is_available == True)
+            .options(
+                joinedload(SupermarketProduct.product),
+                joinedload(SupermarketProduct.supermarket),
+            )
+            .order_by(SupermarketProduct.expiration_date)
+            .limit(limit)
+            .offset(offset)
+        )
+        result = list(self.session.scalars(stmt).unique().all())
+        logger.info(
+            "Retrieved %s product(s) for supermarket_id=%s", len(result), supermarket_id
+        )
+        return result
+
     def get_all(self, limit: int, offset: int) -> list[SupermarketProduct]:
         logger.debug("Fetching all supermarket_products limit=%s, offset=%s", limit, offset)
         stmt = (
