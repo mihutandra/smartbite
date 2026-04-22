@@ -13,12 +13,23 @@ class SupermarketBase(BaseModel):
     website: str | None = None
     logo_url: str | None = None
     opening_hours: dict | None = None
-    is_active: bool = True
-
 
 class SupermarketOut(SupermarketBase):
     id: UUID
+    is_active: bool = True
+    
     created_at: datetime
     updated_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+    
+class SupermarketDetails(SupermarketBase):
+    name: str
+    address: str
+    latitude: float
+    longitude: float
+    phone_number: str | None = None
+    email: str | None = None
+    website: str | None = None
+    logo_url: str | None = None
+    opening_hours: dict | None = None

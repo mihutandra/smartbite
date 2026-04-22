@@ -2,6 +2,7 @@ from uuid import UUID
 from app.exceptions.exceptions import NotFound
 from app.models.supermarket import Supermarket
 from app.repositories.supermarket import SupermarketRepository
+from app.schemas.supermarket import SupermarketDetails
 
 
 class SupermarketService:
@@ -14,6 +15,12 @@ class SupermarketService:
 
     def get_by_id(self, supermarket_id: UUID) -> Supermarket:
         supermarket = self.supermarket_repo.get_by_id(supermarket_id)
+        if not supermarket:
+            raise NotFound(entity="Supermarket", identifier=str(supermarket_id))
+        return supermarket
+    
+    def get_details(self, supermarket_id: UUID) -> SupermarketDetails:
+        supermarket = self.supermarket_repo.get_details(supermarket_id)
         if not supermarket:
             raise NotFound(entity="Supermarket", identifier=str(supermarket_id))
         return supermarket

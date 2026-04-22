@@ -1,7 +1,7 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from app.factories.supermarket import get_supermarket_service
-from app.schemas.supermarket import SupermarketOut
+from app.schemas.supermarket import SupermarketDetails, SupermarketOut
 from app.services.supermarket import SupermarketService
 
 router = APIRouter(prefix="/api/supermarkets", tags=["Supermarkets"])
@@ -20,3 +20,10 @@ def get_supermarket(
     service: SupermarketService = Depends(get_supermarket_service),
 ):
     return service.get_by_id(supermarket_id=supermarket_id)
+
+@router.get("/{supermarket_id}/details", response_model=SupermarketDetails)
+def get_supermarket_details(
+    supermarket_id: UUID,
+    service: SupermarketService = Depends(get_supermarket_service),
+):
+    return service.get_details(supermarket_id=supermarket_id)
