@@ -28,7 +28,7 @@ class UserRepository:
 
     def get_by_email(self, email: str) -> User | None:
         logger.debug(f"Fetching user by email={email}")
-        stmt = select(User).where(User.email == email)
+        stmt = select(User).where(User.email == email, User.is_deleted.is_(False))
         result = self.session.scalars(stmt).first()
         if result:
             logger.info(f"Found user email={email}")
@@ -38,7 +38,7 @@ class UserRepository:
 
     def get_by_name(self, name: str) -> User | None:
         logger.debug(f"Fetching user by name={name}")
-        stmt = select(User).where(User.name == name)
+        stmt = select(User).where(User.name == name, User.is_deleted.is_(False))
         result = self.session.scalars(stmt).first()
         if result:
             logger.info(f"Found user name={name}")
@@ -50,7 +50,13 @@ class UserRepository:
 
     def get_all(self, limit: int, offset: int) -> list[User]:
         logger.debug(f"Fetching all users limit={limit}, offset={offset}")
-        stmt = select(User).order_by(User.name).limit(limit).offset(offset)
+        stmt = (
+            select(User)
+            .where(User.is_deleted.is_(False))
+            .order_by(User.name)
+            .limit(limit)
+            .offset(offset)
+        )
         result = list(self.session.scalars(stmt).all())
         logger.info(f"Retrieved {len(result)} user(s)")
         return result
@@ -59,7 +65,7 @@ class UserRepository:
         logger.debug(f"Fetching users by role={role} limit={limit}, offset={offset}")
         stmt = (
             select(User)
-            .where(User.role == role)
+            .where(User.role == role, User.is_deleted.is_(False))
             .order_by(User.name)
             .limit(limit)
             .offset(offset)

@@ -56,3 +56,7 @@ class TokenOut(BaseModel):
 
 class LogoutOut(BaseModel):
     message: str
+
+
+class DeleteAccountOut(BaseModel):
+    message: str

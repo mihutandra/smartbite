@@ -1,4 +1,5 @@
-from uuid import UUID
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -8,7 +9,7 @@ from app.core.security import hash_password, verify_password
 from app.models.enums import UserRole
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import LogoutOut, TokenOut, UserOut, UserRegisterRequest, UserUpdate
+from app.schemas.user import DeleteAccountOut, LogoutOut, TokenOut, UserOut, UserRegisterRequest, UserUpdate
 import logging
 
 logger = logging.getLogger(__name__)
@@ -60,6 +61,33 @@ class AuthService:
         revoke_jwt_token(token)
         logger.info("User logged out and token revoked")
         return LogoutOut(message="Logged out successfully")
+
+    def delete_account(self, id: UUID, token: str) -> DeleteAccountOut:
+        logger.debug(f"Deleting account id={id}")
+        user = self.repo.get_by_id(id)
+        if user is None or user.is_deleted:
+            logger.warning(f"Delete account failed, user id={id} not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        anon_suffix = uuid4().hex
+        user.name = "Deleted User"
+        user.email = f"deleted_{anon_suffix}@deleted.local"
+        user.password_hash = hash_password(uuid4().hex)
+        user.phone = None
+        user.location = None
+        user.latitude = None
+        user.longitude = None
+        user.role = UserRole.USER
+        user.is_deleted = True
+        user.deleted_at = datetime.now(timezone.utc)
+
+        self.repo.update(user)
+        revoke_jwt_token(token)
+        logger.info(f"Account soft-deleted and anonymized id={id}")
+        return DeleteAccountOut(message="Account deleted successfully")
 
     # ── User management ──────────────────────────────────────────────────────
 
