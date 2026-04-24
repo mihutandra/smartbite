@@ -50,7 +50,12 @@ def get_products_by_supermarket(
         ),
         service: SupermarketProductService = Depends(get_supermarket_product_service),
 ):
-    logger.debug("GET /api/supermarkets/%s/products page=%s page_size=%s", supermarket_id, page, page_size)
+    logger.debug(
+        "GET /api/supermarket-products/%s/products page=%s page_size=%s",
+        supermarket_id,
+        page,
+        page_size,
+    )
     result = service.get_products_by_supermarket(
         supermarket_id=supermarket_id,
         page=page,
