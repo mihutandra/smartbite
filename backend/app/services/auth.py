@@ -3,12 +3,12 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.auth.jwt_utils import create_jwt_token
+from app.auth.jwt_utils import create_jwt_token, revoke_jwt_token
 from app.core.security import hash_password, verify_password
 from app.models.enums import UserRole
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import TokenOut, UserOut, UserRegisterRequest, UserUpdate
+from app.schemas.user import LogoutOut, TokenOut, UserOut, UserRegisterRequest, UserUpdate
 import logging
 
 logger = logging.getLogger(__name__)
@@ -55,6 +55,11 @@ class AuthService:
         token = create_jwt_token(user_id=str(user.id), role=user.role)
         logger.info(f"Login successful id={user.id} email={user.email}")
         return TokenOut(access_token=token)
+
+    def logout(self, token: str) -> LogoutOut:
+        revoke_jwt_token(token)
+        logger.info("User logged out and token revoked")
+        return LogoutOut(message="Logged out successfully")
 
     # ── User management ──────────────────────────────────────────────────────
 
