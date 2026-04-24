@@ -40,7 +40,7 @@ class SupermarketProductRepository:
         stmt = (
             select(SupermarketProduct)
             .where(SupermarketProduct.supermarket_id == supermarket_id)
-            .where(SupermarketProduct.is_available == True)
+            .where(SupermarketProduct.is_available.is_(True))
             .options(
                 joinedload(SupermarketProduct.product),
                 joinedload(SupermarketProduct.supermarket),
