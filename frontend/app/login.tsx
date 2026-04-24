@@ -150,12 +150,18 @@ export default function LoginScreen() {
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Nu ai cont? </Text>
-                <Link href="/register" asChild>
+                <Link href={"/register" as never} asChild>
                   <Pressable>
                     <Text style={styles.footerLink}>Inregistreaza-te</Text>
                   </Pressable>
                 </Link>
               </View>
+
+              <Link href={"/supermarket-card-preview" as never} asChild>
+                <Pressable style={styles.previewButton}>
+                  <Text style={styles.previewButtonText}>Vezi card preview</Text>
+                </Pressable>
+              </Link>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -276,6 +282,21 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     color: "#3F7D4D",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  previewButton: {
+    marginTop: 16,
+    minHeight: 46,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#D8D2C8",
+    backgroundColor: "#FFFCF5",
+  },
+  previewButtonText: {
+    color: "#5C534B",
     fontSize: 14,
     fontWeight: "800",
   },

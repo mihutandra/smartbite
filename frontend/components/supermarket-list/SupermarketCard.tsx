@@ -1,12 +1,8 @@
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
 import {
-  Image,
-  Pressable,
   StyleSheet,
   Text,
   View,
-  type ImageSourcePropType,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
@@ -19,10 +15,8 @@ export type SupermarketCardProps = {
   offersCount: number;
   rating: number;
   accentColor?: string;
-  imageSource?: ImageSourcePropType;
   logoLabel?: string;
   logoTextStyle?: StyleProp<TextStyle>;
-  onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -33,32 +27,18 @@ export function SupermarketCard({
   offersCount,
   rating,
   accentColor = "#E95C24",
-  imageSource,
   logoLabel,
   logoTextStyle,
-  onPress,
   style,
 }: SupermarketCardProps) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const showImage = Boolean(imageSource) && !imageFailed;
-
   return (
-    <Pressable onPress={onPress} style={[styles.card, style]}>
-      <View style={[styles.logoContainer, { borderColor: `${accentColor}33` }] }>
-        {showImage ? (
-          <Image
-            source={imageSource}
-            style={styles.logoImage}
-            resizeMode="contain"
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <View style={[styles.logoBadge, { backgroundColor: `${accentColor}14` }] }>
-            <Text style={[styles.logoText, { color: accentColor }, logoTextStyle]}>
-              {logoLabel ?? getStoreInitials(name)}
-            </Text>
-          </View>
-        )}
+    <View style={[styles.card, style]}>
+      <View style={[styles.logoContainer, { borderColor: `${accentColor}33` }]}>
+        <View style={[styles.logoBadge, { backgroundColor: `${accentColor}14` }]}>
+          <Text style={[styles.logoText, { color: accentColor }, logoTextStyle]}>
+            {logoLabel ?? getStoreInitials(name)}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.details}>
@@ -78,11 +58,19 @@ export function SupermarketCard({
         </Text>
 
         <View style={styles.footerRow}>
-          <InfoPill backgroundColor="#F1B16C" icon="star" label={rating.toFixed(1)} />
-          <InfoPill backgroundColor="#9BC59C" icon="tag" label={`${offersCount} oferte`} />
+          <InfoPill
+            backgroundColor="#F1B16C"
+            icon="star"
+            label={rating.toFixed(1)}
+          />
+          <InfoPill
+            backgroundColor="#9BC59C"
+            icon="tag"
+            label={`${offersCount} oferte`}
+          />
         </View>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
@@ -134,7 +122,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     backgroundColor: "#FFFFFF",
-    overflow: "hidden",
   },
   logoBadge: {
     height: 48,
@@ -142,10 +129,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 14,
-  },
-  logoImage: {
-    height: 46,
-    width: 46,
   },
   logoText: {
     fontSize: 20,
