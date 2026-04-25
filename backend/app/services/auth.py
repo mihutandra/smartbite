@@ -10,6 +10,7 @@ from app.models.enums import UserRole
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import DeleteAccountOut, LogoutOut, TokenOut, UserOut, UserRegisterRequest, UserUpdate
+from app.exceptions.exceptions import Unauthorized
 import logging
 
 logger = logging.getLogger(__name__)
@@ -85,7 +86,10 @@ class AuthService:
         user.deleted_at = datetime.now(timezone.utc)
 
         self.repo.update(user)
-        revoke_jwt_token(token)
+        try:
+            revoke_jwt_token(token)
+        except Unauthorized:
+            logger.warning(f"Account deleted id={id} but token revocation failed", exc_info=True)
         logger.info(f"Account soft-deleted and anonymized id={id}")
         return DeleteAccountOut(message="Account deleted successfully")
 

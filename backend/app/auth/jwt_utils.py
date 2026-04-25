@@ -35,6 +35,7 @@ def revoke_jwt_token(token: str) -> None:
             token,
             settings.JWT_SECRET,
             algorithms=[settings.JWT_ALGORITHM],
+            options={"verify_exp": False},
         )
     except jwt.InvalidTokenError:
         raise Unauthorized(message="Invalid token")
