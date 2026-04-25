@@ -13,8 +13,8 @@ def get_supermarket_product_repository(
     return SupermarketProductRepository(session=db_session)
 
 def get_supermarket_product_service(
-        supermarket_product_repo: SupermarketProductRepository = Depends(get_supermarket_product_repository),
-        supermarket_repo: SupermarketRepository = Depends(get_supermarket_repository),
+    supermarket_product_repo: SupermarketProductRepository = Depends(get_supermarket_product_repository),
+    supermarket_repo: SupermarketRepository = Depends(get_supermarket_repository),
 ) -> SupermarketProductService:
     return SupermarketProductService(
         supermarket_product_repo=supermarket_product_repo,
