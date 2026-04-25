@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
 
-from app.auth.jwt_utils import verify_jwt
+from app.auth.jwt_utils import oauth2_scheme, verify_jwt
 from app.factories.user import get_auth_service
-from app.schemas.user import TokenOut, UserLoginRequest, UserOut, UserRegisterRequest
+from app.schemas.user import DeleteAccountOut, LogoutOut, TokenOut, UserLoginRequest, UserOut, UserRegisterRequest
 from app.services.auth import AuthService
 import logging
 
@@ -45,3 +45,23 @@ def me(
     from uuid import UUID
     result = service.get_by_id(id=UUID(current_user["user_id"]))
     return result
+
+
+@router.post("/logout", response_model=LogoutOut)
+def logout(
+        token: str = Depends(oauth2_scheme),
+        service: AuthService = Depends(get_auth_service),
+):
+    logger.debug("POST /api/auth/logout")
+    return service.logout(token=token)
+
+
+@router.delete("/delete-account", response_model=DeleteAccountOut)
+def delete_account(
+    current_user: dict = Depends(verify_jwt),
+    token: str = Depends(oauth2_scheme),
+    service: AuthService = Depends(get_auth_service),
+):
+    logger.debug(f"DELETE /api/auth/delete-account user_id={current_user['user_id']}")
+    from uuid import UUID
+    return service.delete_account(id=UUID(current_user["user_id"]), token=token)

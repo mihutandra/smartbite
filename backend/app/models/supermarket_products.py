@@ -21,9 +21,6 @@ class SupermarketProduct(Base):
     store_product_code = Column(String, nullable=True)
     is_available = Column(Boolean, default=True)
 
-    supermarket = relationship("Supermarket", back_populates="supermarket_products")
-    product = relationship("Product", back_populates="supermarket_products")
-
     __table_args__ = (
         UniqueConstraint("supermarket_id", "product_id", "expiration_date", name="uq_supermarket_product_batch"),
     )
