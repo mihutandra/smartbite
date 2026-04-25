@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { Link, useRouter } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
@@ -14,11 +14,12 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { login as loginUser } from "../services/auth";
+import { useAuth } from "../context/auth-context";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { error, isAuthenticated, signIn, status } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +27,18 @@ export default function LoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const insets = useSafeAreaInsets();
   const isFormValid = email.trim().length > 0 && password.length > 0;
+
+  if (status === "loading") {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color="#5D9B68" />
+      </View>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/home" />;
+  }
 
   async function handleLogin() {
     if (!isFormValid || isSubmitting) {
@@ -36,7 +49,7 @@ export default function LoginScreen() {
     setErrorMessage("");
 
     try {
-      await loginUser(email, password);
+      await signIn(email, password);
       router.replace("/home");
     } catch (error) {
       const message =
@@ -49,6 +62,8 @@ export default function LoginScreen() {
       setIsSubmitting(false);
     }
   }
+
+  const visibleError = errorMessage || error;
 
   return (
     <View style={styles.screen}>
@@ -131,7 +146,7 @@ export default function LoginScreen() {
                 )}
               </Pressable>
 
-              {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+              {visibleError ? <Text style={styles.errorText}>{visibleError}</Text> : null}
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Nu ai cont? </Text>
@@ -150,6 +165,12 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8F5EE",
+  },
   screen: {
     flex: 1,
     backgroundColor: "#F8F5EE",

@@ -1,10 +1,25 @@
 import { Feather } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Redirect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/auth-context";
 
 export default function HomeScreen() {
+  const { signOut, status, user } = useAuth();
+
+  if (status === "loading") {
+    return (
+      <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+        <ActivityIndicator size="large" color="#5D9B68" />
+      </SafeAreaView>
+    );
+  }
+
+  if (status !== "authenticated" || !user) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
       <StatusBar style="dark" />
@@ -14,14 +29,15 @@ export default function HomeScreen() {
         </View>
         <Text style={styles.title}>Te-ai conectat cu succes</Text>
         <Text style={styles.subtitle}>
-          Acesta este ecranul de home provizoriu pana conectam restul fluxului din aplicatie.
+          Salut, {user.name}! Sesiunea ta este activa, iar tokenul este pastrat pentru cererile
+          autentificate.
         </Text>
+        <Text style={styles.userMeta}>{user.email}</Text>
+        <Text style={styles.userMeta}>Rol: {user.role}</Text>
 
-        <Link href="/login" asChild>
-          <Pressable style={styles.button}>
-            <Text style={styles.buttonText}>Inapoi la login</Text>
-          </Pressable>
-        </Link>
+        <Pressable style={styles.button} onPress={() => void signOut()}>
+          <Text style={styles.buttonText}>Deconecteaza-te</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -68,6 +84,13 @@ const styles = StyleSheet.create({
     color: "#72665C",
     fontSize: 15,
     lineHeight: 22,
+    textAlign: "center",
+  },
+  userMeta: {
+    marginTop: 8,
+    color: "#5C5149",
+    fontSize: 14,
+    fontWeight: "600",
     textAlign: "center",
   },
   button: {

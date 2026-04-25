@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { Link, useRouter } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
@@ -14,7 +14,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { register as registerUser } from "../services/auth";
+import { useAuth } from "../context/auth-context";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 
 const PASSWORD_RULES = [
@@ -37,6 +37,7 @@ function getPasswordChecks(password: string) {
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { error, isAuthenticated, signUp, status } = useAuth();
   const insets = useSafeAreaInsets();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -59,6 +60,18 @@ export default function RegisterScreen() {
     isPasswordStrong &&
     doPasswordsMatch;
 
+  if (status === "loading") {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color="#5D9B68" />
+      </View>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/home" />;
+  }
+
   async function handleRegister() {
     if (!isFormValid || isSubmitting) {
       return;
@@ -68,7 +81,7 @@ export default function RegisterScreen() {
     setErrorMessage("");
 
     try {
-      await registerUser({
+      await signUp({
         name: fullName,
         email,
         password,
@@ -87,6 +100,8 @@ export default function RegisterScreen() {
       setIsSubmitting(false);
     }
   }
+
+  const visibleError = errorMessage || error;
 
   return (
     <View style={styles.screen}>
@@ -271,7 +286,7 @@ export default function RegisterScreen() {
                 )}
               </Pressable>
 
-              {errorMessage ? <Text style={styles.helperTextErrorBlock}>{errorMessage}</Text> : null}
+              {visibleError ? <Text style={styles.helperTextErrorBlock}>{visibleError}</Text> : null}
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Ai deja cont? </Text>
@@ -290,6 +305,12 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingScreen: {
+    flex: 1,
+    backgroundColor: "#F8F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   screen: {
     flex: 1,
     backgroundColor: "#F8F5EE",

@@ -5,17 +5,7 @@ export type LoginResponse = {
   token_type: string;
 };
 
-export type RegisterPayload = {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
-  location?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-};
-
-export type RegisterResponse = {
+export type UserProfile = {
   id: string;
   name: string;
   email: string;
@@ -27,6 +17,15 @@ export type RegisterResponse = {
   created_at: string;
   updated_at: string;
 };
+
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+};
+
+export type RegisterResponse = UserProfile;
 
 export class AuthServiceError extends Error {
   constructor(message: string) {
@@ -50,13 +49,18 @@ async function parseApiResponse<T>(response: Response): Promise<T> {
   return data as T;
 }
 
+function createJsonHeaders(accessToken?: string) {
+  return {
+    "Content-Type": "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  };
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: createJsonHeaders(),
       body: JSON.stringify({
         email: email.trim(),
         password,
@@ -83,9 +87,7 @@ export async function register(payload: RegisterPayload): Promise<RegisterRespon
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: createJsonHeaders(),
       body: JSON.stringify({
         ...payload,
         name: payload.name.trim(),
@@ -95,6 +97,29 @@ export async function register(payload: RegisterPayload): Promise<RegisterRespon
     });
 
     const data = await parseApiResponse<RegisterResponse>(response);
+
+    if (typeof data?.id !== "string" || typeof data?.email !== "string") {
+      throw new AuthServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof AuthServiceError) {
+      throw error;
+    }
+
+    throw new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function fetchCurrentUser(accessToken: string): Promise<UserProfile> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      method: "GET",
+      headers: createJsonHeaders(accessToken),
+    });
+
+    const data = await parseApiResponse<UserProfile>(response);
 
     if (typeof data?.id !== "string" || typeof data?.email !== "string") {
       throw new AuthServiceError("Serverul a returnat un raspuns invalid.");
