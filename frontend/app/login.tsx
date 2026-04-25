@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,13 +14,43 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { login as loginUser } from "../services/auth";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const insets = useSafeAreaInsets();
+  const isFormValid = email.trim().length > 0 && password.length > 0;
+
+  async function handleLogin() {
+    if (!isFormValid || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      await loginUser(email, password);
+
+      setSuccessMessage("Conectarea a reusit. Tokenul a fost primit de la server.");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "A aparut o eroare neasteptata. Incearca din nou.";
+
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <View style={styles.screen}>
@@ -53,6 +84,7 @@ export default function LoginScreen() {
                     onChangeText={setEmail}
                     placeholder="email@exemplu.com"
                     placeholderTextColor="#D9BCB0"
+                    returnKeyType="next"
                     style={styles.input}
                     value={email}
                   />
@@ -67,8 +99,10 @@ export default function LoginScreen() {
                     autoCapitalize="none"
                     autoCorrect={false}
                     onChangeText={setPassword}
+                    onSubmitEditing={handleLogin}
                     placeholder="Parola ta"
                     placeholderTextColor="#D9BCB0"
+                    returnKeyType="done"
                     secureTextEntry={!showPassword}
                     style={styles.input}
                     value={password}
@@ -87,9 +121,20 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              <Pressable style={styles.button}>
-                <Text style={styles.buttonText}>Conecteaza-te</Text>
+              <Pressable
+                disabled={!isFormValid || isSubmitting}
+                onPress={handleLogin}
+                style={[styles.button, (!isFormValid || isSubmitting) && styles.buttonDisabled]}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Conecteaza-te</Text>
+                )}
               </Pressable>
+
+              {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+              {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Nu ai cont? </Text>
@@ -183,10 +228,29 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
+  buttonDisabled: {
+    backgroundColor: "#98BA9E",
+    shadowOpacity: 0.1,
+    elevation: 3,
+  },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "800",
+  },
+  errorText: {
+    marginTop: 12,
+    color: "#C4623B",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  successText: {
+    marginTop: 12,
+    color: "#3F7D4D",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
   },
   footerTextRow: {
     marginTop: 24,
