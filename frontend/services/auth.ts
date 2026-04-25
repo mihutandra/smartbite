@@ -5,11 +5,49 @@ export type LoginResponse = {
   token_type: string;
 };
 
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  location?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export type RegisterResponse = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone: string | null;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export class AuthServiceError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "AuthServiceError";
   }
+}
+
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      typeof data?.detail === "string"
+        ? data.detail
+        : "Nu am reusit sa procesam cererea. Incearca din nou.";
+
+    throw new AuthServiceError(detail);
+  }
+
+  return data as T;
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
@@ -25,22 +63,44 @@ export async function login(email: string, password: string): Promise<LoginRespo
       }),
     });
 
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      const detail =
-        typeof data?.detail === "string"
-          ? data.detail
-          : "Nu am reusit sa te conectam. Verifica datele si incearca din nou.";
-
-      throw new AuthServiceError(detail);
-    }
+    const data = await parseApiResponse<LoginResponse>(response);
 
     if (typeof data?.access_token !== "string" || typeof data?.token_type !== "string") {
       throw new AuthServiceError("Serverul a returnat un raspuns invalid.");
     }
 
     return data as LoginResponse;
+  } catch (error) {
+    if (error instanceof AuthServiceError) {
+      throw error;
+    }
+
+    throw new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function register(payload: RegisterPayload): Promise<RegisterResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...payload,
+        name: payload.name.trim(),
+        email: payload.email.trim(),
+        phone: payload.phone.trim(),
+      }),
+    });
+
+    const data = await parseApiResponse<RegisterResponse>(response);
+
+    if (typeof data?.id !== "string" || typeof data?.email !== "string") {
+      throw new AuthServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
   } catch (error) {
     if (error instanceof AuthServiceError) {
       throw error;
