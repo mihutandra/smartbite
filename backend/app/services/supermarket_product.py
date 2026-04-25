@@ -25,7 +25,7 @@ class SupermarketProductService:
         return supermarket_product
 
     def get_products_by_supermarket(
-            self, supermarket_id: UUID, page: int, page_size: int
+        self, supermarket_id: UUID, page: int, page_size: int
     ) -> list[SupermarketProduct]:
         logger.debug(
             "GET products by supermarket_id=%s page=%s page_size=%s",
