@@ -13,31 +13,39 @@ export class AuthServiceError extends Error {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: email.trim(),
-      password,
-    }),
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+        password,
+      }),
+    });
 
-  const data = await response.json().catch(() => null);
+    const data = await response.json().catch(() => null);
 
-  if (!response.ok) {
-    const detail =
-      typeof data?.detail === "string"
-        ? data.detail
-        : "Nu am reusit sa te conectam. Verifica datele si incearca din nou.";
+    if (!response.ok) {
+      const detail =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Nu am reusit sa te conectam. Verifica datele si incearca din nou.";
 
-    throw new AuthServiceError(detail);
+      throw new AuthServiceError(detail);
+    }
+
+    if (typeof data?.access_token !== "string" || typeof data?.token_type !== "string") {
+      throw new AuthServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data as LoginResponse;
+  } catch (error) {
+    if (error instanceof AuthServiceError) {
+      throw error;
+    }
+
+    throw new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
   }
-
-  if (typeof data?.access_token !== "string" || typeof data?.token_type !== "string") {
-    throw new AuthServiceError("Serverul a returnat un raspuns invalid.");
-  }
-
-  return data as LoginResponse;
 }

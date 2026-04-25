@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
@@ -18,11 +18,11 @@ import { login as loginUser } from "../services/auth";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const insets = useSafeAreaInsets();
   const isFormValid = email.trim().length > 0 && password.length > 0;
@@ -34,12 +34,10 @@ export default function LoginScreen() {
 
     setIsSubmitting(true);
     setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       await loginUser(email, password);
-
-      setSuccessMessage("Conectarea a reusit. Tokenul a fost primit de la server.");
+      router.replace("/home");
     } catch (error) {
       const message =
         error instanceof Error
@@ -134,7 +132,6 @@ export default function LoginScreen() {
               </Pressable>
 
               {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-              {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Nu ai cont? </Text>
@@ -241,13 +238,6 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 12,
     color: "#C4623B",
-    fontSize: 13,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  successText: {
-    marginTop: 12,
-    color: "#3F7D4D",
     fontSize: 13,
     fontWeight: "700",
     textAlign: "center",
