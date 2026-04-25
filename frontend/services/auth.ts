@@ -34,14 +34,75 @@ export class AuthServiceError extends Error {
   }
 }
 
+function formatValidationPath(path: unknown) {
+  if (!Array.isArray(path) || path.length === 0) {
+    return "Camp invalid";
+  }
+
+  const cleanedPath = path
+    .filter((part) => part !== "body")
+    .map((part) => String(part))
+    .join(".");
+
+  return cleanedPath || "Camp invalid";
+}
+
+function extractErrorMessage(data: unknown, fallbackMessage: string) {
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (typeof data !== "object" || data === null) {
+    return fallbackMessage;
+  }
+
+  const detail = "detail" in data ? data.detail : undefined;
+
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    const firstError = detail[0];
+
+    if (typeof firstError === "string" && firstError.trim()) {
+      return firstError;
+    }
+
+    if (typeof firstError === "object" && firstError !== null) {
+      const message = "msg" in firstError && typeof firstError.msg === "string" ? firstError.msg : null;
+      const path = "loc" in firstError ? formatValidationPath(firstError.loc) : null;
+
+      if (message && path) {
+        return `${path}: ${message}`;
+      }
+
+      if (message) {
+        return message;
+      }
+    }
+  }
+
+  return fallbackMessage;
+}
+
 async function parseApiResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => null);
+  const rawText = await response.text();
+  let data: unknown = null;
+
+  if (rawText) {
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = rawText;
+    }
+  }
 
   if (!response.ok) {
-    const detail =
-      typeof data?.detail === "string"
-        ? data.detail
-        : "Nu am reusit sa procesam cererea. Incearca din nou.";
+    const detail = extractErrorMessage(
+      data ?? rawText,
+      rawText.trim() || "Nu am reusit sa procesam cererea. Incearca din nou.",
+    );
 
     throw new AuthServiceError(detail);
   }
