@@ -46,6 +46,7 @@ class ShoppingCartRepository:
     def clear_user_cart(self, user_id: UUID) -> None:
         stmt = delete(ShoppingCart).where(ShoppingCart.user_id == user_id)
         self.session.execute(stmt)
+        self.session.flush()
 
     def create(self, cart_item: ShoppingCart) -> ShoppingCart:
         self.session.add(cart_item)
