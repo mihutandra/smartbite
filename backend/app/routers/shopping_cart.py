@@ -8,7 +8,7 @@ from app.schemas.shopping_cart import ShoppingCartAddIn, ShoppingCartAddOut, Sho
 from app.services.shopping_cart import ShoppingCartService
 
 
-router = APIRouter(prefix="/shopping-cart", tags=["ShoppingCart"])
+router = APIRouter(prefix="/api/shopping-cart", tags=["ShoppingCart"])
 
 
 @router.get("", response_model=list[ShoppingCartItemOut])
