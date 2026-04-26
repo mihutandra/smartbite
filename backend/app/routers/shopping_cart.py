@@ -11,7 +11,7 @@ from app.services.shopping_cart import ShoppingCartService
 router = APIRouter(prefix="/api/shopping-cart", tags=["ShoppingCart"])
 
 
-@router.get("", response_model=list[ShoppingCartItemOut])
+@router.get("/", response_model=list[ShoppingCartItemOut])
 def get_my_shopping_cart(
     current_user: dict = Depends(verify_jwt),
     service: ShoppingCartService = Depends(get_shopping_cart_service),
@@ -20,7 +20,7 @@ def get_my_shopping_cart(
     return service.get_user_cart(user_id=user_id)
 
 
-@router.post("", response_model=ShoppingCartAddOut)
+@router.post("/", response_model=ShoppingCartAddOut)
 def add_to_shopping_cart(
     payload: ShoppingCartAddIn,
     current_user: dict = Depends(verify_jwt),

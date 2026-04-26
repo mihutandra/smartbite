@@ -13,7 +13,7 @@ def test_shopping_cart_single_supermarket_replacement_flow(test_client, db_sessi
     headers = {"Authorization": f"Bearer {token}"}
 
     add_lidl_response = test_client.post(
-        "/shopping-cart",
+        "/api/shopping-cart/",
         json={
             "supermarket_product_id": data["lidl_item_id"],
             "quantity": 1,
@@ -24,7 +24,7 @@ def test_shopping_cart_single_supermarket_replacement_flow(test_client, db_sessi
     assert add_lidl_response.status_code == 200
 
     add_kaufland_conflict_response = test_client.post(
-        "/shopping-cart",
+        "/api/shopping-cart/",
         json={
             "supermarket_product_id": data["kaufland_item_id"],
             "quantity": 1,
@@ -40,7 +40,7 @@ def test_shopping_cart_single_supermarket_replacement_flow(test_client, db_sessi
     assert conflict_body["identifier"]["new_supermarket_id"] == data["kaufland_supermarket_id"]
 
     add_kaufland_confirm_response = test_client.post(
-        "/shopping-cart",
+        "/api/shopping-cart/",
         json={
             "supermarket_product_id": data["kaufland_item_id"],
             "quantity": 1,
@@ -52,7 +52,7 @@ def test_shopping_cart_single_supermarket_replacement_flow(test_client, db_sessi
     confirm_body = add_kaufland_confirm_response.json()
     assert confirm_body["cart_replaced"] is True
 
-    cart_response = test_client.get("/shopping-cart", headers=headers)
+    cart_response = test_client.get("/api/shopping-cart/", headers=headers)
     assert cart_response.status_code == 200
     cart_items = cart_response.json()
 
