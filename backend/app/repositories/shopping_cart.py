@@ -38,6 +38,7 @@ class ShoppingCartRepository:
             select(ShoppingCart)
             .options(joinedload(ShoppingCart.supermarket_product))
             .where(ShoppingCart.user_id == user_id)
+            .order_by(ShoppingCart.created_at.desc())
             .limit(1)
         )
         return self.session.scalars(stmt).first()
