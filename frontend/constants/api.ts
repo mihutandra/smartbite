@@ -9,13 +9,15 @@ function normalizeBaseUrl(url: string) {
 
 function getDefaultApiBaseUrl() {
   const configuredUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+  const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
+
+  // In browser, never use mobile LAN env defaults.
+  if (isBrowser) {
+    return `http://${window.location.hostname}:${DEFAULT_API_PORT}`;
+  }
 
   if (configuredUrl) {
     return normalizeBaseUrl(configuredUrl);
-  }
-
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    return `http://${window.location.hostname}:${DEFAULT_API_PORT}`;
   }
 
   if (Platform.OS === "android") {
@@ -37,3 +39,4 @@ function getDefaultApiBaseUrl() {
 }
 
 export const API_BASE_URL = getDefaultApiBaseUrl();
+
