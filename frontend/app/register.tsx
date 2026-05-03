@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../context/auth-context";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 
 const PASSWORD_RULES = [
@@ -34,13 +36,18 @@ function getPasswordChecks(password: string) {
 }
 
 export default function RegisterScreen() {
+  const router = useRouter();
+  const { error, isAuthenticated, signUp, status } = useAuth();
   const insets = useSafeAreaInsets();
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const passwordChecks = getPasswordChecks(password);
   const isPasswordStrong = Object.values(passwordChecks).every(Boolean);
@@ -48,9 +55,53 @@ export default function RegisterScreen() {
   const doPasswordsMatch = password === confirmPassword;
   const isFormValid =
     fullName.trim().length > 0 &&
+    phone.trim().length >= 5 &&
     email.trim().length > 0 &&
     isPasswordStrong &&
     doPasswordsMatch;
+
+  if (status === "loading") {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color="#5D9B68" />
+      </View>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/home" />;
+  }
+
+  async function handleRegister() {
+    if (!isFormValid || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      await signUp({
+        name: fullName,
+        email,
+        password,
+        phone,
+      });
+
+      router.replace("/login");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "A aparut o eroare neasteptata. Incearca din nou.";
+
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const visibleError = errorMessage || error;
 
   return (
     <View style={styles.screen}>
@@ -101,6 +152,22 @@ export default function RegisterScreen() {
                     placeholderTextColor="#D9BCB0"
                     style={styles.input}
                     value={email}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>NUMAR DE TELEFON</Text>
+                <View style={styles.inputWrapper}>
+                  <Feather name="phone" size={18} color="#D9BCB0" />
+                  <TextInput
+                    autoCorrect={false}
+                    keyboardType="phone-pad"
+                    onChangeText={setPhone}
+                    placeholder="07xxxxxxxx"
+                    placeholderTextColor="#D9BCB0"
+                    style={styles.input}
+                    value={phone}
                   />
                 </View>
               </View>
@@ -205,11 +272,21 @@ export default function RegisterScreen() {
               ) : null}
 
               <Pressable
-                disabled={!isFormValid}
-                style={[styles.button, !isFormValid && styles.buttonDisabled]}
+                disabled={!isFormValid || isSubmitting}
+                onPress={handleRegister}
+                style={[
+                  styles.button,
+                  (!isFormValid || isSubmitting) && styles.buttonDisabled,
+                ]}
               >
-                <Text style={styles.buttonText}>Creeaza cont</Text>
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Creeaza cont</Text>
+                )}
               </Pressable>
+
+              {visibleError ? <Text style={styles.helperTextErrorBlock}>{visibleError}</Text> : null}
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Ai deja cont? </Text>
@@ -228,6 +305,12 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingScreen: {
+    flex: 1,
+    backgroundColor: "#F8F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   screen: {
     flex: 1,
     backgroundColor: "#F8F5EE",
@@ -313,6 +396,13 @@ const styles = StyleSheet.create({
   helperTextError: {
     color: "#C4623B",
     fontWeight: "700",
+  },
+  helperTextErrorBlock: {
+    marginTop: 12,
+    color: "#C4623B",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
   },
   button: {
     marginTop: 6,

@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,13 +14,56 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../context/auth-context";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 
 export default function LoginScreen() {
+  const router = useRouter();
+  const { error, isAuthenticated, signIn, status } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const insets = useSafeAreaInsets();
+  const isFormValid = email.trim().length > 0 && password.length > 0;
+
+  if (status === "loading") {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color="#5D9B68" />
+      </View>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/home" />;
+  }
+
+  async function handleLogin() {
+    if (!isFormValid || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      await signIn(email, password);
+      router.replace("/home");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "A aparut o eroare neasteptata. Incearca din nou.";
+
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const visibleError = errorMessage || error;
 
   return (
     <View style={styles.screen}>
@@ -53,6 +97,7 @@ export default function LoginScreen() {
                     onChangeText={setEmail}
                     placeholder="email@exemplu.com"
                     placeholderTextColor="#D9BCB0"
+                    returnKeyType="next"
                     style={styles.input}
                     value={email}
                   />
@@ -67,8 +112,10 @@ export default function LoginScreen() {
                     autoCapitalize="none"
                     autoCorrect={false}
                     onChangeText={setPassword}
+                    onSubmitEditing={handleLogin}
                     placeholder="Parola ta"
                     placeholderTextColor="#D9BCB0"
+                    returnKeyType="done"
                     secureTextEntry={!showPassword}
                     style={styles.input}
                     value={password}
@@ -87,9 +134,19 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              <Pressable style={styles.button}>
-                <Text style={styles.buttonText}>Conecteaza-te</Text>
+              <Pressable
+                disabled={!isFormValid || isSubmitting}
+                onPress={handleLogin}
+                style={[styles.button, (!isFormValid || isSubmitting) && styles.buttonDisabled]}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Conecteaza-te</Text>
+                )}
               </Pressable>
+
+              {visibleError ? <Text style={styles.errorText}>{visibleError}</Text> : null}
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Nu ai cont? </Text>
@@ -108,6 +165,12 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8F5EE",
+  },
   screen: {
     flex: 1,
     backgroundColor: "#F8F5EE",
@@ -183,10 +246,22 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
+  buttonDisabled: {
+    backgroundColor: "#98BA9E",
+    shadowOpacity: 0.1,
+    elevation: 3,
+  },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "800",
+  },
+  errorText: {
+    marginTop: 12,
+    color: "#C4623B",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
   },
   footerTextRow: {
     marginTop: 24,
