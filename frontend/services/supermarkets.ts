@@ -154,6 +154,44 @@ export async function fetchSupermarketProducts(
   }
 }
 
+export async function fetchSupermarketProductCounts(pageSize = 100): Promise<Record<string, number>> {
+  try {
+    const counts: Record<string, number> = {};
+    let page = 1;
+
+    // TODO: Replace this client-side pagination sweep once the backend exposes
+    // a dedicated supermarket offer-count endpoint or includes counts on the
+    // supermarket list response.
+    while (true) {
+      const queryString = createQueryString({ page, page_size: pageSize });
+      const response = await fetch(`${API_BASE_URL}/api/supermarket-products${queryString}`);
+      const data = await parseApiResponse<SupermarketProduct[]>(response);
+
+      if (!Array.isArray(data)) {
+        throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+      }
+
+      data.forEach((product) => {
+        counts[product.supermarket_id] = (counts[product.supermarket_id] ?? 0) + 1;
+      });
+
+      if (data.length < pageSize) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return counts;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
 export async function searchSupermarketProducts(
   item: string,
   page = 1,
