@@ -5,14 +5,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const NAV_ITEMS = [
   { icon: "home", label: "ACASA", key: "home" },
   { icon: "map-pin", label: "MAGAZINE", key: "map" },
-  { icon: "search", label: "CAUTA" },
+  { icon: "search", label: "CAUTA", key: "search" },
   { icon: "shopping-cart", label: "COS" },
   { icon: "user", label: "PROFIL" },
 ] as const;
 
 type BottomNavBarProps = {
-  activeTab?: "home" | "map";
-  onTabPress?: (tab: "home" | "map") => void;
+  activeTab?: "home" | "map" | "search";
+  onTabPress?: (tab: "home" | "map" | "search") => void;
 };
 
 export function BottomNavBar({ activeTab = "home", onTabPress }: BottomNavBarProps) {
@@ -22,7 +22,7 @@ export function BottomNavBar({ activeTab = "home", onTabPress }: BottomNavBarPro
     <View style={[styles.nav, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {NAV_ITEMS.map((item) => {
         const isActive = item.key === activeTab;
-        const isInteractive = item.key === "home" || item.key === "map";
+        const isInteractive = item.key === "home" || item.key === "map" || item.key === "search";
 
         return (
           <Pressable

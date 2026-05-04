@@ -8,7 +8,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,11 +17,10 @@ import { SupermarketCard } from "../components/SupermarketCard";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 import { useAuth } from "../context/auth-context";
 import {
-  fetchSupermarketProducts,
+  fetchSupermarketProductCounts,
   fetchSupermarkets,
-  searchSupermarketProducts,
 } from "../services/supermarkets";
-import { type Supermarket, type SupermarketProduct } from "../types/supermarket";
+import { type Supermarket } from "../types/supermarket";
 
 const INITIAL_REGION = {
   // Temporary fallback centered on Cluj until the backend exposes the user's
@@ -42,12 +40,9 @@ export default function HomeScreen() {
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [selectedStoreId, setSelectedStoreId] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [loadError, setLoadError] = useState("");
-  const [searchError, setSearchError] = useState("");
   const [isLoadingStores, setIsLoadingStores] = useState(true);
-  const [matchedProducts, setMatchedProducts] = useState<SupermarketProduct[]>([]);
 
   useEffect(() => {
     setViewMode(view === "map" ? "map" : "list");
@@ -75,18 +70,13 @@ export default function HomeScreen() {
         setSupermarkets(supermarketList);
         setSelectedStoreId((current) => current || supermarketList[0]?.id || "");
 
-        const counts = await Promise.all(
-          supermarketList.map(async (supermarket) => {
-            const products = await fetchSupermarketProducts(supermarket.id);
-            return [supermarket.id, products.length] as const;
-          }),
-        );
+        const counts = await fetchSupermarketProductCounts();
 
         if (!isMounted) {
           return;
         }
 
-        setProductCounts(Object.fromEntries(counts));
+        setProductCounts(counts);
       } catch (error) {
         if (!isMounted) {
           return;
@@ -109,68 +99,9 @@ export default function HomeScreen() {
     };
   }, [status]);
 
-  useEffect(() => {
-    if (status !== "authenticated") {
-      setMatchedProducts([]);
-      setSearchError("");
-      return;
-    }
-
-    const normalizedQuery = searchQuery.trim();
-
-    if (!normalizedQuery) {
-      setMatchedProducts([]);
-      setSearchError("");
-      return;
-    }
-
-    let isMounted = true;
-
-    async function loadMatchedProducts() {
-      setSearchError("");
-
-      try {
-        const products = await searchSupermarketProducts(normalizedQuery);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setMatchedProducts(products);
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        setMatchedProducts([]);
-        setSearchError(
-          error instanceof Error ? error.message : "Nu am putut cauta produsele in acest moment.",
-        );
-      }
-    }
-
-    void loadMatchedProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [searchQuery, status]);
-
-  const filteredStores = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return supermarkets;
-    }
-
-    const matchingSupermarketIds = new Set(matchedProducts.map((product) => product.supermarket_id));
-
-    return supermarkets.filter((store) => matchingSupermarketIds.has(store.id));
-  }, [matchedProducts, searchQuery, supermarkets]);
-
   const markers = useMemo<MapMarker[]>(
     () =>
-      filteredStores.map((store, index) => ({
+      supermarkets.map((store, index) => ({
         id: store.id,
         name: store.name,
         shortLabel: getShortLabel(store.name),
@@ -178,7 +109,7 @@ export default function HomeScreen() {
         accentColor: ACCENT_COLORS[index % ACCENT_COLORS.length],
         imageSource: store.logo_url ? { uri: store.logo_url } : undefined,
       })),
-    [filteredStores],
+    [supermarkets],
   );
 
   // TODO: Harta Magazine is still in progress. The screen UI is in place,
@@ -187,7 +118,7 @@ export default function HomeScreen() {
 
   const sortedStores = useMemo(
     () =>
-      [...filteredStores].sort((left, right) => {
+      [...supermarkets].sort((left, right) => {
         if (left.id === selectedStoreId) {
           return -1;
         }
@@ -198,26 +129,15 @@ export default function HomeScreen() {
 
         return getDistanceKm(left.latitude, left.longitude) - getDistanceKm(right.latitude, right.longitude);
       }),
-    [filteredStores, selectedStoreId],
+    [supermarkets, selectedStoreId],
   );
 
   const selectedStore =
-    filteredStores.find((store) => store.id === selectedStoreId) ?? filteredStores[0] ?? supermarkets[0];
-
-  const visibleOfferCounts = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return productCounts;
-    }
-
-    return matchedProducts.reduce<Record<string, number>>((counts, product) => {
-      counts[product.supermarket_id] = (counts[product.supermarket_id] ?? 0) + 1;
-      return counts;
-    }, {});
-  }, [matchedProducts, productCounts, searchQuery]);
+    supermarkets.find((store) => store.id === selectedStoreId) ?? supermarkets[0];
 
   function openStore(storeId: string) {
     setSelectedStoreId(storeId);
-    router.push(`/supermarket/${storeId}`);
+    router.push(`/supermarket/${storeId}` as never);
   }
 
   if (status === "loading") {
@@ -279,16 +199,10 @@ export default function HomeScreen() {
                   </View>
                 </View>
 
-                <View style={styles.searchWrap}>
+                <Pressable onPress={() => router.push("/search" as never)} style={styles.searchWrap}>
                   <Feather color="#D9B6A1" name="search" size={18} />
-                  <TextInput
-                    onChangeText={setSearchQuery}
-                    placeholder="Cauta produse..."
-                    placeholderTextColor="#D9B6A1"
-                    style={styles.searchInput}
-                    value={searchQuery}
-                  />
-                </View>
+                  <Text style={styles.searchPlaceholder}>Cauta produse...</Text>
+                </Pressable>
               </View>
 
               <View style={styles.body}>
@@ -306,11 +220,9 @@ export default function HomeScreen() {
 
                 <View style={styles.resultsRow}>
                   <View style={styles.resultsPill}>
-                    <Text style={styles.resultsText}>{`${filteredStores.length} MAGAZINE`}</Text>
+                    <Text style={styles.resultsText}>{`${supermarkets.length} MAGAZINE`}</Text>
                   </View>
                 </View>
-
-                {searchError ? <Text style={styles.searchErrorText}>{searchError}</Text> : null}
 
                 <View style={styles.cards}>
                   {sortedStores.map((store, index) => (
@@ -320,7 +232,7 @@ export default function HomeScreen() {
                       distanceKm={getDistanceKm(store.latitude, store.longitude)}
                       imageSource={store.logo_url ? { uri: store.logo_url } : undefined}
                       name={store.name}
-                      offersCount={visibleOfferCounts[store.id] ?? 0}
+                      offersCount={productCounts[store.id] ?? 0}
                       // TODO: Add rating once the backend exposes supermarket ratings/reviews.
                       accentColor={ACCENT_COLORS[index % ACCENT_COLORS.length]}
                       logoLabel={getShortLabel(store.name)}
@@ -365,7 +277,14 @@ export default function HomeScreen() {
 
           <BottomNavBar
             activeTab={viewMode === "list" ? "home" : "map"}
-            onTabPress={(tab) => setViewMode(tab === "home" ? "list" : "map")}
+            onTabPress={(tab) => {
+              if (tab === "search") {
+                router.push("/search" as never);
+                return;
+              }
+
+              setViewMode(tab === "home" ? "list" : "map");
+            }}
           />
         </View>
       )}
@@ -442,12 +361,6 @@ const styles = StyleSheet.create({
     color: "#8A6C58",
     fontSize: 14,
     textAlign: "center",
-  },
-  searchErrorText: {
-    marginBottom: 10,
-    color: "#B05D3B",
-    fontSize: 13,
-    fontWeight: "600",
   },
   deviceShell: {
     flex: 1,
@@ -553,7 +466,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 13,
   },
-  searchInput: {
+  searchPlaceholder: {
     flex: 1,
     color: "#715E54",
     fontSize: 15,
