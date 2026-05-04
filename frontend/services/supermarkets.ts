@@ -154,6 +154,27 @@ export async function fetchSupermarketProducts(
   }
 }
 
+export async function fetchSupermarketProduct(
+  supermarketProductId: string,
+): Promise<SupermarketProduct> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/supermarket-products/${supermarketProductId}`);
+    const data = await parseApiResponse<SupermarketProduct>(response);
+
+    if (typeof data?.id !== "string") {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
 export async function fetchSupermarketProductCounts(pageSize = 100): Promise<Record<string, number>> {
   try {
     const counts: Record<string, number> = {};

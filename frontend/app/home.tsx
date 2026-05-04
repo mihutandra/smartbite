@@ -283,6 +283,11 @@ export default function HomeScreen() {
                 return;
               }
 
+              if (tab === "cart") {
+                router.push("/cart" as never);
+                return;
+              }
+
               setViewMode(tab === "home" ? "list" : "map");
             }}
           />
