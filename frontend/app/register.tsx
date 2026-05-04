@@ -14,8 +14,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../context/auth-context";
 import { authHeroStyles } from "../constants/auth-hero-styles";
+import { useAuth } from "../context/auth-context";
 
 const PASSWORD_RULES = [
   { key: "length", label: "Cel putin 8 caractere" },

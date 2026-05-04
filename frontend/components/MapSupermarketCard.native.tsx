@@ -31,6 +31,8 @@ export type MapSupermarketCardProps = {
   initialRegion?: Region;
   onMarkerPress?: (markerId: string) => void;
   style?: StyleProp<ViewStyle>;
+  fullScreen?: boolean;
+  topInset?: number;
 };
 
 const DEFAULT_REGION: Region = {
@@ -47,17 +49,19 @@ export function MapSupermarketCard({
   initialRegion = DEFAULT_REGION,
   onMarkerPress,
   style,
+  fullScreen = false,
+  topInset = 0,
 }: MapSupermarketCardProps) {
   return (
-    <View style={[styles.card, style]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={styles.locationButton}>
-          <Feather color="#F3F7F1" name="map-pin" size={14} />
+    <View style={[styles.card, fullScreen && styles.cardFullScreen, style]}>
+      <View style={[styles.header, { height: 58 + topInset, paddingTop: topInset }]}>
+        <View style={styles.headerTitleWrap}>
+          <Feather color="#F3F7F1" name="map-pin" size={18} />
+          <Text style={styles.title}>{title}</Text>
         </View>
       </View>
 
-      <View style={styles.mapArea}>
+      <View style={[styles.mapArea, fullScreen && styles.mapAreaFullScreen]}>
         <MapView
           initialRegion={initialRegion}
           loadingEnabled
@@ -197,6 +201,14 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 7,
   },
+  cardFullScreen: {
+    flex: 1,
+    borderRadius: 0,
+    borderWidth: 0,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
   header: {
     height: 58,
     paddingHorizontal: 16,
@@ -205,25 +217,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#4E8B5B",
   },
+  headerTitleWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   title: {
     color: "#F7F4EA",
     fontSize: 22,
     fontWeight: "800",
     letterSpacing: -0.4,
   },
-  locationButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.22)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
-  },
   mapArea: {
     height: 184,
     backgroundColor: "#F3E6CF",
+  },
+  mapAreaFullScreen: {
+    flex: 1,
+    height: undefined,
   },
   marker: {
     width: 34,

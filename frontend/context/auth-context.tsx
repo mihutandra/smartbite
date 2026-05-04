@@ -1,5 +1,12 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { AuthServiceError, login, RegisterPayload, register, UserProfile, fetchCurrentUser } from "../services/auth";
+import {
+  AuthServiceError,
+  fetchCurrentUser,
+  login,
+  RegisterPayload,
+  register,
+  UserProfile,
+} from "../services/auth";
 import {
   getStoredAccessToken,
   removeStoredAccessToken,

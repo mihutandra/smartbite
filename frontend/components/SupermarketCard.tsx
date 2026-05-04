@@ -16,8 +16,8 @@ export type SupermarketCardProps = {
   address: string;
   distanceKm: number;
   name: string;
-  offersCount: number;
-  rating: number;
+  offersCount?: number;
+  rating?: number;
   accentColor?: string;
   imageSource?: ImageSourcePropType;
   logoLabel?: string;
@@ -77,10 +77,16 @@ export function SupermarketCard({
           {address}
         </Text>
 
-        <View style={styles.footerRow}>
-          <InfoPill backgroundColor="#F1B16C" icon="star" label={rating.toFixed(1)} />
-          <InfoPill backgroundColor="#9BC59C" icon="tag" label={`${offersCount} oferte`} />
-        </View>
+        {typeof rating === "number" || typeof offersCount === "number" ? (
+          <View style={styles.footerRow}>
+            {typeof rating === "number" ? (
+              <InfoPill backgroundColor="#F1B16C" icon="star" label={rating.toFixed(1)} />
+            ) : null}
+            {typeof offersCount === "number" ? (
+              <InfoPill backgroundColor="#9BC59C" icon="tag" label={`${offersCount} oferte`} />
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -115,40 +121,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#F4D7AF",
+    borderColor: "#F0D8B7",
     backgroundColor: "#FFFDF9",
     padding: 14,
-    shadowColor: "#CCB18A",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 14,
+    shadowColor: "#D9B687",
+    shadowOffset: { width: 0, height: 7 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
     elevation: 4,
   },
   logoContainer: {
-    height: 66,
-    width: 66,
+    height: 72,
+    width: 72,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: 18,
+    borderWidth: 2,
     backgroundColor: "#FFFFFF",
     overflow: "hidden",
   },
   logoBadge: {
-    height: 48,
-    width: 48,
+    height: 54,
+    width: 54,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 14,
+    borderRadius: 16,
   },
   logoImage: {
-    height: 46,
-    width: 46,
+    height: 52,
+    width: 52,
   },
   logoText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "900",
     letterSpacing: -0.6,
   },
@@ -164,16 +170,16 @@ const styles = StyleSheet.create({
   name: {
     flex: 1,
     color: "#2F2924",
-    fontSize: 17,
-    fontWeight: "800",
+    fontSize: 18,
+    fontWeight: "900",
   },
   address: {
     color: "#776B61",
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   footerRow: {
-    marginTop: 2,
+    marginTop: 4,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -184,8 +190,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
     borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   pillText: {
     fontSize: 12,
