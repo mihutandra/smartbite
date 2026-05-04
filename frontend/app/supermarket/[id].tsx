@@ -1,12 +1,59 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { fetchSupermarket } from "../../services/supermarkets";
+import { type Supermarket } from "../../types/supermarket";
 
 export default function SupermarketPlaceholderScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const [supermarket, setSupermarket] = useState<Supermarket | null>(null);
+  const [isLoadingSupermarket, setIsLoadingSupermarket] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    if (typeof id !== "string") {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadSupermarket() {
+      setIsLoadingSupermarket(true);
+      setLoadError("");
+
+      try {
+        const response = await fetchSupermarket(id);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setSupermarket(response);
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setLoadError(
+          error instanceof Error ? error.message : "Nu am putut incarca supermarketul selectat.",
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoadingSupermarket(false);
+        }
+      }
+    }
+
+    void loadSupermarket();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   return (
     <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
@@ -26,13 +73,23 @@ export default function SupermarketPlaceholderScreen() {
           <View style={styles.iconBadge}>
             <Feather color="#FFFFFF" name="shopping-bag" size={24} />
           </View>
-          <Text style={styles.title}>Placeholder temporar</Text>
-          <Text style={styles.text}>
-            Ai selectat supermarketul{typeof id === "string" ? ` cu id ${id}` : ""}. Fluxul de
-            navigare functioneaza, dar pagina de detalii nu este implementata aici.
+          <Text style={styles.title}>
+            {supermarket?.name ?? (isLoadingSupermarket ? "Se incarca..." : "Placeholder temporar")}
           </Text>
+          {isLoadingSupermarket ? (
+            <ActivityIndicator color="#5D9B68" style={styles.loader} />
+          ) : (
+            <Text style={styles.text}>
+              Ai selectat supermarketul
+              {supermarket?.name ? ` ${supermarket.name}` : typeof id === "string" ? ` cu id ${id}` : ""}.
+              Fluxul de navigare functioneaza, dar pagina de detalii nu este implementata aici.
+            </Text>
+          )}
+          {loadError ? <Text style={styles.errorText}>{loadError}</Text> : null}
           <Text style={styles.todo}>
             TODO: Inlocuieste acest placeholder dupa ce pagina de detalii este gata.
+            Endpointul de baza exista deja, dar inca lipsesc integrarea UI completa si folosirea
+            endpointului de details in ecranul final.
           </Text>
 
           <Pressable onPress={() => router.replace("/home")} style={styles.button}>
@@ -141,6 +198,16 @@ const styles = StyleSheet.create({
     color: "#72665C",
     fontSize: 15,
     lineHeight: 22,
+    textAlign: "center",
+  },
+  loader: {
+    marginTop: 14,
+  },
+  errorText: {
+    marginTop: 12,
+    color: "#B05D3B",
+    fontSize: 13,
+    fontWeight: "600",
     textAlign: "center",
   },
   todo: {

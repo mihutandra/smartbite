@@ -20,8 +20,9 @@ import { useAuth } from "../context/auth-context";
 import {
   fetchSupermarketProducts,
   fetchSupermarkets,
-  type Supermarket,
+  searchSupermarketProducts,
 } from "../services/supermarkets";
+import { type Supermarket, type SupermarketProduct } from "../types/supermarket";
 
 const INITIAL_REGION = {
   // Temporary fallback centered on Cluj until the backend exposes the user's
@@ -44,7 +45,9 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [loadError, setLoadError] = useState("");
+  const [searchError, setSearchError] = useState("");
   const [isLoadingStores, setIsLoadingStores] = useState(true);
+  const [matchedProducts, setMatchedProducts] = useState<SupermarketProduct[]>([]);
 
   useEffect(() => {
     setViewMode(view === "map" ? "map" : "list");
@@ -106,6 +109,53 @@ export default function HomeScreen() {
     };
   }, [status]);
 
+  useEffect(() => {
+    if (status !== "authenticated") {
+      setMatchedProducts([]);
+      setSearchError("");
+      return;
+    }
+
+    const normalizedQuery = searchQuery.trim();
+
+    if (!normalizedQuery) {
+      setMatchedProducts([]);
+      setSearchError("");
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadMatchedProducts() {
+      setSearchError("");
+
+      try {
+        const products = await searchSupermarketProducts(normalizedQuery);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setMatchedProducts(products);
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setMatchedProducts([]);
+        setSearchError(
+          error instanceof Error ? error.message : "Nu am putut cauta produsele in acest moment.",
+        );
+      }
+    }
+
+    void loadMatchedProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchQuery, status]);
+
   const filteredStores = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -113,16 +163,14 @@ export default function HomeScreen() {
       return supermarkets;
     }
 
-    return supermarkets.filter(
-      (store) =>
-        store.name.toLowerCase().includes(normalizedQuery) ||
-        store.address.toLowerCase().includes(normalizedQuery),
-    );
-  }, [searchQuery, supermarkets]);
+    const matchingSupermarketIds = new Set(matchedProducts.map((product) => product.supermarket_id));
+
+    return supermarkets.filter((store) => matchingSupermarketIds.has(store.id));
+  }, [matchedProducts, searchQuery, supermarkets]);
 
   const markers = useMemo<MapMarker[]>(
     () =>
-      supermarkets.map((store, index) => ({
+      filteredStores.map((store, index) => ({
         id: store.id,
         name: store.name,
         shortLabel: getShortLabel(store.name),
@@ -130,7 +178,7 @@ export default function HomeScreen() {
         accentColor: ACCENT_COLORS[index % ACCENT_COLORS.length],
         imageSource: store.logo_url ? { uri: store.logo_url } : undefined,
       })),
-    [supermarkets],
+    [filteredStores],
   );
 
   // TODO: Harta Magazine is still in progress. The screen UI is in place,
@@ -155,6 +203,17 @@ export default function HomeScreen() {
 
   const selectedStore =
     filteredStores.find((store) => store.id === selectedStoreId) ?? filteredStores[0] ?? supermarkets[0];
+
+  const visibleOfferCounts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return productCounts;
+    }
+
+    return matchedProducts.reduce<Record<string, number>>((counts, product) => {
+      counts[product.supermarket_id] = (counts[product.supermarket_id] ?? 0) + 1;
+      return counts;
+    }, {});
+  }, [matchedProducts, productCounts, searchQuery]);
 
   function openStore(storeId: string) {
     setSelectedStoreId(storeId);
@@ -251,6 +310,8 @@ export default function HomeScreen() {
                   </View>
                 </View>
 
+                {searchError ? <Text style={styles.searchErrorText}>{searchError}</Text> : null}
+
                 <View style={styles.cards}>
                   {sortedStores.map((store, index) => (
                     <SupermarketCard
@@ -259,8 +320,8 @@ export default function HomeScreen() {
                       distanceKm={getDistanceKm(store.latitude, store.longitude)}
                       imageSource={store.logo_url ? { uri: store.logo_url } : undefined}
                       name={store.name}
-                      offersCount={productCounts[store.id] ?? 0}
-                      rating={4.2 + ((index + 1) % 4) * 0.3}
+                      offersCount={visibleOfferCounts[store.id] ?? 0}
+                      // TODO: Add rating once the backend exposes supermarket ratings/reviews.
                       accentColor={ACCENT_COLORS[index % ACCENT_COLORS.length]}
                       logoLabel={getShortLabel(store.name)}
                       onPress={() => openStore(store.id)}
@@ -381,6 +442,12 @@ const styles = StyleSheet.create({
     color: "#8A6C58",
     fontSize: 14,
     textAlign: "center",
+  },
+  searchErrorText: {
+    marginBottom: 10,
+    color: "#B05D3B",
+    fontSize: 13,
+    fontWeight: "600",
   },
   deviceShell: {
     flex: 1,

@@ -3,15 +3,14 @@ import {
   AuthServiceError,
   fetchCurrentUser,
   login,
-  RegisterPayload,
   register,
-  UserProfile,
 } from "../services/auth";
 import {
   getStoredAccessToken,
   removeStoredAccessToken,
   setStoredAccessToken,
 } from "../services/session-storage";
+import { type RegisterPayload, type UserProfile } from "../types/auth";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -97,6 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
+    // TODO: This currently performs only a local sign-out by clearing the stored token.
+    // Call the backend logout endpoint too once that flow is ready to be implemented.
     await removeStoredAccessToken();
     setAccessToken(null);
     setUser(null);

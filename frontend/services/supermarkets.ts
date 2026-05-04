@@ -1,35 +1,5 @@
 import { API_BASE_URL } from "../constants/api";
-
-export type Supermarket = {
-  id: string;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  phone_number: string | null;
-  email: string | null;
-  website: string | null;
-  logo_url: string | null;
-  opening_hours: Record<string, unknown> | null;
-  is_active?: boolean;
-  created_at?: string;
-  updated_at?: string | null;
-};
-
-export type SupermarketProduct = {
-  id: string;
-  supermarket_id: string;
-  product_id: string;
-  product_name: string | null;
-  supermarket_name: string | null;
-  original_price: string;
-  discount_price: string;
-  currency: string;
-  expiration_date: string;
-  stock_quantity: number;
-  store_product_code: string | null;
-  is_available: boolean;
-};
+import { type Supermarket, type SupermarketProduct } from "../types/supermarket";
 
 export class SupermarketServiceError extends Error {
   constructor(message: string) {
@@ -96,13 +66,33 @@ function createQueryString(params: Record<string, string | number | undefined>) 
 
 export async function fetchSupermarkets(page = 1, pageSize = 20): Promise<Supermarket[]> {
   try {
+    const queryString = createQueryString({ page, page_size: pageSize });
     const response = await fetch(
-      `${API_BASE_URL}/api/supermarkets/${createQueryString({ page, page_size: pageSize })}`,
+      `${API_BASE_URL}/api/supermarkets${queryString}`,
     );
 
     const data = await parseApiResponse<Supermarket[]>(response);
 
     if (!Array.isArray(data)) {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function fetchSupermarket(supermarketId: string): Promise<Supermarket> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/supermarkets/${supermarketId}`);
+    const data = await parseApiResponse<Supermarket>(response);
+
+    if (typeof data?.id !== "string") {
       throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
@@ -147,6 +137,31 @@ export async function fetchSupermarketProducts(
         page_size: pageSize,
       })}`,
     );
+
+    const data = await parseApiResponse<SupermarketProduct[]>(response);
+
+    if (!Array.isArray(data)) {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function searchSupermarketProducts(
+  item: string,
+  page = 1,
+  pageSize = 100,
+): Promise<SupermarketProduct[]> {
+  try {
+    const queryString = createQueryString({ item, page, page_size: pageSize });
+    const response = await fetch(`${API_BASE_URL}/api/supermarket-products/search${queryString}`);
 
     const data = await parseApiResponse<SupermarketProduct[]>(response);
 
