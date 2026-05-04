@@ -182,7 +182,7 @@ export default function HomeScreen() {
                   <View style={styles.heroControls}>
                     <Pressable style={styles.heroSignOutButton} onPress={() => void signOut()}>
                       <Feather color="#A55D31" name="log-out" size={14} />
-                      <Text style={styles.heroSignOutText}>Iesire</Text>
+                      <Text style={styles.heroSignOutText}>Delogheaza-te</Text>
                     </Pressable>
 
                     <View style={styles.heroActionRow}>
