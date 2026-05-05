@@ -19,10 +19,6 @@ class SupermarketProductBase(BaseModel):
 class SupermarketProductOut(SupermarketProductBase):
     id: UUID
     product_name: str | None = None
-    product_description: str | None = None
-    product_image_url: str | None = None
-    product_brand: str | None = None
-    category_name: str | None = None
     supermarket_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
