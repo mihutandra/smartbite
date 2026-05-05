@@ -213,12 +213,6 @@ export default function HomeScreen() {
                     </Pressable>
 
                     <View style={styles.heroActionRow}>
-                      <View style={styles.heroPill}>
-                        <Feather color="#FFFDF6" name="navigation" size={12} />
-                        <Text style={styles.heroPillText}>
-                          {selectedStore ? `${getDistanceKm(selectedStore.latitude, selectedStore.longitude).toFixed(1)} km` : "--"}
-                        </Text>
-                      </View>
                       <Pressable style={styles.heroIconButton} onPress={() => setViewMode("map")}>
                         <Feather color="#FFFDF6" name="map" size={12} />
                       </Pressable>
@@ -459,20 +453,6 @@ const styles = StyleSheet.create({
   heroSignOutText: {
     color: "#A55D31",
     fontSize: 12,
-    fontWeight: "800",
-  },
-  heroPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  heroPillText: {
-    color: "#FFFDF6",
-    fontSize: 11,
     fontWeight: "800",
   },
   heroIconButton: {
