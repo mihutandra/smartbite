@@ -26,9 +26,9 @@ export function BottomNavBar({ activeTab = "home", onTabPress }: BottomNavBarPro
         return (
           <Pressable
             key={item.label}
-            disabled={item.key !== "home" && item.key !== "map" && item.key !== "search"}
+            disabled={item.key !== "home" && item.key !== "map" && item.key !== "search" && item.key !== "cart"}
             onPress={() => {
-              if (item.key === "home" || item.key === "map" || item.key === "search") {
+              if (item.key === "home" || item.key === "map" || item.key === "search" || item.key === "cart") {
                 onTabPress?.(item.key);
               }
             }}
