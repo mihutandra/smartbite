@@ -81,8 +81,8 @@ export default function HomeScreen() {
           error instanceof Error ? error.message : "Nu am putut incarca lista de supermarketuri.",
         );
       } finally {
-        if (!isMounted) {
-          return;
+        if (isMounted) {
+          setIsLoadingStores(false);
         }
       }
     }
@@ -254,7 +254,7 @@ export default function HomeScreen() {
                       distanceKm={getDistanceKm(store.latitude, store.longitude)}
                       imageSource={store.logo_url ? { uri: store.logo_url } : undefined}
                       name={store.name}
-                      offersCount={productCounts[store.id] ?? 0}
+                      offersCount={productCounts[store.id]}
                       // TODO: Add rating once the backend exposes supermarket ratings/reviews.
                       accentColor={ACCENT_COLORS[index % ACCENT_COLORS.length]}
                       logoLabel={getShortLabel(store.name)}
