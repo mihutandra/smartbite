@@ -51,6 +51,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (status !== "authenticated") {
       setIsLoadingStores(false);
+      setProductCounts({});
       return;
     }
 
@@ -69,14 +70,7 @@ export default function HomeScreen() {
 
         setSupermarkets(supermarketList);
         setSelectedStoreId((current) => current || supermarketList[0]?.id || "");
-
-        const counts = await fetchSupermarketProductCounts();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setProductCounts(counts);
+        setIsLoadingStores(false);
       } catch (error) {
         if (!isMounted) {
           return;
@@ -86,13 +80,46 @@ export default function HomeScreen() {
           error instanceof Error ? error.message : "Nu am putut incarca lista de supermarketuri.",
         );
       } finally {
-        if (isMounted) {
-          setIsLoadingStores(false);
+        if (!isMounted) {
+          return;
         }
       }
     }
 
     void loadSupermarkets();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "authenticated") {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadProductCounts() {
+      try {
+        const counts = await fetchSupermarketProductCounts();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setProductCounts(counts);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        // Keep the supermarket list visible even if the offer counts load later or fail.
+        setProductCounts({});
+      }
+    }
+
+    void loadProductCounts();
 
     return () => {
       isMounted = false;

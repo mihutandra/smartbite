@@ -6,8 +6,8 @@ const NAV_ITEMS = [
   { icon: "home", label: "ACASA", key: "home" },
   { icon: "map-pin", label: "MAGAZINE", key: "map" },
   { icon: "search", label: "CAUTA", key: "search" },
-  { icon: "shopping-cart", label: "COS" },
-  { icon: "user", label: "PROFIL" },
+  { icon: "shopping-cart", label: "COS", key: "cart" },
+  { icon: "user", label: "PROFIL", key: "profile" },
 ] as const;
 
 type BottomNavBarProps = {
@@ -22,14 +22,13 @@ export function BottomNavBar({ activeTab = "home", onTabPress }: BottomNavBarPro
     <View style={[styles.nav, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {NAV_ITEMS.map((item) => {
         const isActive = item.key === activeTab;
-        const isInteractive = item.key === "home" || item.key === "map" || item.key === "search";
 
         return (
           <Pressable
             key={item.label}
-            disabled={!isInteractive}
+            disabled={item.key !== "home" && item.key !== "map" && item.key !== "search"}
             onPress={() => {
-              if (isInteractive) {
+              if (item.key === "home" || item.key === "map" || item.key === "search") {
                 onTabPress?.(item.key);
               }
             }}

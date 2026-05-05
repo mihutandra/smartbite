@@ -111,8 +111,12 @@ export async function fetchSupermarketDetails(supermarketId: string): Promise<Su
     const response = await fetch(`${API_BASE_URL}/api/supermarkets/${supermarketId}/details`);
     const data = await parseApiResponse<Supermarket>(response);
 
-    if (typeof data?.id !== "string" && typeof supermarketId === "string") {
+    if (typeof data === "object" && data !== null && typeof data.id !== "string") {
       return { ...data, id: supermarketId };
+    }
+
+    if (typeof data !== "object" || data === null || typeof data.id !== "string") {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
     return data;
