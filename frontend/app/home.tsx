@@ -25,6 +25,7 @@ import { type Supermarket } from "../types/supermarket";
 const INITIAL_REGION = {
   // Temporary fallback centered on Cluj until the backend exposes the user's
   // actual location or a region tailored to the returned supermarket set.
+  // TODO: Replace with actual user location or server-driven region once supported by the backend
   latitude: 46.7712,
   longitude: 23.6236,
   latitudeDelta: 0.12,
