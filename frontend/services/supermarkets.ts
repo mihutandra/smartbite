@@ -8,6 +8,9 @@ export class SupermarketServiceError extends Error {
   }
 }
 
+const PRODUCT_COUNT_PAGE_SIZE = 100;
+const PRODUCT_COUNT_MAX_PAGES = 10;
+
 function extractErrorMessage(data: unknown, fallbackMessage: string) {
   if (typeof data === "string" && data.trim()) {
     return data;
@@ -111,8 +114,16 @@ export async function fetchSupermarketDetails(supermarketId: string): Promise<Su
     const response = await fetch(`${API_BASE_URL}/api/supermarkets/${supermarketId}/details`);
     const data = await parseApiResponse<Supermarket>(response);
 
-    if (typeof data?.id !== "string" && typeof supermarketId === "string") {
+    if (Array.isArray(data)) {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    if (typeof data === "object" && data !== null && typeof data.id !== "string") {
       return { ...data, id: supermarketId };
+    }
+
+    if (typeof data !== "object" || data === null || typeof data.id !== "string") {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
     return data;
@@ -174,8 +185,9 @@ export async function fetchSupermarketProduct(
     throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
   }
 }
-
-export async function fetchSupermarketProductCounts(pageSize = 100): Promise<Record<string, number>> {
+export async function fetchSupermarketProductCounts(
+  pageSize = PRODUCT_COUNT_PAGE_SIZE,
+): Promise<Record<string, number>> {
   try {
     const counts: Record<string, number> = {};
     let page = 1;
@@ -183,7 +195,7 @@ export async function fetchSupermarketProductCounts(pageSize = 100): Promise<Rec
     // TODO: Replace this client-side pagination sweep once the backend exposes
     // a dedicated supermarket offer-count endpoint or includes counts on the
     // supermarket list response.
-    while (true) {
+    while (page <= PRODUCT_COUNT_MAX_PAGES) {
       const queryString = createQueryString({ page, page_size: pageSize });
       const response = await fetch(`${API_BASE_URL}/api/supermarket-products${queryString}`);
       const data = await parseApiResponse<SupermarketProduct[]>(response);
@@ -202,6 +214,9 @@ export async function fetchSupermarketProductCounts(pageSize = 100): Promise<Rec
 
       page += 1;
     }
+
+    // TODO: If we ever hit this cap in practice, stop extending the client sweep
+    // and switch to a backend count endpoint instead of pulling more pages here.
 
     return counts;
   } catch (error) {

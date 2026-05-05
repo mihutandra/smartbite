@@ -25,6 +25,7 @@ import { type Supermarket } from "../types/supermarket";
 const INITIAL_REGION = {
   // Temporary fallback centered on Cluj until the backend exposes the user's
   // actual location or a region tailored to the returned supermarket set.
+  // TODO: Replace with actual user location or server-driven region once supported by the backend
   latitude: 46.7712,
   longitude: 23.6236,
   latitudeDelta: 0.12,
@@ -51,6 +52,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (status !== "authenticated") {
       setIsLoadingStores(false);
+      setProductCounts({});
       return;
     }
 
@@ -69,14 +71,7 @@ export default function HomeScreen() {
 
         setSupermarkets(supermarketList);
         setSelectedStoreId((current) => current || supermarketList[0]?.id || "");
-
-        const counts = await fetchSupermarketProductCounts();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setProductCounts(counts);
+        setIsLoadingStores(false);
       } catch (error) {
         if (!isMounted) {
           return;
@@ -93,6 +88,39 @@ export default function HomeScreen() {
     }
 
     void loadSupermarkets();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "authenticated") {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadProductCounts() {
+      try {
+        const counts = await fetchSupermarketProductCounts();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setProductCounts(counts);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        // Keep the supermarket list visible even if the offer counts load later or fail.
+        setProductCounts({});
+      }
+    }
+
+    void loadProductCounts();
 
     return () => {
       isMounted = false;
@@ -186,12 +214,6 @@ export default function HomeScreen() {
                     </Pressable>
 
                     <View style={styles.heroActionRow}>
-                      <View style={styles.heroPill}>
-                        <Feather color="#FFFDF6" name="navigation" size={12} />
-                        <Text style={styles.heroPillText}>
-                          {selectedStore ? `${getDistanceKm(selectedStore.latitude, selectedStore.longitude).toFixed(1)} km` : "--"}
-                        </Text>
-                      </View>
                       <Pressable style={styles.heroIconButton} onPress={() => setViewMode("map")}>
                         <Feather color="#FFFDF6" name="map" size={12} />
                       </Pressable>
@@ -232,7 +254,7 @@ export default function HomeScreen() {
                       distanceKm={getDistanceKm(store.latitude, store.longitude)}
                       imageSource={store.logo_url ? { uri: store.logo_url } : undefined}
                       name={store.name}
-                      offersCount={productCounts[store.id] ?? 0}
+                      offersCount={productCounts[store.id]}
                       // TODO: Add rating once the backend exposes supermarket ratings/reviews.
                       accentColor={ACCENT_COLORS[index % ACCENT_COLORS.length]}
                       logoLabel={getShortLabel(store.name)}
@@ -437,20 +459,6 @@ const styles = StyleSheet.create({
   heroSignOutText: {
     color: "#A55D31",
     fontSize: 12,
-    fontWeight: "800",
-  },
-  heroPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  heroPillText: {
-    color: "#FFFDF6",
-    fontSize: 11,
     fontWeight: "800",
   },
   heroIconButton: {
