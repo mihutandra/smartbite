@@ -14,8 +14,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../context/auth-context";
 import { authHeroStyles } from "../constants/auth-hero-styles";
+import { useAuth } from "../context/auth-context";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -150,12 +150,13 @@ export default function LoginScreen() {
 
               <View style={styles.footerTextRow}>
                 <Text style={styles.footerText}>Nu ai cont? </Text>
-                <Link href="/register" asChild>
+                <Link href={"/register" as never} asChild>
                   <Pressable>
                     <Text style={styles.footerLink}>Inregistreaza-te</Text>
                   </Pressable>
                 </Link>
               </View>
+
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
