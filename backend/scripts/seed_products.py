@@ -149,7 +149,7 @@ def seed_data():
                 description="Pâine neagră feliată pentru consum zilnic.",
                 category_id=categories_by_name["Panificație"].id,
                 brand="Vel Pitar",
-                image_url="https://www.velpitar.ro/produse/paine-neagra/",
+                image_url="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTjGJVGG40VdsVQQJWfZoZeAQQe6-A07akZ4TDzFdKdUoMfnpQ6gPiC58Oc-WjnJuI44ZlPbkIX",
                 is_active=True,
             ),
             Product(
@@ -157,7 +157,7 @@ def seed_data():
                 description="Lapte UHT integral cu conținut de 3.5% grăsime.",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Zuzu",
-                image_url="https://www.zuzu.ro/produse/",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQeWzG6FwBdbGIYT418jw8jguV2YAQ-aWu7TXhndLuZwacTfjE1YD4n0haejXpWNOhcd6qBAfgn",
                 is_active=True,
             ),
             Product(
@@ -165,7 +165,7 @@ def seed_data():
                 description="Smântână fermentată, potrivită pentru gătit și servire.",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Napolact",
-                image_url="https://www.napolact.ro/produse/",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcS-0HUGuTjCe9ZnWO7ZwtKhBf7UNs400ZFai1mjl_UTm8c2s7QeRueLr6wBITXek4moYcNOMog",
                 is_active=True,
             ),
             Product(
@@ -173,7 +173,7 @@ def seed_data():
                 description="Mezel feliat din carne de porc pentru sandvișuri.",
                 category_id=categories_by_name["Carne și mezeluri"].id,
                 brand="Caroli",
-                image_url="https://www.caroli.ro/produse/",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcS-EzhFU8VThk88XvyERdBbv6cI2ABEuQ8dFrzXNm5psDj0cf12pC7zxG4ughVddixAYJ47WPJ-",
                 is_active=True,
             ),
             Product(
@@ -181,7 +181,7 @@ def seed_data():
                 description="Cașcaval semitare pentru sandvișuri și gratinare.",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Hochland",
-                image_url="https://www.hochland.ro/produse/",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcScXtnb-Jx14r4QtEn9KdhKUMXUsyXdnoJMQjNtCctD3cfiBAqV-HTLkmE13ZosZkxkVf9XgsIG",
                 is_active=True,
             ),
             Product(
@@ -189,7 +189,7 @@ def seed_data():
                 description="Gem de căpșuni cu bucăți de fruct.",
                 category_id=categories_by_name["Conserve și dulcețuri"].id,
                 brand="Râureni",
-                image_url="https://www.raureni.ro/produse/gemuri/",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRfKV9z8ZH6ADldha2uA7sRfLKy1i5G1i0a3rxa7yEfpAYU_4yw3mjNbg-V23skP2xO6QdcfB3X",
                 is_active=True,
             ),
             Product(
@@ -197,7 +197,7 @@ def seed_data():
                 description="Iaurt cremos simplu pentru gustare zilnică.",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Activia",
-                image_url="https://www.activia.ro/produse/",
+                image_url="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcThygzsc2S9ZveOjXG24J-tVTdFP6_t0gatlIFOp9uNxkN5rav9CNN69iIEgj_NOl3lK5HyIUCP",
                 is_active=True,
             ),
             Product(
@@ -205,7 +205,7 @@ def seed_data():
                 description="Ouă proaspete calibru M, ambalaj de 10 bucăți.",
                 category_id=categories_by_name["Ouă"].id,
                 brand="Agricola",
-                image_url="https://www.agricola.ro/",
+                image_url="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcRvQ8n1Z9MVymGMYjsxsUSFlnHVi11Jh2QEGRy91IWKK__AGpnApgeuBiDjWcsx5g0fLrBdAQU",
                 is_active=True,
             ),
             Product(
@@ -213,7 +213,7 @@ def seed_data():
                 description="Ulei rafinat de floarea-soarelui pentru gătit.",
                 category_id=categories_by_name["Uleiuri"].id,
                 brand="Unisol",
-                image_url="https://www.unisol.ro/",
+                image_url="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTxB09OA9MvZiHXW4vszBvT_I7vCwpafDEDf0qKvs7laWEo_Xoci_DJ_vgyeDkGxnsZkR18xhkE",
                 is_active=True,
             ),
             Product(
@@ -221,7 +221,7 @@ def seed_data():
                 description="Mere dulci-acrișoare, origine România.",
                 category_id=categories_by_name["Fructe"].id,
                 brand="Producători locali",
-                image_url="https://ro.wikipedia.org/wiki/M%C4%83r",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRSjtCI8cEY0gOYuD9Zl04wESv3uih8bEtKJUfLsdtq6NNi2clsdRSbUjvDelhl8xIaxh8LI8w",
                 is_active=True,
             ),
             Product(
@@ -229,7 +229,7 @@ def seed_data():
                 description="Banane proaspete import, calibrul standard de retail.",
                 category_id=categories_by_name["Fructe"].id,
                 brand="Chiquita",
-                image_url="https://www.chiquita.com/banana/",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcS48IdHOmqQEGgeYeymgmfKVsqwSu06Z-szkm_V1UCAfGTRHHmfY8YlHdauAo0xv39bycqS13Xp",
                 is_active=True,
             ),
             Product(
@@ -237,7 +237,7 @@ def seed_data():
                 description="Paste din grâu dur, timp de fierbere aprox. 9 minute.",
                 category_id=categories_by_name["Paste și orez"].id,
                 brand="Barilla",
-                image_url="https://www.barilla.com/en-us/products/pasta/classic-blue-box/spaghetti",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcShoXCcrkN1ZecdJSJIGrOtUiwJvE3-wyXTxywda2Si-SF_jB_t9D7bVDyWc2g",
                 is_active=True,
             ),
             Product(
@@ -245,7 +245,7 @@ def seed_data():
                 description="Paste românești tip penne pentru sosuri consistente.",
                 category_id=categories_by_name["Paste și orez"].id,
                 brand="Băneasa",
-                image_url="https://www.baneasa.ro/produse/paste-fainoase/",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQP8GRWH87qGCubVPN_S_dWmMLQ6xYHF0ZHUX00IqrbahyPeTmNyVkV1tEvl-oCwI8mhkttn5A",
                 is_active=True,
             ),
             Product(
@@ -253,7 +253,7 @@ def seed_data():
                 description="Passata fină de roșii pentru paste și pizza.",
                 category_id=categories_by_name["Sosuri"].id,
                 brand="Mutti",
-                image_url="https://mutti-parma.com/products/passata/",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRVWWzAalS56vb_nOnw2DmGprgAAInuw8WMvGMCUD_pvDelOAbUXr1OYZQYz3_dj_wtXUx0Lpda",
                 is_active=True,
             ),
             Product(
@@ -261,7 +261,7 @@ def seed_data():
                 description="Ketchup clasic pe bază de roșii coapte.",
                 category_id=categories_by_name["Sosuri"].id,
                 brand="Heinz",
-                image_url="https://www.heinz.com/products/tomato-ketchup",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQsPDxCgLGLn8aMoUAkwb7SRItLQD77ty-BgBDks-utIFpXkrClRntTSnAs-z5JNoi-KfbZKTQ",
                 is_active=True,
             ),
             Product(
@@ -269,7 +269,7 @@ def seed_data():
                 description="Piept de pui refrigerat, fără os.",
                 category_id=categories_by_name["Carne și mezeluri"].id,
                 brand="Agricola",
-                image_url="https://www.agricola.ro/",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRTgWAw5cO025_0ylWI7gxX8E5CvhzYypyk4fLtGztdLV9p9E7VNb-dnXk-Y5xv568AyWv49EI",
                 is_active=True,
             ),
             Product(
@@ -277,7 +277,7 @@ def seed_data():
                 description="Carne de porc refrigerată pentru grătar sau cuptor.",
                 category_id=categories_by_name["Carne și mezeluri"].id,
                 brand="Carrefour",
-                image_url="https://www.carrefour.ro/",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTEFzDRxl4OwOnfoUsRpbd0TxAirugQa73mx03S_tC2p-cplYv_3vLWvkaJWKvWhSBymlmnC17L",
                 is_active=True,
             ),
             Product(
@@ -285,7 +285,7 @@ def seed_data():
                 description="Brânză telemea din lapte de vacă, sărată moderat.",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Delaco",
-                image_url="https://www.delaco.ro/produse/",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQPbkyqQS2MazSNJ7Iy7nF-hO1zRN8x4-Zw1H-0EPhjFhELnkh1PGi2-9LoeNA0jpx7nJRg_pY",
                 is_active=True,
             ),
             Product(
@@ -293,7 +293,7 @@ def seed_data():
                 description="Biscuiți sandwich cu cremă de vanilie.",
                 category_id=categories_by_name["Gustări"].id,
                 brand="Oreo",
-                image_url="https://www.oreo.com/",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcREuIJZv1Tsa8cfjmjl3jjonVDbomC_TL_yu9j_viyvRDORER7LeckD7K1T8ft-bk7chCXG0gDl",
                 is_active=True,
             ),
             Product(
@@ -301,7 +301,7 @@ def seed_data():
                 description="Biscuiți digestivi cu cacao pentru gustări rapide.",
                 category_id=categories_by_name["Gustări"].id,
                 brand="Picnic",
-                image_url="https://www.etitreats.com/brands/picnic",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTREgDDGqCXs97TlPiLb6UMx-mf0fc4MInBldoSPehiCQTiIJjzNhB_Vg8R6t9CMcyfSzIwzBu5",
                 is_active=True,
             ),
             Product(
@@ -309,7 +309,7 @@ def seed_data():
                 description="Chipsuri din cartofi cu sare.",
                 category_id=categories_by_name["Gustări"].id,
                 brand="Lay's",
-                image_url="https://www.lays.com/products/lays-classic-potato-chips",
+                image_url="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQlmcIBERx5gVkQya1a2Q41YZFWtRZnRlD9QUYyBz16I1QxrrbHWGssJlnIfyBUsa9qvkD0mOU",
                 is_active=True,
             ),
             Product(
@@ -317,7 +317,7 @@ def seed_data():
                 description="Chipsuri cu aromă de paprika.",
                 category_id=categories_by_name["Gustări"].id,
                 brand="Chio",
-                image_url="https://chiochips.eu/",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQUFjBOOf860yXgs7j6w-y-H2AIsbHJMesOlrsmdzorjTJo_iI",
                 is_active=True,
             ),
         ]
