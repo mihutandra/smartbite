@@ -17,12 +17,6 @@ def seed_data():
     session = SessionLocal()
     
     try:
-        # Check if data already exists
-        existing_products = session.query(Product).count()
-        if existing_products > 0:
-            print(f"✓ Database already contains {existing_products} product(s). Skipping seed.")
-            return
-
         # Ensure categories exist
         categories_seed = [
             ("Panificație", "Produse de panificație și brutărie"),
@@ -33,6 +27,10 @@ def seed_data():
             ("Ouă", "Ouă proaspete"),
             ("Uleiuri", "Uleiuri alimentare"),
             ("Legume", "Legume proaspete"),
+            ("Fructe", "Fructe proaspete"),
+            ("Paste și orez", "Paste făinoase și produse din cereale"),
+            ("Sosuri", "Sosuri pentru gătit și condimente lichide"),
+            ("Gustări", "Biscuiți, chipsuri și alte gustări"),
         ]
         categories_by_name: dict[str, Category] = {}
         for category_name, category_description in categories_seed:
@@ -143,20 +141,203 @@ def seed_data():
                 description="Morcovi freschi, crescuți fără pesticide, proaspăt recoltați",
                 category_id=categories_by_name["Legume"].id,
                 brand="Grădina Naturii",
-                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcT81HideVUcwuXHxRqG3iHm0x7gJ_zaECtKhq_wkq0bnRp6fL2DHiaCOx9MWOgzLas7TEicZ4IW",
+                image_url="https://images.example.com/morcovi.jpg",
                 is_active=True
+            ),
+            Product(
+                name="Pâine neagră Vel Pitar",
+                description="Pâine neagră feliată pentru consum zilnic.",
+                category_id=categories_by_name["Panificație"].id,
+                brand="Vel Pitar",
+                image_url="https://www.velpitar.ro/produse/paine-neagra/",
+                is_active=True,
+            ),
+            Product(
+                name="Lapte Zuzu 3.5%",
+                description="Lapte UHT integral cu conținut de 3.5% grăsime.",
+                category_id=categories_by_name["Lactate"].id,
+                brand="Zuzu",
+                image_url="https://www.zuzu.ro/produse/",
+                is_active=True,
+            ),
+            Product(
+                name="Smântână Napolact 20%",
+                description="Smântână fermentată, potrivită pentru gătit și servire.",
+                category_id=categories_by_name["Lactate"].id,
+                brand="Napolact",
+                image_url="https://www.napolact.ro/produse/",
+                is_active=True,
+            ),
+            Product(
+                name="Șuncă Praga Caroli",
+                description="Mezel feliat din carne de porc pentru sandvișuri.",
+                category_id=categories_by_name["Carne și mezeluri"].id,
+                brand="Caroli",
+                image_url="https://www.caroli.ro/produse/",
+                is_active=True,
+            ),
+            Product(
+                name="Cașcaval Hochland",
+                description="Cașcaval semitare pentru sandvișuri și gratinare.",
+                category_id=categories_by_name["Lactate"].id,
+                brand="Hochland",
+                image_url="https://www.hochland.ro/produse/",
+                is_active=True,
+            ),
+            Product(
+                name="Gem de căpșuni Râureni",
+                description="Gem de căpșuni cu bucăți de fruct.",
+                category_id=categories_by_name["Conserve și dulcețuri"].id,
+                brand="Râureni",
+                image_url="https://www.raureni.ro/produse/gemuri/",
+                is_active=True,
+            ),
+            Product(
+                name="Iaurt simplu Activia",
+                description="Iaurt cremos simplu pentru gustare zilnică.",
+                category_id=categories_by_name["Lactate"].id,
+                brand="Activia",
+                image_url="https://www.activia.ro/produse/",
+                is_active=True,
+            ),
+            Product(
+                name="Ouă de găină Agricola 10 buc",
+                description="Ouă proaspete calibru M, ambalaj de 10 bucăți.",
+                category_id=categories_by_name["Ouă"].id,
+                brand="Agricola",
+                image_url="https://www.agricola.ro/",
+                is_active=True,
+            ),
+            Product(
+                name="Ulei de floarea-soarelui Unisol",
+                description="Ulei rafinat de floarea-soarelui pentru gătit.",
+                category_id=categories_by_name["Uleiuri"].id,
+                brand="Unisol",
+                image_url="https://www.unisol.ro/",
+                is_active=True,
+            ),
+            Product(
+                name="Mere Golden România",
+                description="Mere dulci-acrișoare, origine România.",
+                category_id=categories_by_name["Fructe"].id,
+                brand="Producători locali",
+                image_url="https://ro.wikipedia.org/wiki/M%C4%83r",
+                is_active=True,
+            ),
+            Product(
+                name="Banane Chiquita",
+                description="Banane proaspete import, calibrul standard de retail.",
+                category_id=categories_by_name["Fructe"].id,
+                brand="Chiquita",
+                image_url="https://www.chiquita.com/banana/",
+                is_active=True,
+            ),
+            Product(
+                name="Paste Barilla Spaghetti nr.5",
+                description="Paste din grâu dur, timp de fierbere aprox. 9 minute.",
+                category_id=categories_by_name["Paste și orez"].id,
+                brand="Barilla",
+                image_url="https://www.barilla.com/en-us/products/pasta/classic-blue-box/spaghetti",
+                is_active=True,
+            ),
+            Product(
+                name="Paste Băneasa Penne",
+                description="Paste românești tip penne pentru sosuri consistente.",
+                category_id=categories_by_name["Paste și orez"].id,
+                brand="Băneasa",
+                image_url="https://www.baneasa.ro/produse/paste-fainoase/",
+                is_active=True,
+            ),
+            Product(
+                name="Sos de roșii Mutti Passata",
+                description="Passata fină de roșii pentru paste și pizza.",
+                category_id=categories_by_name["Sosuri"].id,
+                brand="Mutti",
+                image_url="https://mutti-parma.com/products/passata/",
+                is_active=True,
+            ),
+            Product(
+                name="Ketchup Heinz",
+                description="Ketchup clasic pe bază de roșii coapte.",
+                category_id=categories_by_name["Sosuri"].id,
+                brand="Heinz",
+                image_url="https://www.heinz.com/products/tomato-ketchup",
+                is_active=True,
+            ),
+            Product(
+                name="Piept de pui Agricola",
+                description="Piept de pui refrigerat, fără os.",
+                category_id=categories_by_name["Carne și mezeluri"].id,
+                brand="Agricola",
+                image_url="https://www.agricola.ro/",
+                is_active=True,
+            ),
+            Product(
+                name="Ceafă de porc Carrefour",
+                description="Carne de porc refrigerată pentru grătar sau cuptor.",
+                category_id=categories_by_name["Carne și mezeluri"].id,
+                brand="Carrefour",
+                image_url="https://www.carrefour.ro/",
+                is_active=True,
+            ),
+            Product(
+                name="Telemea de vacă Delaco",
+                description="Brânză telemea din lapte de vacă, sărată moderat.",
+                category_id=categories_by_name["Lactate"].id,
+                brand="Delaco",
+                image_url="https://www.delaco.ro/produse/",
+                is_active=True,
+            ),
+            Product(
+                name="Biscuiți Oreo Original",
+                description="Biscuiți sandwich cu cremă de vanilie.",
+                category_id=categories_by_name["Gustări"].id,
+                brand="Oreo",
+                image_url="https://www.oreo.com/",
+                is_active=True,
+            ),
+            Product(
+                name="Biscuiți Picnic cacao",
+                description="Biscuiți digestivi cu cacao pentru gustări rapide.",
+                category_id=categories_by_name["Gustări"].id,
+                brand="Picnic",
+                image_url="https://www.etitreats.com/brands/picnic",
+                is_active=True,
+            ),
+            Product(
+                name="Chipsuri Lay's cu sare",
+                description="Chipsuri din cartofi cu sare.",
+                category_id=categories_by_name["Gustări"].id,
+                brand="Lay's",
+                image_url="https://www.lays.com/products/lays-classic-potato-chips",
+                is_active=True,
+            ),
+            Product(
+                name="Chipsuri Chio paprika",
+                description="Chipsuri cu aromă de paprika.",
+                category_id=categories_by_name["Gustări"].id,
+                brand="Chio",
+                image_url="https://chiochips.eu/",
+                is_active=True,
             ),
         ]
         
-        # Add all products
+        existing_names = {name for (name,) in session.query(Product.name).all()}
+        created = 0
+        skipped = 0
         for product in products:
+            if product.name in existing_names:
+                skipped += 1
+                continue
             session.add(product)
+            created += 1
             
         session.flush()
         session.commit()
         
         print("✓ Data seeded successfully!")
-        print(f"  - {len(products)} products added")
+        print(f"  - {created} products added")
+        print(f"  - {skipped} products skipped (already existed)")
         
     except Exception as e:
         session.rollback()
