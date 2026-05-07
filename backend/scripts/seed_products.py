@@ -55,7 +55,7 @@ def seed_data():
                 description="Pâine neagră proaspătă, coapte zilnic, recunoascut pentru aroma și textura clasică",
                 category_id=categories_by_name["Panificație"].id,
                 brand="Păunul Fericit",
-                image_url="https://images.example.com/paine-neagra.jpg",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSPz7HB5L-cAhs7E8ooWC3A-3hIq_09Ujajo_wN9MkAqn9yXp_cI_1MLnYhSHSRbJ93JVU5px0v",
                 is_active=True
             ),
             Product(
@@ -63,7 +63,7 @@ def seed_data():
                 description="Brânză tradițională de oaie, cu sare și condimente, produsă în Carpați",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Brânzele Moldovei",
-                image_url="https://images.example.com/branza-burduf.jpg",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQzkCnDG1wn4NfLl6ThJGTQ4kyVVWxkNciLe-Uoqaf1G-TpeCzZLdbg78D9zRhcs527l1_ak1F0",
                 is_active=True
             ),
             Product(
@@ -71,7 +71,7 @@ def seed_data():
                 description="Lapte integral proaspăt din ferme locale, bogat în calciu și vitamine",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Luna Ferma",
-                image_url="https://images.example.com/lapte-integral.jpg",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcR-pA2QNRqkGLRgbWMh1IzO1_U5OCahhhyNf0frwswYZSqAdUOSjlvi5RJgt301WQXbfHOeY7Zz",
                 is_active=True
             ),
             Product(
@@ -79,7 +79,7 @@ def seed_data():
                 description="Smântână groasă, ideal pentru ciorbe și costume tradiționale",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Gospodăria Români",
-                image_url="https://images.example.com/smantana.jpg",
+                image_url="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTZUWmqbOrl_w0-W96yR_LsMd17DDtGL5MGtwZYziFi0OFwIJDF1rQ7Wtxwv29Rdum-NA1Vb3M",
                 is_active=True
             ),
             Product(
@@ -87,7 +87,7 @@ def seed_data():
                 description="Șuncă afumată, tradițional preparată, perfectă pentru sandvișuri",
                 category_id=categories_by_name["Carne și mezeluri"].id,
                 brand="Carnicerul Veseliei",
-                image_url="https://images.example.com/sunca-casa.jpg",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRo2PnUc5AztUgyjlMRs1jvOgh2IvBhnht_xiF46eTT9v1_kh5LvO015o_BxJNyIZ3wG-L3Vb4",
                 is_active=True
             ),
             Product(
@@ -103,7 +103,7 @@ def seed_data():
                 description="Brânzetură proaspătă, cremoasă, potrivită pentru mic dejun",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Crama Veche",
-                image_url="https://images.example.com/brranzetură.jpg",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRet3BszPC0Df176xqrkyZyqZzbng-4yMlB6eEHp7jJ2vop6Ia_aXgDlFk3eu1EGor4-H_cnIof",
                 is_active=True
             ),
             Product(
@@ -111,7 +111,7 @@ def seed_data():
                 description="Gem de casă din coacăze negre, fără conservanți, îmbiar și bogat",
                 category_id=categories_by_name["Conserve și dulcețuri"].id,
                 brand="Zarzavagiul Bunicii",
-                image_url="https://images.example.com/gem-coacaze.jpg",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTQXtxhPfiRKrsXMQgF6iAqyslSOhOCIxo-5A57z3Yx8WPeSAI9FLAE5wA_peK0fFstkBwk6Koe",
                 is_active=True
             ),
             Product(
@@ -119,7 +119,7 @@ def seed_data():
                 description="Iaurt închegat natural cu bacterii probiotice, fără aditivi",
                 category_id=categories_by_name["Lactate"].id,
                 brand="Ferma Ecologică Vlădești",
-                image_url="https://images.example.com/iaurt-natural.jpg",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcThO81yrf7aEBkCnNsx2Ui7UZtHTuDdNwGtmUuDGmJ-ZNFbIWsp5RTCpDHPahr-8wCPAFl0Owo",
                 is_active=True
             ),
             Product(
@@ -127,7 +127,7 @@ def seed_data():
                 description="Ouă proaspete, cu gălbenuș bogat în nutrienți, de la găini crescute la poală",
                 category_id=categories_by_name["Ouă"].id,
                 brand="Gospodăria Rototej",
-                image_url="https://images.example.com/oua-curte.jpg",
+                image_url="https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRUwmvJUc7AG3_JslW7NFI4RCvPHjVc7OOz_u7g2Tyss6bymQ_h5Sa76pDLuzSejOqlyu6w97M",
                 is_active=True
             ),
             Product(
@@ -135,7 +135,7 @@ def seed_data():
                 description="Ulei natural, presat la rece, bogat în acizi grași esențiali",
                 category_id=categories_by_name["Uleiuri"].id,
                 brand="Moară Vechea Petrobrazi",
-                image_url="https://images.example.com/ulei-floare.jpg",
+                image_url="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRywVzhB1kFit9AVtwt0SMVngCJioznU4SVBq4yAzJrjM30X0SZUAtxN4yJbxlIdqFD7uWv020",
                 is_active=True
             ),
             Product(
@@ -143,7 +143,7 @@ def seed_data():
                 description="Morcovi freschi, crescuți fără pesticide, proaspăt recoltați",
                 category_id=categories_by_name["Legume"].id,
                 brand="Grădina Naturii",
-                image_url="https://images.example.com/morcovi.jpg",
+                image_url="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcT81HideVUcwuXHxRqG3iHm0x7gJ_zaECtKhq_wkq0bnRp6fL2DHiaCOx9MWOgzLas7TEicZ4IW",
                 is_active=True
             ),
         ]

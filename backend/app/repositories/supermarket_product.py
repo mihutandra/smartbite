@@ -18,7 +18,7 @@ class SupermarketProductRepository:
         stmt = (
             select(SupermarketProduct)
             .options(
-                joinedload(SupermarketProduct.product),
+                joinedload(SupermarketProduct.product).joinedload(Product.category),
                 joinedload(SupermarketProduct.supermarket),
             )
             .where(SupermarketProduct.id == id)
@@ -42,7 +42,7 @@ class SupermarketProductRepository:
             .where(SupermarketProduct.supermarket_id == supermarket_id)
             .where(SupermarketProduct.is_available.is_(True))
             .options(
-                joinedload(SupermarketProduct.product),
+                joinedload(SupermarketProduct.product).joinedload(Product.category),
                 joinedload(SupermarketProduct.supermarket),
             )
             .order_by(SupermarketProduct.expiration_date)
@@ -60,7 +60,7 @@ class SupermarketProductRepository:
         stmt = (
             select(SupermarketProduct)
             .options(
-                joinedload(SupermarketProduct.product),
+                joinedload(SupermarketProduct.product).joinedload(Product.category),
                 joinedload(SupermarketProduct.supermarket),
             )
             .order_by(SupermarketProduct.expiration_date)
@@ -82,7 +82,7 @@ class SupermarketProductRepository:
         stmt = (
             select(SupermarketProduct)
             .options(
-                joinedload(SupermarketProduct.product),
+                joinedload(SupermarketProduct.product).joinedload(Product.category),
                 joinedload(SupermarketProduct.supermarket),
             )
             .join(SupermarketProduct.product)
