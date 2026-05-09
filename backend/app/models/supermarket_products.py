@@ -36,3 +36,19 @@ class SupermarketProduct(Base):
     def supermarket_name(self) -> str | None:
         return self.supermarket.name if self.supermarket else None
     
+    @property
+    def product_description(self) -> str | None:
+        return self.product.description if self.product else None
+
+    @property
+    def product_image_url(self) -> str | None:
+        return self.product.image_url if self.product else None
+
+    @property
+    def product_brand(self) -> str | None:
+        return self.product.brand if self.product else None
+
+    @property
+    def category_name(self) -> str | None:
+        return self.product.category.name if self.product and self.product.category else None
+    
