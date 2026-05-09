@@ -1,8 +1,8 @@
 from uuid import UUID
-from app.exceptions.exceptions import NotFound
+from app.exceptions.exceptions import NotFound, ValidationError
 from app.models.supermarket import Supermarket
 from app.repositories.supermarket import SupermarketRepository
-from app.schemas.supermarket import SupermarketDetails
+from app.schemas.supermarket import SupermarketDetails, SupermarketWithDistance
 
 
 class SupermarketService:
@@ -24,3 +24,60 @@ class SupermarketService:
         if not supermarket:
             raise NotFound(entity="Supermarket", identifier=str(supermarket_id))
         return supermarket
+    
+    def get_in_bounds(
+    self, south: float, north: float, west: float, east: float, limit: int) -> list[Supermarket]:
+    # Latitude sanity
+        if south > north:
+            raise ValidationError(
+                "Invalid bounds: 'south' must be less than or equal to 'north'.",
+                field="south",
+            )
+        if not (-90 <= south <= 90) or not (-90 <= north <= 90):
+            raise ValidationError(
+                "Latitude bounds must be between -90 and 90.",
+                field="latitude",
+            )
+        if not (-180 <= west <= 180) or not (-180 <= east <= 180):
+            raise ValidationError(
+                "Longitude bounds must be between -180 and 180.",
+                field="longitude",
+            )
+        # Note: we do NOT require west <= east — repository handles antimeridian wrap.
+        return self.supermarket_repo.get_in_bounds(
+            south=south, north=north, west=west, east=east, limit=limit,
+        )
+        
+    @staticmethod
+    def _validate_coords(lat: float, lng: float) -> None:
+        if not (-90 <= lat <= 90):
+            raise ValidationError("Latitude must be between -90 and 90.", field="user_lat")
+        if not (-180 <= lng <= 180):
+            raise ValidationError("Longitude must be between -180 and 180.", field="user_lng")
+        
+    def list_all_with_distance(
+        self,
+        user_lat: float,
+        user_lng: float,
+        page: int,
+        page_size: int,
+        radius_km: float | None = None,
+    ) -> list[SupermarketWithDistance]:
+        self._validate_coords(user_lat, user_lng)
+        if radius_km is not None and radius_km <= 0:
+            raise ValidationError("radius_km must be positive.", field="radius_km")
+
+        offset = (page - 1) * page_size
+        rows = self.supermarket_repo.get_all_with_distance(
+            user_lat=user_lat,
+            user_lng=user_lng,
+            limit=page_size,
+            offset=offset,
+            radius_km=radius_km,
+        )
+        return [
+            SupermarketWithDistance.model_validate(
+                {**supermarket.__dict__, "distance_km": round(distance, 2)}
+            )
+            for supermarket, distance in rows
+        ]
