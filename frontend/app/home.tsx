@@ -17,8 +17,8 @@ import { SupermarketCard } from "../components/SupermarketCard";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 import { useAuth } from "../context/auth-context";
 import {
+  fetchAllSupermarkets,
   fetchSupermarketProductCounts,
-  fetchSupermarkets,
 } from "../services/supermarkets";
 import { type Supermarket } from "../types/supermarket";
 
@@ -63,7 +63,7 @@ export default function HomeScreen() {
       setLoadError("");
 
       try {
-        const supermarketList = await fetchSupermarkets();
+        const supermarketList = await fetchAllSupermarkets();
 
         if (!isMounted) {
           return;

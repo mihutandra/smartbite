@@ -15,8 +15,8 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BottomNavBar } from "../../components/BottomNavBar";
 import { ProductCard } from "../../components/ProductCard";
 import {
+  fetchAllSupermarketProducts,
   fetchSupermarketDetails,
-  fetchSupermarketProducts,
 } from "../../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../../types/supermarket";
 import { getCategoryLabel } from "../../utils/product_detail";
@@ -49,7 +49,7 @@ export default function SupermarketProductsScreen() {
       try {
         const [supermarketResponse, productsResponse] = await Promise.all([
           fetchSupermarketDetails(id),
-          fetchSupermarketProducts(id),
+          fetchAllSupermarketProducts(id),
         ]);
 
         if (!isMounted) {
@@ -103,7 +103,6 @@ export default function SupermarketProductsScreen() {
     return rows;
   }, [filteredProducts]);
 
-  const offerCount = products.length;
   const distanceKm = supermarket
     ? getDistanceKm(supermarket.latitude, supermarket.longitude).toFixed(1)
     : "--";
@@ -151,8 +150,7 @@ export default function SupermarketProductsScreen() {
 
                 <View style={styles.statsRow}>
                   <InfoChip color="#E49B4C" icon="star" label="4.5" />
-                  <InfoChip color="#DF7440" icon="clock" label={`${distanceKm} km`} />
-                  <InfoChip color="#5C9064" icon="tag" label={`${offerCount} oferte`} />
+                  <InfoChip color="#5C9064" icon="clock" label={`${distanceKm} km`} />
                 </View>
               </View>
             </View>
@@ -182,7 +180,6 @@ export default function SupermarketProductsScreen() {
               </ScrollView>
 
               <View style={styles.productsHeader}>
-                <Text style={styles.productsTitle}>Oferte speciale</Text>
                 <Text style={styles.productsCount}>{`${filteredProducts.length} produse`}</Text>
               </View>
 
@@ -493,7 +490,7 @@ const styles = StyleSheet.create({
   productsHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     gap: 10,
   },
   productsTitle: {

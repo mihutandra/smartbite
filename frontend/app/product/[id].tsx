@@ -78,10 +78,20 @@ export default function ProductDetailsScreen() {
     () => (product ? calculateDiscountPercentage(product) : 0),
     [product],
   );
-  const maxQuantity = Math.max(1, product?.stock_quantity ?? 1);
+  const maxQuantity = Math.max(0, product?.stock_quantity ?? 0);
+
+  useEffect(() => {
+    setQuantity((current) => {
+      if (maxQuantity < 1) {
+        return 0;
+      }
+
+      return Math.min(Math.max(1, current), maxQuantity);
+    });
+  }, [maxQuantity]);
 
   function reserveProduct() {
-    if (!product) {
+    if (!product || product.stock_quantity < 1) {
       return;
     }
 
@@ -126,7 +136,7 @@ export default function ProductDetailsScreen() {
 
               {discountPercentage > 0 ? (
                 <View style={styles.discountBadge}>
-                  <Text style={styles.discountText}>{`%${discountPercentage} reducere`}</Text>
+                  <Text style={styles.discountText}>{`${discountPercentage}% reducere`}</Text>
                 </View>
               ) : null}
             </View>
@@ -135,6 +145,11 @@ export default function ProductDetailsScreen() {
               <View style={styles.panelHandle} />
 
               <Text style={styles.productName}>{product.product_name ?? "Produs"}</Text>
+              {product.product_brand ? (
+                <View style={styles.brandRow}>
+                  <Text style={styles.brandValue}>{product.product_brand}</Text>
+                </View>
+              ) : null}
               <Text style={styles.description}>
                 {product.product_description?.trim() || "Descriere indisponibila pentru acest produs."}
               </Text>
@@ -178,16 +193,22 @@ export default function ProductDetailsScreen() {
                       onPress={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
                       style={[
                         styles.quantityButton,
-                        quantity >= maxQuantity && styles.quantityButtonDisabled,
+                        (quantity >= maxQuantity || maxQuantity < 1) && styles.quantityButtonDisabled,
                       ]}
                     >
                       <Text style={styles.quantityButtonText}>+</Text>
                     </Pressable>
                   </View>
 
-                  <Pressable onPress={reserveProduct} style={styles.reserveButton}>
+                  <Pressable
+                    disabled={maxQuantity < 1}
+                    onPress={reserveProduct}
+                    style={[styles.reserveButton, maxQuantity < 1 && styles.reserveButtonDisabled]}
+                  >
                     <Feather color="#FFF8F0" name="shopping-bag" size={16} />
-                    <Text style={styles.reserveButtonText}>Rezerva acum</Text>
+                    <Text style={styles.reserveButtonText}>
+                      {maxQuantity < 1 ? "Stoc epuizat" : "Rezerva acum"}
+                    </Text>
                   </Pressable>
                 </View>
               </View>
@@ -396,9 +417,26 @@ const styles = StyleSheet.create({
   },
   productName: {
     color: "#342B26",
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "900",
-    lineHeight: 28,
+    lineHeight: 30,
+  },
+  brandRow: {
+    alignSelf: "flex-start",
+    gap: 4,
+    marginTop: -8,
+  },
+  brandLabel: {
+    color: "#A56336",
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  brandValue: {
+    color: "#4F8C62",
+    fontSize: 13,
+    fontWeight: "800",
   },
   description: {
     color: "#857366",
@@ -565,6 +603,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 18,
     elevation: 4,
+  },
+  reserveButtonDisabled: {
+    backgroundColor: "#9EB3A3",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   reserveButtonText: {
     color: "#FFF8F0",
