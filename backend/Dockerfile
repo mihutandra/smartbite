@@ -42,7 +42,6 @@ FROM base AS test
 
 # Copy Pytest config
 COPY ./pytest.ini ./pytest.ini
-COPY ./.coveragerc ./.coveragerc
 
 # Install test dependencies
 COPY ./requirements.test.txt ./requirements.test.txt
