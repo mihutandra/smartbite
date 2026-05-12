@@ -14,15 +14,13 @@ from app.models.supermarket import Supermarket
 def seed_data():
     """Populate supermarkets with Romanian data."""
     session = SessionLocal()
-    
+
     try:
-        # Check if data already exists
         existing_supermarkets = session.query(Supermarket).count()
         if existing_supermarkets > 0:
             print(f"✓ Database already contains {existing_supermarkets} supermarket(s). Skipping seed.")
             return
-        
-        # Romanian supermarkets with realistic locations
+
         supermarkets = [
             Supermarket(
                 name="Carrefour Express",
@@ -32,6 +30,7 @@ def seed_data():
                 phone_number="+40213100000",
                 email="contact@carrefour.ro",
                 website="https://carrefour.ro",
+                rating=4.2,
                 opening_hours={
                     "Monday": "07:00-21:00",
                     "Tuesday": "07:00-21:00",
@@ -39,9 +38,9 @@ def seed_data():
                     "Thursday": "07:00-21:00",
                     "Friday": "07:00-22:00",
                     "Saturday": "07:00-22:00",
-                    "Sunday": "08:00-20:00"
+                    "Sunday": "08:00-20:00",
                 },
-                is_active=True
+                is_active=True,
             ),
             Supermarket(
                 name="Lidl România",
@@ -51,6 +50,7 @@ def seed_data():
                 phone_number="+40213001000",
                 email="info@lidl.ro",
                 website="https://lidl.ro",
+                rating=4.5,
                 opening_hours={
                     "Monday": "06:00-23:00",
                     "Tuesday": "06:00-23:00",
@@ -58,9 +58,9 @@ def seed_data():
                     "Thursday": "06:00-23:00",
                     "Friday": "06:00-23:00",
                     "Saturday": "06:00-23:00",
-                    "Sunday": "07:00-22:00"
+                    "Sunday": "07:00-22:00",
                 },
-                is_active=True
+                is_active=True,
             ),
             Supermarket(
                 name="Kaufland Cluj",
@@ -70,6 +70,7 @@ def seed_data():
                 phone_number="+40264300000",
                 email="contact@kaufland.ro",
                 website="https://kaufland.ro",
+                rating=4.3,
                 opening_hours={
                     "Monday": "07:00-21:00",
                     "Tuesday": "07:00-21:00",
@@ -77,9 +78,9 @@ def seed_data():
                     "Thursday": "07:00-21:00",
                     "Friday": "07:00-22:00",
                     "Saturday": "07:00-22:00",
-                    "Sunday": "08:00-20:00"
+                    "Sunday": "08:00-20:00",
                 },
-                is_active=True
+                is_active=True,
             ),
             Supermarket(
                 name="Penny Market Timișoara",
@@ -89,6 +90,7 @@ def seed_data():
                 phone_number="+40256400000",
                 email="contact@penny.ro",
                 website="https://penny.ro",
+                rating=3.8,
                 opening_hours={
                     "Monday": "06:00-22:00",
                     "Tuesday": "06:00-22:00",
@@ -96,9 +98,9 @@ def seed_data():
                     "Thursday": "06:00-22:00",
                     "Friday": "06:00-23:00",
                     "Saturday": "06:00-23:00",
-                    "Sunday": "07:00-21:00"
+                    "Sunday": "07:00-21:00",
                 },
-                is_active=True
+                is_active=True,
             ),
             Supermarket(
                 name="Mega Image Constanța",
@@ -108,6 +110,7 @@ def seed_data():
                 phone_number="+40241800000",
                 email="contact@megaimage.ro",
                 website="https://megaimage.ro",
+                rating=4.0,
                 opening_hours={
                     "Monday": "07:00-21:00",
                     "Tuesday": "07:00-21:00",
@@ -115,22 +118,21 @@ def seed_data():
                     "Thursday": "07:00-21:00",
                     "Friday": "07:00-22:00",
                     "Saturday": "07:00-22:00",
-                    "Sunday": "08:00-20:00"
+                    "Sunday": "08:00-20:00",
                 },
-                is_active=True
+                is_active=True,
             ),
         ]
-        
-        # Add all supermarkets
+
         for supermarket in supermarkets:
             session.add(supermarket)
-        
-        session.flush()  # Ensure supermarkets have IDs
+
+        session.flush()
         session.commit()
-        
+
         print("✓ Data seeded successfully!")
         print(f"  - {len(supermarkets)} supermarkets added")
-        
+
     except Exception as e:
         session.rollback()
         print(f"✗ Error seeding data: {e}")
