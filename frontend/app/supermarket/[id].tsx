@@ -1,17 +1,38 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { fetchSupermarket } from "../../services/supermarkets";
-import { type Supermarket } from "../../types/supermarket";
+import { BottomNavBar } from "../../components/BottomNavBar";
+import { ProductCard } from "../../components/ProductCard";
+import {
+  fetchAllSupermarketProducts,
+  fetchSupermarketDetails,
+} from "../../services/supermarkets";
+import { type Supermarket, type SupermarketProduct } from "../../types/supermarket";
+import { getCategoryLabel } from "../../utils/product_detail";
 
-export default function SupermarketPlaceholderScreen() {
+const FALLBACK_REGION = {
+  latitude: 46.7712,
+  longitude: 23.6236,
+};
+
+export default function SupermarketProductsScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [supermarket, setSupermarket] = useState<Supermarket | null>(null);
-  const [isLoadingSupermarket, setIsLoadingSupermarket] = useState(false);
+  const [products, setProducts] = useState<SupermarketProduct[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("Toate");
+  const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
@@ -21,215 +42,496 @@ export default function SupermarketPlaceholderScreen() {
 
     let isMounted = true;
 
-    async function loadSupermarket() {
-      setIsLoadingSupermarket(true);
+    async function loadData() {
+      setIsLoading(true);
       setLoadError("");
 
       try {
-        const response = await fetchSupermarket(id);
+        const [supermarketResponse, productsResponse] = await Promise.all([
+          fetchSupermarketDetails(id),
+          fetchAllSupermarketProducts(id),
+        ]);
 
         if (!isMounted) {
           return;
         }
 
-        setSupermarket(response);
+        setSupermarket(supermarketResponse);
+        setProducts(productsResponse);
       } catch (error) {
         if (!isMounted) {
           return;
         }
 
         setLoadError(
-          error instanceof Error ? error.message : "Nu am putut incarca supermarketul selectat.",
+          error instanceof Error ? error.message : "Nu am putut incarca produsele magazinului.",
         );
       } finally {
         if (isMounted) {
-          setIsLoadingSupermarket(false);
+          setIsLoading(false);
         }
       }
     }
 
-    void loadSupermarket();
+    void loadData();
 
     return () => {
       isMounted = false;
     };
   }, [id]);
 
+  const categories = useMemo(() => {
+    const values = Array.from(new Set(products.map((product) => getCategoryLabel(product))));
+    return ["Toate", ...values];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === "Toate") {
+      return products;
+    }
+
+    return products.filter((product) => getCategoryLabel(product) === selectedCategory);
+  }, [products, selectedCategory]);
+
+  const displayedRows = useMemo(() => {
+    const rows: SupermarketProduct[][] = [];
+
+    for (let index = 0; index < filteredProducts.length; index += 2) {
+      rows.push(filteredProducts.slice(index, index + 2));
+    }
+
+    return rows;
+  }, [filteredProducts]);
+
+  const distanceKm = supermarket
+    ? getDistanceKm(supermarket.latitude, supermarket.longitude).toFixed(1)
+    : "--";
+
   return (
-    <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.screen} edges={["left", "right"]}>
       <StatusBar style="light" />
-      <View style={[styles.hero, { paddingTop: insets.top + 18 }]}>
-        <View style={styles.heroCircleLarge} />
-        <View style={styles.heroCircleSmall} />
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Feather color="#8E5428" name="arrow-left" size={18} />
-        </Pressable>
-        <Text style={styles.heroTitle}>Detalii supermarket</Text>
-        <Text style={styles.heroSubtitle}>Pagina este rezervata pentru implementarea colegului tau.</Text>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.card}>
-          <View style={styles.iconBadge}>
-            <Feather color="#FFFFFF" name="shopping-bag" size={24} />
-          </View>
-          <Text style={styles.title}>
-            {supermarket?.name ?? (isLoadingSupermarket ? "Se incarca..." : "Placeholder temporar")}
-          </Text>
-          {isLoadingSupermarket ? (
-            <ActivityIndicator color="#5D9B68" style={styles.loader} />
-          ) : (
-            <Text style={styles.text}>
-              Ai selectat supermarketul
-              {supermarket?.name ? ` ${supermarket.name}` : typeof id === "string" ? ` cu id ${id}` : ""}.
-              Fluxul de navigare functioneaza, dar pagina de detalii nu este implementata aici.
-            </Text>
-          )}
-          {loadError ? <Text style={styles.errorText}>{loadError}</Text> : null}
-          <Text style={styles.todo}>
-            TODO: Inlocuieste acest placeholder dupa ce pagina de detalii este gata.
-            Endpointul de baza exista deja, dar inca lipsesc integrarea UI completa si folosirea
-            endpointului de details in ecranul final.
-          </Text>
-
-          <Pressable onPress={() => router.replace("/home")} style={styles.button}>
-            <Text style={styles.buttonText}>Inapoi la lista</Text>
-          </Pressable>
+      {isLoading ? (
+        <View style={styles.centerState}>
+          <ActivityIndicator color="#4F8C62" size="large" />
         </View>
-      </View>
+      ) : loadError ? (
+        <View style={styles.centerState}>
+          <Text style={styles.errorTitle}>Nu am putut incarca magazinul</Text>
+          <Text style={styles.errorText}>{loadError}</Text>
+        </View>
+      ) : (
+        <View style={styles.contentShell}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            <View style={[styles.hero, { paddingTop: insets.top + 14 }]}>
+              <View style={styles.heroBlobLeft} />
+              <View style={styles.heroBlobRight} />
+
+              <View style={styles.storeCard}>
+                <Pressable onPress={() => router.back()} style={styles.backButton}>
+                  <Feather color="#7F4A25" name="arrow-left" size={18} />
+                </Pressable>
+
+                <View style={styles.storeInfo}>
+                  <View style={styles.storeTextBlock}>
+                    <Text style={styles.storeName}>{supermarket?.name ?? "Supermarket"}</Text>
+                    <Text style={styles.storeAddress}>{supermarket?.address ?? "Adresa indisponibila"}</Text>
+                  </View>
+
+                  <View style={styles.logoFrame}>
+                    {supermarket?.logo_url ? (
+                      <Image source={{ uri: supermarket.logo_url }} style={styles.logoImage} resizeMode="contain" />
+                    ) : (
+                      <View style={styles.logoFallback}>
+                        <Text style={styles.logoFallbackText}>{getStoreInitials(supermarket?.name ?? "SM")}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.statsRow}>
+                  <InfoChip color="#E49B4C" icon="star" label="4.5" />
+                  <InfoChip color="#5C9064" icon="clock" label={`${distanceKm} km`} />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.body}>
+              <Text style={styles.sectionLabel}>Categorii</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryRow}
+              >
+                {categories.map((category) => {
+                  const isSelected = selectedCategory === category;
+
+                  return (
+                    <Pressable
+                      key={category}
+                      onPress={() => setSelectedCategory(category)}
+                      style={[styles.categoryChip, isSelected && styles.categoryChipActive]}
+                    >
+                      <Text style={[styles.categoryChipText, isSelected && styles.categoryChipTextActive]}>
+                        {category}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+
+              <View style={styles.productsHeader}>
+                <Text style={styles.productsCount}>{`${filteredProducts.length} produse`}</Text>
+              </View>
+
+              {filteredProducts.length ? (
+                <View style={styles.grid}>
+                  {displayedRows.map((row, rowIndex) => (
+                    <View key={`row-${rowIndex}`} style={styles.gridRow}>
+                      {row.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/product/[id]",
+                              params: { id: product.id, supermarketId: product.supermarket_id },
+                            })
+                          }
+                        />
+                      ))}
+                      {row.length === 1 ? <View style={styles.gridSpacer} /> : null}
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyTitle}>Nu exista produse in aceasta categorie</Text>
+                  <Text style={styles.emptyText}>Incearca alta categorie sau revino mai tarziu.</Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+
+          <BottomNavBar
+            activeTab="map"
+            onTabPress={(tab) => {
+              if (tab === "home") {
+                router.replace("/home" as never);
+                return;
+              }
+
+              if (tab === "search") {
+                router.push("/search" as never);
+                return;
+              }
+
+              if (tab === "cart") {
+                router.push("/cart" as never);
+                return;
+              }
+
+              router.replace("/home?view=map" as never);
+            }}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
+}
+
+function InfoChip({
+  color,
+  icon,
+  label,
+}: {
+  color: string;
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+}) {
+  return (
+    <View style={[styles.infoChip, { backgroundColor: `${color}18` }]}>
+      <Feather color={color} name={icon} size={13} />
+      <Text style={[styles.infoChipText, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+function getStoreInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function getDistanceKm(latitude: number, longitude: number) {
+  const distanceInKm = haversineDistanceKm(
+    FALLBACK_REGION.latitude,
+    FALLBACK_REGION.longitude,
+    latitude,
+    longitude,
+  );
+
+  return Number(distanceInKm.toFixed(1));
+}
+
+function haversineDistanceKm(
+  fromLatitude: number,
+  fromLongitude: number,
+  toLatitude: number,
+  toLongitude: number,
+) {
+  const earthRadiusKm = 6371;
+  const latitudeDelta = toRadians(toLatitude - fromLatitude);
+  const longitudeDelta = toRadians(toLongitude - fromLongitude);
+  const a =
+    Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+    Math.cos(toRadians(fromLatitude)) *
+      Math.cos(toRadians(toLatitude)) *
+      Math.sin(longitudeDelta / 2) *
+      Math.sin(longitudeDelta / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadiusKm * c;
+}
+
+function toRadians(value: number) {
+  return (value * Math.PI) / 180;
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8F5EE",
+    backgroundColor: "#F7F2E8",
+  },
+  centerState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  errorTitle: {
+    color: "#3A3029",
+    fontSize: 22,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  errorText: {
+    marginTop: 8,
+    color: "#876D5D",
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 21,
+  },
+  contentShell: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 16,
   },
   hero: {
-    position: "relative",
     overflow: "hidden",
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    alignItems: "center",
-    backgroundColor: "#F28B31",
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    shadowColor: "#B86E2B",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 18,
+    paddingHorizontal: 14,
+    paddingBottom: 26,
+    backgroundColor: "#F3953D",
+    shadowColor: "#B96F2F",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
     elevation: 6,
   },
-  heroCircleLarge: {
+  heroBlobLeft: {
     position: "absolute",
-    top: -32,
-    right: -16,
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    backgroundColor: "rgba(230, 186, 113, 0.45)",
+    top: -12,
+    left: -48,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "rgba(246, 204, 158, 0.42)",
   },
-  heroCircleSmall: {
+  heroBlobRight: {
     position: "absolute",
-    bottom: -28,
-    left: -24,
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: "rgba(255, 214, 153, 0.28)",
+    right: -26,
+    bottom: -44,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "rgba(161, 153, 84, 0.42)",
+  },
+  storeCard: {
+    borderRadius: 30,
+    backgroundColor: "#FFF9F3",
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 16,
+    shadowColor: "#BC8146",
+    shadowOffset: { width: 0, height: 9 },
+    shadowOpacity: 0.14,
+    shadowRadius: 20,
+    elevation: 4,
   },
   backButton: {
-    alignSelf: "flex-start",
     width: 38,
     height: 38,
     borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFF4E5",
-    marginBottom: 14,
+    backgroundColor: "#FFF4E2",
+    shadowColor: "#C89562",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  heroTitle: {
-    color: "#FFFFFF",
-    fontSize: 26,
-    fontWeight: "800",
-    textAlign: "center",
+  storeInfo: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
   },
-  heroSubtitle: {
-    marginTop: 8,
-    color: "#FFE5C4",
-    fontSize: 13,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  content: {
+  storeTextBlock: {
     flex: 1,
-    padding: 20,
-    justifyContent: "center",
+    gap: 8,
   },
-  card: {
-    borderRadius: 24,
+  storeName: {
+    color: "#7C3515",
+    fontSize: 22,
+    fontWeight: "900",
+    lineHeight: 31,
+  },
+  storeAddress: {
+    color: "#8E7A6D",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  logoFrame: {
+    width: 84,
+    height: 84,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: "#F0B462",
     backgroundColor: "#FFFFFF",
-    padding: 28,
-    alignItems: "center",
-    shadowColor: "#4A413B",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 6,
-  },
-  iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#5D9B68",
-    marginBottom: 18,
+    overflow: "hidden",
   },
-  title: {
-    color: "#423B35",
+  logoImage: {
+    width: 70,
+    height: 70,
+  },
+  logoFallback: {
+    width: 62,
+    height: 62,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF0E0",
+  },
+  logoFallbackText: {
+    color: "#C5542B",
     fontSize: 24,
-    fontWeight: "800",
-    textAlign: "center",
+    fontWeight: "900",
   },
-  text: {
-    marginTop: 12,
-    color: "#72665C",
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: "center",
+  statsRow: {
+    marginTop: 16,
+    flexDirection: "row",
+    gap: 10,
+    flexWrap: "wrap",
   },
-  loader: {
-    marginTop: 14,
-  },
-  errorText: {
-    marginTop: 12,
-    color: "#B05D3B",
-    fontSize: 13,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  todo: {
-    marginTop: 14,
-    color: "#C4623B",
-    fontSize: 13,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  button: {
-    marginTop: 24,
-    minHeight: 48,
-    minWidth: 180,
-    paddingHorizontal: 24,
-    borderRadius: 14,
+  infoChip: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F68B2F",
+    gap: 6,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 15,
+  infoChipText: {
+    fontSize: 13,
     fontWeight: "800",
+  },
+  body: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingTop: 24,
+    gap: 18,
+  },
+  sectionLabel: {
+    color: "#CB652F",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  categoryRow: {
+    gap: 10,
+    paddingRight: 24,
+  },
+  categoryChip: {
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: "#E8B35C",
+    backgroundColor: "#FFFDF9",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  categoryChipActive: {
+    backgroundColor: "#E98A33",
+    borderColor: "#E98A33",
+  },
+  categoryChipText: {
+    color: "#914A24",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  categoryChipTextActive: {
+    color: "#FFF9EF",
+  },
+  productsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 10,
+  },
+  productsTitle: {
+    color: "#312925",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  productsCount: {
+    color: "#4F8C62",
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+  },
+  grid: {
+    gap: 16,
+    paddingBottom: 8,
+  },
+  gridRow: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  gridSpacer: {
+    flex: 1,
+  },
+  emptyState: {
+    borderRadius: 24,
+    backgroundColor: "#FFF9F2",
+    padding: 22,
+    borderWidth: 1,
+    borderColor: "#F0D9BC",
+  },
+  emptyTitle: {
+    color: "#3A3029",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  emptyText: {
+    marginTop: 6,
+    color: "#856E60",
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
