@@ -1,4 +1,7 @@
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 from uuid import UUID
+from fastapi import HTTPException
 from app.exceptions.exceptions import AlreadyExists, NotFound
 from app.models.product import Product
 from app.repositories.product import ProductRepository
@@ -26,3 +29,32 @@ class ProductService:
 
         product = Product(**product_data.model_dump())
         return self.product_repo.create(product)
+
+    def fetch_product_image(self, product_id: UUID) -> tuple[bytes, str]:
+        product = self.get_by_id(product_id=product_id)
+        if not product.image_url:
+            raise NotFound(entity="Product image", identifier=str(product_id))
+
+        request = Request(
+            product.image_url,
+            headers={
+                "User-Agent": "SmartBite/1.0",
+                "Accept": "image/*,*/*;q=0.8",
+            },
+        )
+
+        try:
+            with urlopen(request, timeout=10) as response:
+                content = response.read()
+                content_type = response.headers.get_content_type() or "image/jpeg"
+                return content, content_type
+        except HTTPError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Failed to fetch upstream image (status={exc.code})",
+            ) from exc
+        except URLError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail="Failed to fetch upstream image",
+            ) from exc
