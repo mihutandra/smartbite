@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SupermarketBase(BaseModel):
@@ -13,16 +13,19 @@ class SupermarketBase(BaseModel):
     website: str | None = None
     logo_url: str | None = None
     opening_hours: dict | None = None
+    rating: float | None = Field(default=None, ge=0, le=5)
+
 
 class SupermarketOut(SupermarketBase):
     id: UUID
     is_active: bool = True
-    
+    rating: float | None = None
     created_at: datetime
     updated_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
-    
+
+
 class SupermarketDetails(SupermarketBase):
     name: str
     address: str
@@ -33,3 +36,4 @@ class SupermarketDetails(SupermarketBase):
     website: str | None = None
     logo_url: str | None = None
     opening_hours: dict | None = None
+    rating: float | None = Field(default=None, ge=0, le=5)
