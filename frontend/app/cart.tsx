@@ -6,7 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BottomNavBar } from "../components/BottomNavBar";
 import { useAuth } from "../context/auth-context";
 
-export default function SearchPlaceholderScreen() {
+export default function CartPlaceholderScreen() {
   const insets = useSafeAreaInsets();
   const { status, user } = useAuth();
 
@@ -27,27 +27,27 @@ export default function SearchPlaceholderScreen() {
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Feather color="#8E5428" name="arrow-left" size={18} />
         </Pressable>
-        <Text style={styles.heroTitle}>Cauta produse</Text>
-        <Text style={styles.heroSubtitle}>Ecranul de cautare va fi implementat separat.</Text>
+        <Text style={styles.heroTitle}>Cos</Text>
+        <Text style={styles.heroSubtitle}>Ecranul complet pentru cos va fi implementat separat.</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.card}>
           <View style={styles.iconBadge}>
-            <Feather color="#FFFFFF" name="search" size={24} />
+            <Feather color="#FFFFFF" name="shopping-cart" size={24} />
           </View>
           <Text style={styles.title}>Placeholder temporar</Text>
           <Text style={styles.text}>
-            Navigarea catre `Cauta` functioneaza, dar fluxul de cautare nu este implementat inca.
+            Navigarea catre `Cos` functioneaza. Aici poti continua cu fluxul complet de rezervare si checkout.
           </Text>
           <Text style={styles.todo}>
-            TODO: Adauga cautarea de produse pe acest ecran cand partea respectiva este gata.
+            TODO: Adauga lista produselor rezervate, totalul si actiunile finale pentru comanda.
           </Text>
         </View>
       </View>
 
       <BottomNavBar
-        activeTab="search"
+        activeTab="cart"
         onTabPress={(tab) => {
           if (tab === "home") {
             router.replace("/home" as never);
@@ -59,8 +59,8 @@ export default function SearchPlaceholderScreen() {
             return;
           }
 
-          if (tab === "cart") {
-            router.push("/cart" as never);
+          if (tab === "search") {
+            router.push("/search" as never);
           }
         }}
       />
