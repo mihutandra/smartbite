@@ -14,17 +14,11 @@ from app.models.supermarket import Supermarket
 def seed_data():
     """Populate supermarkets with Romanian data."""
     session = SessionLocal()
-    
+
     try:
-        # Check if data already exists
-        existing_supermarkets = session.query(Supermarket).count()
-        if existing_supermarkets > 0:
-            print(f"✓ Database already contains {existing_supermarkets} supermarket(s). Skipping seed.")
-            return
-        
         # Romanian supermarkets with realistic locations
-        supermarkets = [
-            Supermarket(
+        supermarkets_data = [
+            dict(
                 name="Carrefour Express",
                 address="Calea Victoriei 45, București, 010061",
                 latitude=44.4268,
@@ -32,6 +26,8 @@ def seed_data():
                 phone_number="+40213100000",
                 email="contact@carrefour.ro",
                 website="https://carrefour.ro",
+                rating=4.2,
+                logo_url="https://images.seeklogo.com/logo-png/31/2/carrefour-logo-png_seeklogo-318190.png",
                 opening_hours={
                     "Monday": "07:00-21:00",
                     "Tuesday": "07:00-21:00",
@@ -39,11 +35,11 @@ def seed_data():
                     "Thursday": "07:00-21:00",
                     "Friday": "07:00-22:00",
                     "Saturday": "07:00-22:00",
-                    "Sunday": "08:00-20:00"
+                    "Sunday": "08:00-20:00",
                 },
-                is_active=True
+                is_active=True,
             ),
-            Supermarket(
+            dict(
                 name="Lidl România",
                 address="Strada Mihai Vodă 1, București, 030035",
                 latitude=44.4155,
@@ -51,6 +47,8 @@ def seed_data():
                 phone_number="+40213001000",
                 email="info@lidl.ro",
                 website="https://lidl.ro",
+                rating=4.5,
+                logo_url="https://e7.pngegg.com/pngimages/727/982/png-clipart-lidl-logo-ireland-logo-lidl-symbols-lidl-logo-miscellaneous-cdr-thumbnail.png",
                 opening_hours={
                     "Monday": "06:00-23:00",
                     "Tuesday": "06:00-23:00",
@@ -58,11 +56,11 @@ def seed_data():
                     "Thursday": "06:00-23:00",
                     "Friday": "06:00-23:00",
                     "Saturday": "06:00-23:00",
-                    "Sunday": "07:00-22:00"
+                    "Sunday": "07:00-22:00",
                 },
-                is_active=True
+                is_active=True,
             ),
-            Supermarket(
+            dict(
                 name="Kaufland Cluj",
                 address="Strada Avram Iancu 100, Cluj-Napoca, 400159",
                 latitude=46.7712,
@@ -70,6 +68,8 @@ def seed_data():
                 phone_number="+40264300000",
                 email="contact@kaufland.ro",
                 website="https://kaufland.ro",
+                rating=4.3,
+                logo_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Kaufland_201x_logo.svg/3840px-Kaufland_201x_logo.svg.png",
                 opening_hours={
                     "Monday": "07:00-21:00",
                     "Tuesday": "07:00-21:00",
@@ -77,11 +77,11 @@ def seed_data():
                     "Thursday": "07:00-21:00",
                     "Friday": "07:00-22:00",
                     "Saturday": "07:00-22:00",
-                    "Sunday": "08:00-20:00"
+                    "Sunday": "08:00-20:00",
                 },
-                is_active=True
+                is_active=True,
             ),
-            Supermarket(
+            dict(
                 name="Penny Market Timișoara",
                 address="Bulevardul Revoluției 5, Timișoara, 300001",
                 latitude=45.7489,
@@ -89,6 +89,8 @@ def seed_data():
                 phone_number="+40256400000",
                 email="contact@penny.ro",
                 website="https://penny.ro",
+                rating=3.8,
+                logo_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Penny-Logo.svg/3840px-Penny-Logo.svg.png",
                 opening_hours={
                     "Monday": "06:00-22:00",
                     "Tuesday": "06:00-22:00",
@@ -96,11 +98,11 @@ def seed_data():
                     "Thursday": "06:00-22:00",
                     "Friday": "06:00-23:00",
                     "Saturday": "06:00-23:00",
-                    "Sunday": "07:00-21:00"
+                    "Sunday": "07:00-21:00",
                 },
-                is_active=True
+                is_active=True,
             ),
-            Supermarket(
+            dict(
                 name="Mega Image Constanța",
                 address="Bulevardul Tomis 1, Constanța, 900001",
                 latitude=44.1871,
@@ -108,6 +110,8 @@ def seed_data():
                 phone_number="+40241800000",
                 email="contact@megaimage.ro",
                 website="https://megaimage.ro",
+                rating=4.0,
+                logo_url="https://upload.wikimedia.org/wikipedia/ro/thumb/1/1d/Logo_Mega_Image.svg/1280px-Logo_Mega_Image.svg.png",
                 opening_hours={
                     "Monday": "07:00-21:00",
                     "Tuesday": "07:00-21:00",
@@ -115,22 +119,39 @@ def seed_data():
                     "Thursday": "07:00-21:00",
                     "Friday": "07:00-22:00",
                     "Saturday": "07:00-22:00",
-                    "Sunday": "08:00-20:00"
+                    "Sunday": "08:00-20:00",
                 },
-                is_active=True
+                is_active=True,
             ),
         ]
-        
-        # Add all supermarkets
-        for supermarket in supermarkets:
-            session.add(supermarket)
-        
-        session.flush()  # Ensure supermarkets have IDs
+
+        names = [item["name"] for item in supermarkets_data]
+        existing = (
+            session.query(Supermarket)
+            .filter(Supermarket.name.in_(names))
+            .all()
+        )
+        existing_by_name = {supermarket.name: supermarket for supermarket in existing}
+
+        updated_count = 0
+        added_count = 0
+
+        for supermarket_data in supermarkets_data:
+            existing_supermarket = existing_by_name.get(supermarket_data["name"])
+            if existing_supermarket:
+                existing_supermarket.logo_url = supermarket_data["logo_url"]
+                existing_supermarket.rating = supermarket_data["rating"]
+                updated_count += 1
+            else:
+                session.add(Supermarket(**supermarket_data))
+                added_count += 1
+
         session.commit()
-        
-        print("✓ Data seeded successfully!")
-        print(f"  - {len(supermarkets)} supermarkets added")
-        
+
+        print("✓ Supermarket seed/update finished successfully!")
+        print(f"  - {updated_count} supermarket logo(s) updated")
+        print(f"  - {added_count} supermarket(s) added")
+
     except Exception as e:
         session.rollback()
         print(f"✗ Error seeding data: {e}")

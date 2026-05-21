@@ -15,6 +15,13 @@ const SUPERMARKET_MAX_PAGES = 10;
 const SUPERMARKET_PRODUCTS_PAGE_SIZE = 100;
 const SUPERMARKET_PRODUCTS_MAX_PAGES = 10;
 
+function withProductProxyImageUrl(product: SupermarketProduct): SupermarketProduct {
+  return {
+    ...product,
+    product_proxy_image_url: `${API_BASE_URL}/api/products/${product.product_id}/image`,
+  };
+}
+
 function extractErrorMessage(data: unknown, fallbackMessage: string) {
   if (typeof data === "string" && data.trim()) {
     return data;
@@ -159,7 +166,7 @@ export async function fetchSupermarketProducts(
       throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
-    return data;
+    return data.map(withProductProxyImageUrl);
   } catch (error) {
     if (error instanceof SupermarketServiceError) {
       throw error;
@@ -237,7 +244,7 @@ export async function fetchSupermarketProduct(
       throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
-    return data;
+    return withProductProxyImageUrl(data);
   } catch (error) {
     if (error instanceof SupermarketServiceError) {
       throw error;
@@ -345,7 +352,7 @@ export async function searchSupermarketProducts(
       throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
-    return data;
+    return data.map(withProductProxyImageUrl);
   } catch (error) {
     if (error instanceof SupermarketServiceError) {
       throw error;
