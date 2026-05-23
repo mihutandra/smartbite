@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, Query
 from app.factories.supermarket_product import get_supermarket_product_service
 from app.schemas.supermarket_product import SupermarketProductOut
 from app.services.supermarket_product import SupermarketProductService
-from app.schemas.supermarket_product import SupermarketProductCountOut, SupermarketCategoryCountOut
 
 logger = logging.getLogger(__name__)
 
