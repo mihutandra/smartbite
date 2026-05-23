@@ -5,7 +5,6 @@ from app.models.supermarket_products import SupermarketProduct
 from app.repositories.supermarket_product import SupermarketProductRepository
 
 from app.repositories.supermarket import SupermarketRepository
-from app.schemas.supermarket_product import SupermarketProductCountOut, SupermarketCategoryCountOut, CategoryCountOut
 
 
 logger = logging.getLogger(__name__)
