@@ -5,8 +5,6 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.product import Product
 from app.models.supermarket_products import SupermarketProduct
 from sqlalchemy import func
-from app.models.category import Category
-from app.models.supermarket import Supermarket
 
 
 logger = logging.getLogger(__name__)
