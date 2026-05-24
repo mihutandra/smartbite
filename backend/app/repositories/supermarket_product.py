@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 from app.models.product import Product
 from app.models.supermarket_products import SupermarketProduct
+from sqlalchemy import func
 
 
 logger = logging.getLogger(__name__)
@@ -98,3 +99,34 @@ class SupermarketProductRepository:
             len(result),
         )
         return result
+
+
+    def get_counts_by_supermarket(self) -> list[tuple]:
+        logger.debug("Fetching product counts grouped by supermarket")
+
+        stmt = (
+            select(
+                SupermarketProduct.supermarket_id,
+                Supermarket.name,
+                func.count().label("product_count"),
+            )
+            .join(Supermarket, SupermarketProduct.supermarket_id == Supermarket.id)
+            .where(SupermarketProduct.is_available.is_(True))
+            .group_by(SupermarketProduct.supermarket_id, Supermarket.name)
+            .order_by(Supermarket.name)
+        )
+        rows = self.session.execute(stmt).all()
+        logger.info("Retrieved product counts for %s supermarket(s)", len(rows))
+        return rows
+
+    def get_count_by_supermarket_and_category(self, supermarket_id: UUID, category_id: UUID) -> int:
+
+        stmt = (
+            select(func.count())
+            .select_from(SupermarketProduct)
+            .join(Product, SupermarketProduct.product_id == Product.id)
+            .where(SupermarketProduct.supermarket_id == supermarket_id)
+            .where(Product.category_id == category_id)
+            .where(SupermarketProduct.is_available.is_(True))
+        )
+        return self.session.execute(stmt).scalar() or 0
