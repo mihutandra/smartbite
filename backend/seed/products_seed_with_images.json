@@ -1,0 +1,1418 @@
+[
+  {
+    "name": "Ulei de floarea soarelui",
+    "description": "Ulei rafinat pentru gătit și prăjit.",
+    "category": "Alimente de bază",
+    "brand": "Bunica",
+    "image_url": "/products/ulei-de-floarea-soarelui-bunica.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Zahăr alb",
+    "description": "Zahăr cristal alb pentru deserturi și băuturi.",
+    "category": "Alimente de bază",
+    "brand": "Mărgăritar",
+    "image_url": "/products/zahar-alb-margaritar.png",
+    "is_active": true
+  },
+  {
+    "name": "Făină de grâu",
+    "description": "Făină albă potrivită pentru pâine și prăjituri.",
+    "category": "Alimente de bază",
+    "brand": "Dobrogea",
+    "image_url": "/products/faina-de-grau-dobrogea.png",
+    "is_active": true
+  },
+  {
+    "name": "Orez",
+    "description": "Orez cu bob lung pentru garnituri și pilaf.",
+    "category": "Alimente de bază",
+    "brand": "Scotti",
+    "image_url": "/products/orez-scotti.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Spaghete Barilla",
+    "description": "Paste italiene din grâu dur.",
+    "category": "Alimente de bază",
+    "brand": "Barilla",
+    "image_url": "/products/spaghete-barilla-barilla.webp",
+    "is_active": true
+  },
+  {
+    "name": "Conserve de fasole",
+    "description": "Fasole boabe gata preparată.",
+    "category": "Alimente de bază",
+    "brand": "Bonduelle",
+    "image_url": "/products/conserve-de-fasole-bonduelle.webp",
+    "is_active": true
+  },
+  {
+    "name": "Mălai",
+    "description": "Mălai pentru mămăligă și preparate tradiționale.",
+    "category": "Alimente de bază",
+    "brand": "Raftul Bunicii",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Sare",
+    "description": "Sare iodată alimentară.",
+    "category": "Alimente de bază",
+    "brand": "Salrom",
+    "image_url": "/products/sare-salrom.webp",
+    "is_active": true
+  },
+  {
+    "name": "Piper",
+    "description": "Piper negru măcinat pentru condimentare.",
+    "category": "Alimente de bază",
+    "brand": "Cosmin",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Bulion",
+    "description": "Pastă concentrată de roșii.",
+    "category": "Alimente de bază",
+    "brand": "Orkla Ardealul",
+    "image_url": "/products/bulion-orkla-ardealul.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pesmet",
+    "description": "Pesmet fin pentru pane și chiftele.",
+    "category": "Alimente de bază",
+    "brand": "Băneasa",
+    "image_url": "/products/pesmet-baneasa.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Oțet de mere",
+    "description": "Oțet natural obținut din mere.",
+    "category": "Alimente de bază",
+    "brand": "Râureni",
+    "image_url": "/products/otet-de-mere-raureni.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Muștar",
+    "description": "Muștar clasic cu gust ușor picant.",
+    "category": "Alimente de bază",
+    "brand": "Olympia",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Ketchup",
+    "description": "Sos de roșii pentru diverse preparate.",
+    "category": "Alimente de bază",
+    "brand": "Heinz",
+    "image_url": "/products/ketchup-heinz.webp",
+    "is_active": true
+  },
+  {
+    "name": "Mazăre la conservă",
+    "description": "Mazăre dulce gata de consum.",
+    "category": "Alimente de bază",
+    "brand": "Bonduelle",
+    "image_url": "/products/mazare-la-conserva-bonduelle.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Năut la conservă",
+    "description": "Năut fiert pentru salate și hummus.",
+    "category": "Alimente de bază",
+    "brand": "Bonduelle",
+    "image_url": "/products/naut-la-conserva-bonduelle.webp",
+    "is_active": true
+  },
+  {
+    "name": "Linte",
+    "description": "Linte uscată bogată în proteine.",
+    "category": "Alimente de bază",
+    "brand": "SanoVita",
+    "image_url": "/products/linte-sanovita.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Griș",
+    "description": "Griș din grâu pentru deserturi.",
+    "category": "Alimente de bază",
+    "brand": "Dobrogea",
+    "image_url": "/products/gris-dobrogea.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Fulgi de ovăz",
+    "description": "Fulgi pentru mic dejun sănătos.",
+    "category": "Alimente de bază",
+    "brand": "Nestlé Fitness",
+    "image_url": "/products/fulgi-de-ovaz-nestl-fitness.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Praf de copt",
+    "description": "Agent de creștere pentru aluaturi.",
+    "category": "Alimente de bază",
+    "brand": "Dr. Oetker",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Mere",
+    "description": "Mere roșii dulci pentru consum zilnic.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/mere-carrefour-fresh.webp",
+    "is_active": true
+  },
+  {
+    "name": "Morcovi",
+    "description": "Morcovi proaspeți bogați în vitamine.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/morcovi-carrefour-fresh.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Struguri",
+    "description": "Struguri albi fără sâmburi.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/struguri-carrefour-fresh.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Banane",
+    "description": "Banane dulci importate.",
+    "category": "Fructe și legume",
+    "brand": "Chiquita",
+    "image_url": "/products/banane-chiquita.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Roșii",
+    "description": "Roșii proaspete pentru salate.",
+    "category": "Fructe și legume",
+    "brand": "Hortex",
+    "image_url": "/products/rosii-hortex.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pătrunjel",
+    "description": "Verdeață aromată proaspătă.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/patrunjel-carrefour-fresh.webp",
+    "is_active": true
+  },
+  {
+    "name": "Castraveți",
+    "description": "Castraveți verzi crocanți.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/castraveti-carrefour-fresh.webp",
+    "is_active": true
+  },
+  {
+    "name": "Ceapă",
+    "description": "Ceapă galbenă pentru gătit.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/ceapa-carrefour-fresh.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cartofi",
+    "description": "Cartofi albi pentru diverse preparate.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/cartofi-carrefour-fresh.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ardei gras",
+    "description": "Ardei roșu dulce.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/ardei-gras-carrefour-fresh.png",
+    "is_active": true
+  },
+  {
+    "name": "Usturoi",
+    "description": "Usturoi românesc aromat.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/usturoi-carrefour-fresh.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Lămâi",
+    "description": "Citrice pentru băuturi și deserturi.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/lamai-carrefour-fresh.webp",
+    "is_active": true
+  },
+  {
+    "name": "Portocale",
+    "description": "Portocale dulci bogate în vitamina C.",
+    "category": "Fructe și legume",
+    "brand": "Sunkist",
+    "image_url": "/products/portocale-sunkist.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pere",
+    "description": "Pere suculente.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/pere-carrefour-fresh.webp",
+    "is_active": true
+  },
+  {
+    "name": "Kiwi",
+    "description": "Kiwi verde bogat în vitamine.",
+    "category": "Fructe și legume",
+    "brand": "Zespri",
+    "image_url": "/products/kiwi-zespri.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Căpșuni",
+    "description": "Căpșuni proaspete dulci.",
+    "category": "Fructe și legume",
+    "brand": "Driscoll's",
+    "image_url": "/products/capsuni-driscoll-s.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Broccoli",
+    "description": "Broccoli pentru gătit sau salate.",
+    "category": "Fructe și legume",
+    "brand": "Bonduelle Fresh",
+    "image_url": "/products/broccoli-bonduelle-fresh.png",
+    "is_active": true
+  },
+  {
+    "name": "Salată verde",
+    "description": "Mix proaspăt de salată.",
+    "category": "Fructe și legume",
+    "brand": "Eisberg",
+    "image_url": "/products/salata-verde-eisberg.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Vinete",
+    "description": "Vinete pentru preparate tradiționale.",
+    "category": "Fructe și legume",
+    "brand": "Carrefour Fresh",
+    "image_url": "/products/vinete-carrefour-fresh.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ciuperci",
+    "description": "Ciuperci champignon proaspete.",
+    "category": "Fructe și legume",
+    "brand": "Huelva",
+    "image_url": "/products/ciuperci-huelva.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Salam",
+    "description": "Salam clasic pentru sandwich-uri.",
+    "category": "Mezeluri",
+    "brand": "Cristim",
+    "image_url": "/products/salam-cristim.png",
+    "is_active": true
+  },
+  {
+    "name": "Șuncă",
+    "description": "Șuncă afumată feliată.",
+    "category": "Mezeluri",
+    "brand": "Praga Cristim",
+    "image_url": "/products/sunca-praga-cristim.png",
+    "is_active": true
+  },
+  {
+    "name": "Crenvuști",
+    "description": "Crenvuști din carne de pui.",
+    "category": "Mezeluri",
+    "brand": "Caroli",
+    "image_url": "/products/crenvusti-caroli.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Parizer",
+    "description": "Parizer tradițional.",
+    "category": "Mezeluri",
+    "brand": "Aldis",
+    "image_url": "/products/parizer-aldis.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Salam de Sibiu",
+    "description": "Salam crud-uscat premium.",
+    "category": "Mezeluri",
+    "brand": "Agricola",
+    "image_url": "/products/salam-de-sibiu-agricola.webp",
+    "is_active": true
+  },
+  {
+    "name": "Mușchi file",
+    "description": "Specialitate afumată din porc.",
+    "category": "Mezeluri",
+    "brand": "Caroli",
+    "image_url": "/products/muschi-file-caroli.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Kaizer",
+    "description": "Kaizer afumat și condimentat.",
+    "category": "Mezeluri",
+    "brand": "Cristim",
+    "image_url": "/products/kaizer-cristim.png",
+    "is_active": true
+  },
+  {
+    "name": "Salam uscat",
+    "description": "Salam maturat.",
+    "category": "Mezeluri",
+    "brand": "Campofrio",
+    "image_url": "/products/salam-uscat-campofrio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Salam de pui",
+    "description": "Salam cu conținut redus de grăsime.",
+    "category": "Mezeluri",
+    "brand": "Caroli",
+    "image_url": "/products/salam-de-pui-caroli.webp",
+    "is_active": true
+  },
+  {
+    "name": "Mortadella",
+    "description": "Specialitate italiană cu carne de porc.",
+    "category": "Mezeluri",
+    "brand": "Campofrio",
+    "image_url": "/products/mortadella-campofrio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pastramă",
+    "description": "Pastramă afumată și condimentată.",
+    "category": "Mezeluri",
+    "brand": "Aldis",
+    "image_url": "/products/pastrama-aldis.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Șuncă presată",
+    "description": "Șuncă feliată pentru sandwich-uri.",
+    "category": "Mezeluri",
+    "brand": "Fox",
+    "image_url": "/products/sunca-presata-fox.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Salam italian",
+    "description": "Salam inspirat din rețete italiene.",
+    "category": "Mezeluri",
+    "brand": "Campofrio",
+    "image_url": "/products/salam-italian-campofrio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Bacon afumat",
+    "description": "Bacon feliat afumat.",
+    "category": "Mezeluri",
+    "brand": "Campofrio",
+    "image_url": "/products/bacon-afumat-campofrio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Șuncă Praga",
+    "description": "Șuncă premium afumată.",
+    "category": "Mezeluri",
+    "brand": "Cristim",
+    "image_url": "/products/sunca-praga-cristim.png",
+    "is_active": true
+  },
+  {
+    "name": "Leber",
+    "description": "Pastă tartinabilă din ficat.",
+    "category": "Mezeluri",
+    "brand": "Aldis",
+    "image_url": "/products/leber-aldis.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cârnați uscați",
+    "description": "Cârnați afumați tradiționali.",
+    "category": "Mezeluri",
+    "brand": "Meda",
+    "image_url": "/products/carnati-uscati-meda.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Mușchi țigănesc",
+    "description": "Specialitate afumată de porc.",
+    "category": "Mezeluri",
+    "brand": "Cristim",
+    "image_url": "/products/muschi-tiganesc-cristim.png",
+    "is_active": true
+  },
+  {
+    "name": "Salam picant",
+    "description": "Salam cu gust intens.",
+    "category": "Mezeluri",
+    "brand": "Campofrio",
+    "image_url": "/products/salam-picant-campofrio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cabanos",
+    "description": "Cârnați subțiri afumați.",
+    "category": "Mezeluri",
+    "brand": "Caroli",
+    "image_url": "/products/cabanos-caroli.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Piept de pui",
+    "description": "Carne proaspătă fără os.",
+    "category": "Măcelărie și pește",
+    "brand": "Agricola",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Mici",
+    "description": "Mici tradiționali românești.",
+    "category": "Măcelărie și pește",
+    "brand": "Elit",
+    "image_url": "/products/mici-elit.png",
+    "is_active": true
+  },
+  {
+    "name": "Ceafă de porc",
+    "description": "Carne pentru grătar.",
+    "category": "Măcelărie și pește",
+    "brand": "Moldova în Bucate",
+    "image_url": "/products/ceafa-de-porc-moldova-in-bucate.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pulpe de pui",
+    "description": "Pulpe proaspete refrigerate.",
+    "category": "Măcelărie și pește",
+    "brand": "Coco Rico",
+    "image_url": "/products/pulpe-de-pui-coco-rico.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Aripioare de pui",
+    "description": "Aripioare pentru cuptor sau grătar.",
+    "category": "Măcelărie și pește",
+    "brand": "Agricola",
+    "image_url": "/products/aripioare-de-pui-agricola.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Carne tocată porc",
+    "description": "Carne pentru chiftele.",
+    "category": "Măcelărie și pește",
+    "brand": "LaProvincia",
+    "image_url": "/products/carne-tocata-porc-laprovincia.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Carne tocată vită",
+    "description": "Carne premium pentru burgeri.",
+    "category": "Măcelărie și pește",
+    "brand": "Angst",
+    "image_url": "/products/carne-tocata-vita-angst.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cotlet de porc",
+    "description": "Cotlet fără os.",
+    "category": "Măcelărie și pește",
+    "brand": "Moldova în Bucate",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Mușchi de vită",
+    "description": "Carne premium.",
+    "category": "Măcelărie și pește",
+    "brand": "Angus Farm",
+    "image_url": "/products/muschi-de-vita-angus-farm.png",
+    "is_active": true
+  },
+  {
+    "name": "Cârnați proaspeți",
+    "description": "Cârnați tradiționali.",
+    "category": "Măcelărie și pește",
+    "brand": "Elit",
+    "image_url": "/products/carnati-proaspeti-elit.png",
+    "is_active": true
+  },
+  {
+    "name": "Somon",
+    "description": "File de somon proaspăt.",
+    "category": "Măcelărie și pește",
+    "brand": "Fjord Trout",
+    "image_url": "/products/somon-fjord-trout.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Macrou",
+    "description": "Pește bogat în Omega-3.",
+    "category": "Măcelărie și pește",
+    "brand": "Ocean Fish",
+    "image_url": "/products/macrou-ocean-fish.png",
+    "is_active": true
+  },
+  {
+    "name": "Păstrăv",
+    "description": "Păstrăv proaspăt românesc.",
+    "category": "Măcelărie și pește",
+    "brand": "Doripesco",
+    "image_url": "/products/pastrav-doripesco.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ton",
+    "description": "Ton în conservă premium.",
+    "category": "Măcelărie și pește",
+    "brand": "Rio Mare",
+    "image_url": "/products/ton-rio-mare.jpg",
+    "is_active": true
+  },
+  {
+    "name": "File de șalău",
+    "description": "File fără oase.",
+    "category": "Măcelărie și pește",
+    "brand": "Ocean Fish",
+    "image_url": "/products/file-de-salau-ocean-fish.png",
+    "is_active": true
+  },
+  {
+    "name": "Creveți",
+    "description": "Creveți prefierți.",
+    "category": "Măcelărie și pește",
+    "brand": "Seafood Market",
+    "image_url": "/products/creveti-seafood-market.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ficat de pui",
+    "description": "Ficat refrigerat.",
+    "category": "Măcelărie și pește",
+    "brand": "Agricola",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Mușchiuleț de porc",
+    "description": "Carne fragedă.",
+    "category": "Măcelărie și pește",
+    "brand": "Moldova în Bucate",
+    "image_url": "/products/muschiulet-de-porc-moldova-in-bucate.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Fructe de mare mix",
+    "description": "Mix congelat.",
+    "category": "Măcelărie și pește",
+    "brand": "Ocean Fish",
+    "image_url": "/products/fructe-de-mare-mix-ocean-fish.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pâine albă",
+    "description": "Pâine albă feliată pentru consum zilnic.",
+    "category": "Brutărie și panificație",
+    "brand": "Vel Pitar",
+    "image_url": "/products/paine-alba-vel-pitar.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Baghetă",
+    "description": "Baghetă crocantă cu coajă aurie.",
+    "category": "Brutărie și panificație",
+    "brand": "Băneasa",
+    "image_url": "/products/bagheta-baneasa.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Chiflă",
+    "description": "Chiflă moale pentru burgeri și sandwich-uri.",
+    "category": "Brutărie și panificație",
+    "brand": "Vel Pitar",
+    "image_url": "/products/chifla-vel-pitar.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Croissant",
+    "description": "Croissant pufos cu umplutură fină.",
+    "category": "Brutărie și panificație",
+    "brand": "7Days",
+    "image_url": "/products/croissant-7days.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Lipie",
+    "description": "Lipie moale pentru wrap-uri și kebab.",
+    "category": "Brutărie și panificație",
+    "brand": "Lidl Chef Select",
+    "image_url": "/products/lipie-lidl-chef-select.webp",
+    "is_active": true
+  },
+  {
+    "name": "Pâine integrală",
+    "description": "Pâine bogată în fibre.",
+    "category": "Brutărie și panificație",
+    "brand": "Vel Pitar",
+    "image_url": "/products/paine-integrala-vel-pitar.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pâine cu semințe",
+    "description": "Pâine cu mix de semințe nutritive.",
+    "category": "Brutărie și panificație",
+    "brand": "Boromir",
+    "image_url": "/products/paine-cu-seminte-boromir.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Covrig",
+    "description": "Covrig proaspăt cu sare și susan.",
+    "category": "Brutărie și panificație",
+    "brand": "Luca",
+    "image_url": "/products/covrig-luca.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Baton",
+    "description": "Pâine lungă pentru servire zilnică.",
+    "category": "Brutărie și panificație",
+    "brand": "Vel Pitar",
+    "image_url": "/products/baton-vel-pitar.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Focaccia",
+    "description": "Pâine italiană cu ierburi aromatice.",
+    "category": "Brutărie și panificație",
+    "brand": "Lidl Chef Select",
+    "image_url": "/products/focaccia-lidl-chef-select.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cozonac",
+    "description": "Cozonac tradițional cu cacao și nucă.",
+    "category": "Brutărie și panificație",
+    "brand": "Boromir",
+    "image_url": "/products/cozonac-boromir.png",
+    "is_active": true
+  },
+  {
+    "name": "Franzelă",
+    "description": "Franzelă albă clasică.",
+    "category": "Brutărie și panificație",
+    "brand": "Vel Pitar",
+    "image_url": "/products/franzela-vel-pitar.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pâine toast",
+    "description": "Pâine feliată pentru sandwich-uri.",
+    "category": "Brutărie și panificație",
+    "brand": "Toasty",
+    "image_url": "/products/paine-toast-toasty.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Chec",
+    "description": "Desert pufos cu aromă de vanilie.",
+    "category": "Brutărie și panificație",
+    "brand": "Boromir",
+    "image_url": "/products/chec-boromir.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Corn cu ciocolată",
+    "description": "Corn pufos cu cremă de cacao.",
+    "category": "Brutărie și panificație",
+    "brand": "7Days",
+    "image_url": "/products/corn-cu-ciocolata-7days.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Foietaj cu brânză",
+    "description": "Foietaj fraged cu umplutură de brânză.",
+    "category": "Brutărie și panificație",
+    "brand": "Fornetti",
+    "image_url": "/products/foietaj-cu-branza-fornetti.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ciabatta",
+    "description": "Pâine italiană cu interior aerat.",
+    "category": "Brutărie și panificație",
+    "brand": "Băneasa",
+    "image_url": "/products/ciabatta-baneasa.webp",
+    "is_active": true
+  },
+  {
+    "name": "Mini baghete",
+    "description": "Baghete mici pentru gustări.",
+    "category": "Brutărie și panificație",
+    "brand": "Vel Pitar",
+    "image_url": "/products/mini-baghete-vel-pitar.png",
+    "is_active": true
+  },
+  {
+    "name": "Biscuiți digestivi",
+    "description": "Biscuiți integrali crocanți.",
+    "category": "Brutărie și panificație",
+    "brand": "McVitie's",
+    "image_url": "/products/biscuiti-digestivi-mcvitie-s.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Grisine",
+    "description": "Bețișoare crocante coapte.",
+    "category": "Brutărie și panificație",
+    "brand": "Maretti",
+    "image_url": "/products/grisine-maretti.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Lapte 3.5%",
+    "description": "Lapte proaspăt integral pasteurizat.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Zuzu",
+    "image_url": "/products/lapte-3-5-zuzu.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Iaurt",
+    "description": "Iaurt cremos pentru consum zilnic.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Danone",
+    "image_url": "/products/iaurt-danone.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Unt 80%",
+    "description": "Unt cu conținut ridicat de grăsime.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Napolact",
+    "image_url": "/products/unt-80-napolact.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Smântână 10%",
+    "description": "Smântână ușoară pentru gătit.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Olympus",
+    "image_url": "/products/smantana-10-olympus.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cașcaval",
+    "description": "Cașcaval clasic pentru sandwich-uri.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Hochland",
+    "image_url": "/products/cascaval-hochland.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Telemea",
+    "description": "Brânză telemea maturată.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Delaco",
+    "image_url": "/products/telemea-delaco.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Brânză de vaci",
+    "description": "Brânză proaspătă bogată în proteine.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Napolact",
+    "image_url": "/products/branza-de-vaci-napolact.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Chefir",
+    "description": "Băutură fermentată din lapte.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Olympus",
+    "image_url": "/products/chefir-olympus.png",
+    "is_active": true
+  },
+  {
+    "name": "Sana",
+    "description": "Produs lactat tradițional fermentat.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Napolact",
+    "image_url": "/products/sana-napolact.png",
+    "is_active": true
+  },
+  {
+    "name": "Lapte bătut",
+    "description": "Lapte fermentat răcoritor.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Zuzu",
+    "image_url": "/products/lapte-batut-zuzu.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Mozzarella",
+    "description": "Brânză italiană pentru pizza și salate.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Delaco",
+    "image_url": "/products/mozzarella-delaco.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Parmezan",
+    "description": "Brânză maturată italiană.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Parmareggio",
+    "image_url": "/products/parmezan-parmareggio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Brânză topită",
+    "description": "Brânză cremoasă pentru tartine.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Hochland",
+    "image_url": "/products/branza-topita-hochland.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ricotta",
+    "description": "Brânză moale cu gust delicat.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Delaco",
+    "image_url": "/products/ricotta-delaco.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Mascarpone",
+    "description": "Cremă italiană pentru deserturi.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Galbani",
+    "image_url": "/products/mascarpone-galbani.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Unt sărat",
+    "description": "Unt fin cu gust sărat.",
+    "category": "Lactate și brânzeturi",
+    "brand": "President",
+    "image_url": "/products/unt-sarat-president.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Iaurt grecesc",
+    "description": "Iaurt dens bogat în proteine.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Olympus",
+    "image_url": "/products/iaurt-grecesc-olympus.webp",
+    "is_active": true
+  },
+  {
+    "name": "Frișcă lichidă",
+    "description": "Frișcă pentru gătit și deserturi.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Meggle",
+    "image_url": "/products/frisca-lichida-meggle.png",
+    "is_active": true
+  },
+  {
+    "name": "Brânză feta",
+    "description": "Brânză grecească tradițională.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Dodoni",
+    "image_url": "/products/branza-feta-dodoni.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cottage cheese",
+    "description": "Brânză proaspătă cu granule.",
+    "category": "Lactate și brânzeturi",
+    "brand": "Hochland",
+    "image_url": "/products/cottage-cheese-hochland.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Apă",
+    "description": "Apă minerală naturală.",
+    "category": "Băuturi",
+    "brand": "Borsec",
+    "image_url": "/products/apa-borsec.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Suc de portocale",
+    "description": "Băutură răcoritoare cu fructe.",
+    "category": "Băuturi",
+    "brand": "Prigat",
+    "image_url": "/products/suc-de-portocale-prigat.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Lipton",
+    "description": "Ceai rece cu aromă de lămâie.",
+    "category": "Băuturi",
+    "brand": "Lipton",
+    "image_url": "/products/lipton-lipton.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Bere",
+    "description": "Bere blondă premium.",
+    "category": "Băuturi",
+    "brand": "Heineken",
+    "image_url": "/products/bere-heineken.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Vin roșu",
+    "description": "Vin sec cu arome fructate.",
+    "category": "Băuturi",
+    "brand": "Jidvei",
+    "image_url": "/products/vin-rosu-jidvei.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Vin alb",
+    "description": "Vin alb aromat.",
+    "category": "Băuturi",
+    "brand": "Cotnari",
+    "image_url": "/products/vin-alb-cotnari.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cola",
+    "description": "Băutură carbogazoasă clasică.",
+    "category": "Băuturi",
+    "brand": "Coca-Cola",
+    "image_url": "/products/cola-coca-cola.png",
+    "is_active": true
+  },
+  {
+    "name": "Limonadă",
+    "description": "Limonadă răcoritoare.",
+    "category": "Băuturi",
+    "brand": "Granini",
+    "image_url": "/products/limonada-granini.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Apă minerală",
+    "description": "Apă carbogazoasă naturală.",
+    "category": "Băuturi",
+    "brand": "Borsec",
+    "image_url": "/products/apa-minerala-borsec.jpg",
+    "is_active": true
+  },
+  {
+    "name": "RedBull Tropical",
+    "description": "Energizant cu aromă tropicală.",
+    "category": "Băuturi",
+    "brand": "Red Bull",
+    "image_url": "/products/redbull-tropical-red-bull.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Nectar de piersici",
+    "description": "Nectar cu pulpă de fructe.",
+    "category": "Băuturi",
+    "brand": "Cappy",
+    "image_url": "/products/nectar-de-piersici-cappy.webp",
+    "is_active": true
+  },
+  {
+    "name": "Cidru",
+    "description": "Băutură alcoolică din mere.",
+    "category": "Băuturi",
+    "brand": "Strongbow",
+    "image_url": "/products/cidru-strongbow.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Cappuccino ready-to-drink",
+    "description": "Cafea cu lapte gata preparată.",
+    "category": "Băuturi",
+    "brand": "Starbucks",
+    "image_url": "/products/cappuccino-ready-to-drink-starbucks.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Suc de mere",
+    "description": "Suc dulce cu aromă naturală.",
+    "category": "Băuturi",
+    "brand": "Tymbark",
+    "image_url": "/products/suc-de-mere-tymbark.png",
+    "is_active": true
+  },
+  {
+    "name": "Monster Energy",
+    "description": "Băutură energizantă carbogazoasă.",
+    "category": "Băuturi",
+    "brand": "Monster",
+    "image_url": "/products/monster-energy-monster.webp",
+    "is_active": true
+  },
+  {
+    "name": "Sirop",
+    "description": "Sirop concentrat pentru băuturi.",
+    "category": "Băuturi",
+    "brand": "Teisseire",
+    "image_url": "/products/sirop-teisseire.webp",
+    "is_active": true
+  },
+  {
+    "name": "Ciocolată caldă",
+    "description": "Pudră pentru băutură caldă.",
+    "category": "Băuturi",
+    "brand": "Dr. Oetker",
+    "image_url": "/products/ciocolata-calda-dr-oetker.webp",
+    "is_active": true
+  },
+  {
+    "name": "Lapte vegetal",
+    "description": "Băutură vegetală din migdale sau ovăz.",
+    "category": "Băuturi",
+    "brand": "Alpro",
+    "image_url": "/products/lapte-vegetal-alpro.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Smoothie căpșuni și banane",
+    "description": "Smoothie din fructe naturale.",
+    "category": "Băuturi",
+    "brand": "Innocent",
+    "image_url": "/products/smoothie-capsuni-si-banane-innocent.png",
+    "is_active": true
+  },
+  {
+    "name": "Ciocolată cu lapte",
+    "description": "Ciocolată fină cu lapte alpin.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Milka",
+    "image_url": "/products/ciocolata-cu-lapte-milka.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Biscuiți Leibnitz",
+    "description": "Biscuiți crocanți cu unt.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Bahlsen",
+    "image_url": "/products/biscuiti-leibnitz-bahlsen.png",
+    "is_active": true
+  },
+  {
+    "name": "Chipsuri Lays cu sare",
+    "description": "Chipsuri clasice din cartofi.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Lay's",
+    "image_url": "/products/chipsuri-lays-cu-sare-lay-s.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Caju",
+    "description": "Caju copt și sărat.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Alesto",
+    "image_url": "/products/caju-alesto.webp",
+    "is_active": true
+  },
+  {
+    "name": "Alune",
+    "description": "Alune prăjite pentru gustări.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Nutline",
+    "image_url": "/products/alune-nutline.png",
+    "is_active": true
+  },
+  {
+    "name": "Covrigei",
+    "description": "Covrigei crocanți sărați.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Pretz",
+    "image_url": "/products/covrigei-pretz.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Napolitane",
+    "description": "Napolitane cu cremă de cacao.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Joe",
+    "image_url": "/products/napolitane-joe.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Jeleuri",
+    "description": "Bomboane gumate cu fructe.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Katjes",
+    "image_url": "/products/jeleuri-katjes.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Batoane proteice",
+    "description": "Snack bogat în proteine.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "ProteinRex",
+    "image_url": "/products/batoane-proteice-proteinrex.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Popcorn cu cașcaval",
+    "description": "Popcorn aromat.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Chio",
+    "image_url": "/products/popcorn-cu-cascaval-chio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Prăjituri ambalate",
+    "description": "Desert individual ambalat.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "7Days",
+    "image_url": "/products/prajituri-ambalate-7days.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pufuleți",
+    "description": "Pufuleți din mălai cu gust clasic.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Gusto",
+    "image_url": "/products/pufuleti-gusto.png",
+    "is_active": true
+  },
+  {
+    "name": "Sticksuri sărate",
+    "description": "Gustare crocantă sărată.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Chio",
+    "image_url": "/products/sticksuri-sarate-chio.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Migdale",
+    "description": "Migdale coapte.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Alesto",
+    "image_url": "/products/migdale-alesto.webp",
+    "is_active": true
+  },
+  {
+    "name": "Fistic",
+    "description": "Fistic prăjit și sărat.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Wonderful",
+    "image_url": "/products/fistic-wonderful.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Drajeuri",
+    "description": "Drajeuri cu ciocolată.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "M&M's",
+    "image_url": "/products/drajeuri-m-m-s.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Fursecuri cu ciocolată",
+    "description": "Biscuiți fragezi cu bucăți de ciocolată.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Milka",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Turtă dulce",
+    "description": "Desert aromat cu scorțișoară.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Boromir",
+    "image_url": "/products/turta-dulce-boromir.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Haribo",
+    "description": "Jeleuri gumate cu fructe.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Haribo",
+    "image_url": "/products/haribo-haribo.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Kinder Bueno",
+    "description": "Baton crocant cu cremă de lapte și alune.",
+    "category": "Dulciuri și snacks-uri",
+    "brand": "Kinder",
+    "image_url": "/products/kinder-bueno-kinder.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Legume congelate",
+    "description": "Mix de legume pentru gătit rapid.",
+    "category": "Produse congelate",
+    "brand": "Bonduelle",
+    "image_url": "/products/legume-congelate-bonduelle.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Semipreparate",
+    "description": "Produse gata de preparare.",
+    "category": "Produse congelate",
+    "brand": "Edenia",
+    "image_url": "/products/semipreparate-edenia.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pește congelat",
+    "description": "File congelat fără oase.",
+    "category": "Produse congelate",
+    "brand": "Ocean Fish",
+    "image_url": "/products/peste-congelat-ocean-fish.png",
+    "is_active": true
+  },
+  {
+    "name": "Pizza congelată",
+    "description": "Pizza italiană congelată.",
+    "category": "Produse congelate",
+    "brand": "Dr. Oetker Ristorante",
+    "image_url": "/products/pizza-congelata-dr-oetker-ristorante.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Nuggets de pui",
+    "description": "Nuggets pane din carne de pui.",
+    "category": "Produse congelate",
+    "brand": "Agricola",
+    "image_url": "/products/nuggets-de-pui-agricola.jpg",
+    "is_active": true
+  },
+  {
+    "name": "File de cod",
+    "description": "File de cod congelat.",
+    "category": "Produse congelate",
+    "brand": "Ocean Fish",
+    "image_url": "/products/file-de-cod-ocean-fish.png",
+    "is_active": true
+  },
+  {
+    "name": "Cartofi prăjiți congelați",
+    "description": "Cartofi prefierți pentru cuptor.",
+    "category": "Produse congelate",
+    "brand": "Farm Frites",
+    "image_url": "/products/cartofi-prajiti-congelati-farm-frites.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Fructe de pădure congelate",
+    "description": "Mix de fructe congelate.",
+    "category": "Produse congelate",
+    "brand": "Edenia",
+    "image_url": "/products/fructe-de-padure-congelate-edenia.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Spanac congelat",
+    "description": "Spanac porționat congelat.",
+    "category": "Produse congelate",
+    "brand": "Bonduelle",
+    "image_url": "/products/spanac-congelat-bonduelle.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Broccoli congelat",
+    "description": "Broccoli congelat rapid.",
+    "category": "Produse congelate",
+    "brand": "Bonduelle",
+    "image_url": "/products/broccoli-congelat-bonduelle.png",
+    "is_active": true
+  },
+  {
+    "name": "Mazăre congelată",
+    "description": "Mazăre verde congelată.",
+    "category": "Produse congelate",
+    "brand": "Bonduelle",
+    "image_url": null,
+    "is_active": true
+  },
+  {
+    "name": "Mix mexican congelat",
+    "description": "Legume mixte condimentate.",
+    "category": "Produse congelate",
+    "brand": "Edenia",
+    "image_url": "/products/mix-mexican-congelat-edenia.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Ravioli congelați",
+    "description": "Paste umplute congelate.",
+    "category": "Produse congelate",
+    "brand": "Buitoni",
+    "image_url": "/products/ravioli-congelati-buitoni.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Lasagna congelată",
+    "description": "Lasagna gata preparată.",
+    "category": "Produse congelate",
+    "brand": "Findus",
+    "image_url": "/products/lasagna-congelata-findus.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Chiftele congelate",
+    "description": "Chiftele pentru încălzire rapidă.",
+    "category": "Produse congelate",
+    "brand": "Iglu",
+    "image_url": "/products/chiftele-congelate-iglu.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Creveți congelați",
+    "description": "Creveți prefierți congelați.",
+    "category": "Produse congelate",
+    "brand": "Ocean Fish",
+    "image_url": "/products/creveti-congelati-ocean-fish.png",
+    "is_active": true
+  },
+  {
+    "name": "Pui pane congelat",
+    "description": "Bucăți pane din piept de pui.",
+    "category": "Produse congelate",
+    "brand": "Agricola",
+    "image_url": "/products/pui-pane-congelat-agricola.jpg",
+    "is_active": true
+  },
+  {
+    "name": "Pește pane",
+    "description": "File pane congelat.",
+    "category": "Produse congelate",
+    "brand": "Frosta",
+    "image_url": "/products/peste-pane-frosta.png",
+    "is_active": true
+  },
+  {
+    "name": "Mini eclere congelate",
+    "description": "Mini deserturi congelate.",
+    "category": "Produse congelate",
+    "brand": "Delifrance",
+    "image_url": "/products/mini-eclere-congelate-delifrance.jpg",
+    "is_active": true
+  }
+]
