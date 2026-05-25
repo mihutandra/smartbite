@@ -12,6 +12,8 @@ pydantic
 pydantic[email]
 fastapi
 uvicorn
+requests
+python-dotenv
 
 # Auth
 python-multipart
