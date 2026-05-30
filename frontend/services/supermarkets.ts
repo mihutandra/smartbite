@@ -281,6 +281,12 @@ export async function fetchAllSupermarketCatalogProducts(
         break;
       }
 
+      if (page === SUPERMARKET_PRODUCTS_MAX_PAGES) {
+        throw new SupermarketServiceError(
+          "Catalogul de produse este prea mare pentru limita curenta de paginare. Rezultatele ar fi incomplete.",
+        );
+      }
+
       page += 1;
     }
 

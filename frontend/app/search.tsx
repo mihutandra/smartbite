@@ -16,8 +16,8 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BottomNavBar } from "../components/BottomNavBar";
 import { useAuth } from "../context/auth-context";
 import {
-  fetchAllSupermarketCatalogProducts,
   fetchAllSupermarkets,
+  searchSupermarketProducts,
 } from "../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../types/supermarket";
 import { formatCurrency } from "../utils/product_detail";
@@ -45,22 +45,18 @@ export default function SearchScreen() {
 
     let isMounted = true;
 
-    async function loadInitialCatalog() {
+    async function loadSupermarkets() {
       setIsBootstrapping(true);
       setLoadError("");
 
       try {
-        const [supermarketList, catalogProducts] = await Promise.all([
-          fetchAllSupermarkets(),
-          fetchAllSupermarketCatalogProducts(),
-        ]);
+        const supermarketList = await fetchAllSupermarkets();
 
         if (!isMounted) {
           return;
         }
 
         setSupermarkets(supermarketList);
-        setAllProducts(catalogProducts);
       } catch (error) {
         if (!isMounted) {
           return;
@@ -76,12 +72,61 @@ export default function SearchScreen() {
       }
     }
 
-    void loadInitialCatalog();
+    void loadSupermarkets();
 
     return () => {
       isMounted = false;
     };
   }, [status, user]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !user) {
+      return;
+    }
+
+    let isMounted = true;
+    const normalizedQuery = normalizeSearchValue(query);
+    const searchTimeout = setTimeout(async () => {
+      if (!normalizedQuery) {
+        if (isMounted) {
+          setAllProducts([]);
+          setLoadError("");
+        }
+
+        return;
+      }
+
+      setIsBootstrapping(true);
+      setLoadError("");
+
+      try {
+        const catalogProducts = await searchSupermarketProducts(query);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setAllProducts(catalogProducts.filter((product) => product.is_available));
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setLoadError(
+          error instanceof Error ? error.message : "Nu am putut incarca datele pentru cautare.",
+        );
+      } finally {
+        if (isMounted) {
+          setIsBootstrapping(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(searchTimeout);
+    };
+  }, [query, status, user]);
 
   const productsBySupermarket = useMemo(() => {
     const map = new Map<string, SupermarketProduct[]>();
@@ -245,19 +290,7 @@ export default function SearchScreen() {
                       style={styles.productPreviewCard}
                     >
                       <View style={styles.productImageWrap}>
-                        {product.product_image_url ? (
-                          <Image
-                            source={{ uri: product.product_image_url }}
-                            style={styles.productImage}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={styles.productImageFallback}>
-                            <Text style={styles.productImageFallbackText}>
-                              {(product.product_name ?? "Produs").slice(0, 1).toUpperCase()}
-                            </Text>
-                          </View>
-                        )}
+                        <ProductPreviewImage product={product} />
                       </View>
 
                       <Text numberOfLines={2} style={styles.productName}>
@@ -308,6 +341,29 @@ function normalizeSearchValue(value: string | null | undefined) {
     .replace(/ß/g, "ss")
     .toLocaleLowerCase()
     .trim();
+}
+
+function ProductPreviewImage({ product }: { product: SupermarketProduct }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (product.product_image_url && !imageFailed) {
+    return (
+      <Image
+        source={{ uri: product.product_image_url }}
+        style={styles.productImage}
+        resizeMode="cover"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <View style={styles.productImageFallback}>
+      <Text style={styles.productImageFallbackText}>
+        {(product.product_name ?? "Produs").slice(0, 1).toUpperCase()}
+      </Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
