@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Alimente de bază",
+    "description": "Produse alimentare esențiale pentru gătit și consum zilnic.",
+    "is_active": true
+  },
+  {
+    "name": "Fructe și legume",
+    "description": "Fructe și legume proaspete pentru o alimentație sănătoasă.",
+    "is_active": true
+  },
+  {
+    "name": "Mezeluri",
+    "description": "Produse din carne procesată, feliate sau ambalate.",
+    "is_active": true
+  },
+  {
+    "name": "Măcelărie și pește",
+    "description": "Carne proaspătă, pește și fructe de mare.",
+    "is_active": true
+  },
+  {
+    "name": "Brutărie și panificație",
+    "description": "Pâine, produse de brutărie și produse de patiserie.",
+    "is_active": true
+  },
+  {
+    "name": "Lactate și brânzeturi",
+    "description": "Lapte, iaurturi, unt, smântână și brânzeturi.",
+    "is_active": true
+  },
+  {
+    "name": "Băuturi",
+    "description": "Apă, sucuri, cafea, ceai și alte băuturi.",
+    "is_active": true
+  },
+  {
+    "name": "Dulciuri și snacks-uri",
+    "description": "Ciocolată, biscuiți, chipsuri, nuci și gustări.",
+    "is_active": true
+  },
+  {
+    "name": "Produse congelate",
+    "description": "Legume, carne, pește, semipreparate și deserturi congelate.",
+    "is_active": true
+  }
+]

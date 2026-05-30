@@ -9,8 +9,9 @@ class Settings(BaseSettings):
     JWT_EXPIRE_HOURS: int = 24
     
     model_config = SettingsConfigDict(
-    env_file=".env",
-)
+        env_file=".env",
+        extra="ignore",
+    )
 
 # Ignore missing argument here; Pydantic will fetch from env vars at runtime.
 settings = Settings() # type: ignore
