@@ -26,7 +26,15 @@ class SupermarketService:
         return supermarket
     
     def get_in_bounds(
-    self, south: float, north: float, west: float, east: float, limit: int) -> list[Supermarket]:
+        self,
+        south: float,
+        north: float,
+        west: float,
+        east: float,
+        limit: int,
+        user_lat: float | None = None,
+        user_lng: float | None = None,
+    ) -> list[tuple[Supermarket, int, float | None]]:
     # Latitude sanity
         if south > north:
             raise ValidationError(
@@ -43,9 +51,22 @@ class SupermarketService:
                 "Longitude bounds must be between -180 and 180.",
                 field="longitude",
             )
-        # Note: we do NOT require west <= east — repository handles antimeridian wrap.
+        if (user_lat is None) != (user_lng is None):
+            raise ValidationError(
+                "user_lat and user_lng must both be provided together.",
+                field="user_lat" if user_lat is None else "user_lng",
+            )
+        if user_lat is not None and user_lng is not None:
+            self._validate_coords(user_lat, user_lng)
+
         return self.supermarket_repo.get_in_bounds(
-            south=south, north=north, west=west, east=east, limit=limit,
+            south=south,
+            north=north,
+            west=west,
+            east=east,
+            limit=limit,
+            user_lat=user_lat,
+            user_lng=user_lng,
         )
         
     @staticmethod

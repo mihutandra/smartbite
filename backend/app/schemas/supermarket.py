@@ -38,9 +38,12 @@ class SupermarketMapMarker(BaseModel):
     """Lightweight representation for map markers — just enough to render a pin."""
     id: UUID
     name: str
+    address: str
     latitude: float
     longitude: float
     logo_url: str | None = None
+    offers_count: int = 0
+    distance_km: float | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
