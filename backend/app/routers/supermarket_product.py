@@ -33,6 +33,30 @@ def search_supermarket_products(
 ):
     return service.search_by_product_name(query=item, page=page, page_size=page_size)
 
+@router.get("/counts/by-supermarket/{supermarket_id}", response_model=int)
+def get_product_count_by_supermarket(
+        supermarket_id: UUID,
+        service: SupermarketProductService = Depends(get_supermarket_product_service),
+):
+    logger.debug("GET /api/supermarket-products/counts/by-supermarket/%s", supermarket_id)
+    result = service.get_counts_by_supermarket_id(supermarket_id=supermarket_id)
+    logger.info("Product count for supermarket_id=%s: %s", supermarket_id, result)
+    return result
+
+
+@router.get("/counts/{supermarket_id}/{category_id}", response_model=int)
+def get_count_by_supermarket_and_category(
+        supermarket_id: UUID,
+        category_id: UUID,
+        service: SupermarketProductService = Depends(get_supermarket_product_service),
+):
+    logger.debug("GET /api/supermarket-products/counts/%s/%s", supermarket_id, category_id)
+    result = service.get_count_by_supermarket_and_category(
+        supermarket_id=supermarket_id,
+        category_id=category_id,
+    )
+    logger.info("Count for supermarket_id=%s category_id=%s: %s", supermarket_id, category_id, result)
+    return result
 
 @router.get("/{supermarket_product_id}", response_model=SupermarketProductOut)
 def get_supermarket_product(

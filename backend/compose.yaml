@@ -20,6 +20,8 @@ services:
     # TODO: figure out how to automatically block this in production
     volumes:
       - ./app:/base/app:ro
+      - ./alembic:/base/alembic:ro
+      - ./alembic.ini:/base/alembic.ini:ro
     # Reload flag to tell Uvicorn to hot-reload code
     # TODO: figure out how to automatically block this in production
     command: --reload

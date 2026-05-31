@@ -19,6 +19,27 @@ class SupermarketProductBase(BaseModel):
 class SupermarketProductOut(SupermarketProductBase):
     id: UUID
     product_name: str | None = None
+    product_description: str | None = None
+    product_image_url: str | None = None
+    product_brand: str | None = None
     supermarket_name: str | None = None
+    category_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class SupermarketProductCountOut(BaseModel):
+    supermarket_id: UUID
+    supermarket_name: str
+    product_count: int
+
+
+class CategoryCountOut(BaseModel):
+    category_id: UUID
+    category_name: str
+    product_count: int
+
+
+class SupermarketCategoryCountOut(BaseModel):
+    supermarket_id: UUID
+    supermarket_name: str
+    categories: list[CategoryCountOut]

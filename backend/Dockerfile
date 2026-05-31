@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r ./requirements.txt
 # Copy application code
 COPY ./app ./app
 COPY ./scripts ./scripts
+COPY ./seed ./seed
 
 # Copy Alembic files
 COPY ./alembic.ini ./alembic.ini
@@ -42,7 +43,6 @@ FROM base AS test
 
 # Copy Pytest config
 COPY ./pytest.ini ./pytest.ini
-COPY ./.coveragerc ./.coveragerc
 
 # Install test dependencies
 COPY ./requirements.test.txt ./requirements.test.txt
