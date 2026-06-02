@@ -6,20 +6,8 @@ from app.exceptions.exceptions import ValidationError
 from app.factories.supermarket import get_supermarket_service
 from app.schemas.supermarket import SupermarketDetails, SupermarketOut, SupermarketMapMarker, SupermarketWithDistance
 from app.services.supermarket import SupermarketService
-from app.exceptions.exceptions import ValidationError
 
 router = APIRouter(prefix="/api/supermarkets", tags=["Supermarkets"])
-
-@router.get("/", response_model=list[SupermarketOut])
-def list_supermarkets(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-    user_lat: float | None = Query(None, ge=-90, le=90),
-    user_lng: float | None = Query(None, ge=-180, le=180),
-    radius_km: float | None = Query(None, gt=0, le=20000),
-    service: SupermarketService = Depends(get_supermarket_service),
-):
-    return service.list_all(page=page, page_size=page_size)
 
 @router.get(
     "/",
