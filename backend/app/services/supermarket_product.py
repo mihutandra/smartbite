@@ -62,3 +62,25 @@ class SupermarketProductService:
             limit=page_size,
             offset=offset,
         )
+
+
+    def get_counts_by_supermarket_id(self, supermarket_id: UUID) -> int:
+        logger.debug("Getting product count for supermarket_id=%s", supermarket_id)
+        supermarket = self.supermarket_repo.get_by_id(supermarket_id)
+        if not supermarket:
+            raise NotFound(entity="Supermarket", identifier=str(supermarket_id))
+        rows = self.supermarket_product_repo.get_counts_by_supermarket()
+        for row in rows:
+            if str(row[0]) == str(supermarket_id):
+                return row[2]
+        return 0
+
+    def get_count_by_supermarket_and_category(self, supermarket_id: UUID, category_id: UUID) -> int:
+        logger.debug("Getting count for supermarket_id=%s category_id=%s", supermarket_id, category_id)
+        supermarket = self.supermarket_repo.get_by_id(supermarket_id)
+        if not supermarket:
+            raise NotFound(entity="Supermarket", identifier=str(supermarket_id))
+        return self.supermarket_product_repo.get_count_by_supermarket_and_category(
+            supermarket_id=supermarket_id,
+            category_id=category_id,
+    )

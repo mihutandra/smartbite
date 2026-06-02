@@ -3,9 +3,10 @@ from __future__ import annotations
 import uuid
 from sqlalchemy import Boolean, String, DateTime, CheckConstraint, Float, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 from app.models.enums import UserRole
+from app.models.shopping_cart import ShoppingCart
 
 
 class User(Base):
@@ -42,4 +43,10 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,
+    )
+
+    shopping_cart_items: Mapped[list[ShoppingCart]] = relationship(
+        "ShoppingCart",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

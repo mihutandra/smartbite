@@ -19,6 +19,11 @@ export type SupermarketProduct = {
   supermarket_id: string;
   product_id: string;
   product_name: string | null;
+  product_description: string | null;
+  product_image_url: string | null;
+  product_proxy_image_url?: string | null;
+  product_brand: string | null;
+  category_name: string | null;
   supermarket_name: string | null;
   original_price: string;
   discount_price: string;

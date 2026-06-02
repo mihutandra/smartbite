@@ -10,6 +10,17 @@ export class SupermarketServiceError extends Error {
 
 const PRODUCT_COUNT_PAGE_SIZE = 100;
 const PRODUCT_COUNT_MAX_PAGES = 10;
+const SUPERMARKET_PAGE_SIZE = 100;
+const SUPERMARKET_MAX_PAGES = 10;
+const SUPERMARKET_PRODUCTS_PAGE_SIZE = 100;
+const SUPERMARKET_PRODUCTS_MAX_PAGES = 10;
+
+function withProductProxyImageUrl(product: SupermarketProduct): SupermarketProduct {
+  return {
+    ...product,
+    product_proxy_image_url: `${API_BASE_URL}/api/products/${product.product_id}/image`,
+  };
+}
 
 function extractErrorMessage(data: unknown, fallbackMessage: string) {
   if (typeof data === "string" && data.trim()) {
@@ -155,7 +166,7 @@ export async function fetchSupermarketProducts(
       throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
-    return data;
+    return data.map(withProductProxyImageUrl);
   } catch (error) {
     if (error instanceof SupermarketServiceError) {
       throw error;
@@ -165,6 +176,83 @@ export async function fetchSupermarketProducts(
   }
 }
 
+export async function fetchAllSupermarkets(
+  pageSize = SUPERMARKET_PAGE_SIZE,
+): Promise<Supermarket[]> {
+  try {
+    const supermarkets: Supermarket[] = [];
+    let page = 1;
+
+    while (page <= SUPERMARKET_MAX_PAGES) {
+      const currentPage = await fetchSupermarkets(page, pageSize);
+      supermarkets.push(...currentPage);
+
+      if (currentPage.length < pageSize) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return supermarkets;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function fetchAllSupermarketProducts(
+  supermarketId: string,
+  pageSize = SUPERMARKET_PRODUCTS_PAGE_SIZE,
+): Promise<SupermarketProduct[]> {
+  try {
+    const products: SupermarketProduct[] = [];
+    let page = 1;
+
+    while (page <= SUPERMARKET_PRODUCTS_MAX_PAGES) {
+      const currentPage = await fetchSupermarketProducts(supermarketId, page, pageSize);
+      products.push(...currentPage);
+
+      if (currentPage.length < pageSize) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return products;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function fetchSupermarketProduct(
+  supermarketProductId: string,
+): Promise<SupermarketProduct> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/supermarket-products/${supermarketProductId}`);
+    const data = await parseApiResponse<SupermarketProduct>(response);
+
+    if (typeof data?.id !== "string") {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return withProductProxyImageUrl(data);
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
 export async function fetchSupermarketProductCounts(
   pageSize = PRODUCT_COUNT_PAGE_SIZE,
 ): Promise<Record<string, number>> {
@@ -223,7 +311,7 @@ export async function searchSupermarketProducts(
       throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
     }
 
-    return data;
+    return data.map(withProductProxyImageUrl);
   } catch (error) {
     if (error instanceof SupermarketServiceError) {
       throw error;
