@@ -81,6 +81,7 @@ def seed_shopping_cart_flow_data(session: Session) -> dict[str, object]:
     session.commit()
 
     return {
+        "user_id": str(user.id),
         "email": user.email,
         "password": "password123",
         "lidl_item_id": str(lidl_item.id),

@@ -152,3 +152,71 @@ def test_user_can_have_multiple_active_reservations(test_client, db_session):
         select(Reservation).where(Reservation.status == "active")
     ).all()
     assert len(active_reservations) == 2
+
+
+def test_user_can_list_and_filter_reservations(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+    headers = _auth_headers(test_client, data["email"], data["password"])
+
+    add_response = test_client.post(
+        "/api/shopping-cart/",
+        json={"supermarket_product_id": data["lidl_item_id"], "quantity": 1},
+        headers=headers,
+    )
+    assert add_response.status_code == 200
+
+    cart_item = test_client.get("/api/shopping-cart/", headers=headers).json()[0]
+    confirm_response = test_client.post(
+        "/api/shopping-cart/confirm",
+        json={"items": [{"cart_item_id": cart_item["id"], "quantity": 1}]},
+        headers=headers,
+    )
+    assert confirm_response.status_code == 200
+    active_reservation_id = confirm_response.json()["id"]
+
+    inactive_reservation = Reservation(user_id=UUID(data["user_id"]), status="inactive")
+    db_session.add(inactive_reservation)
+    db_session.commit()
+
+    all_response = test_client.get("/api/reservations/", headers=headers)
+    assert all_response.status_code == 200
+    assert len(all_response.json()) == 2
+
+    active_response = test_client.get("/api/reservations/?status=active", headers=headers)
+    assert active_response.status_code == 200
+    active_reservations = active_response.json()
+    assert len(active_reservations) == 1
+    assert active_reservations[0]["id"] == active_reservation_id
+    assert active_reservations[0]["items"][0]["product_name"] == "Milk Lidl"
+
+    inactive_response = test_client.get("/api/reservations/?status=inactive", headers=headers)
+    assert inactive_response.status_code == 200
+    inactive_reservations = inactive_response.json()
+    assert len(inactive_reservations) == 1
+    assert inactive_reservations[0]["id"] == str(inactive_reservation.id)
+
+
+def test_user_can_get_reservation_detail(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+    headers = _auth_headers(test_client, data["email"], data["password"])
+
+    test_client.post(
+        "/api/shopping-cart/",
+        json={"supermarket_product_id": data["lidl_item_id"], "quantity": 1},
+        headers=headers,
+    )
+    cart_item = test_client.get("/api/shopping-cart/", headers=headers).json()[0]
+    confirm_response = test_client.post(
+        "/api/shopping-cart/confirm",
+        json={"items": [{"cart_item_id": cart_item["id"], "quantity": 1}]},
+        headers=headers,
+    )
+    reservation_id = confirm_response.json()["id"]
+
+    detail_response = test_client.get(f"/api/reservations/{reservation_id}", headers=headers)
+
+    assert detail_response.status_code == 200
+    reservation = detail_response.json()
+    assert reservation["id"] == reservation_id
+    assert reservation["status"] == "active"
+    assert reservation["items"][0]["product_image_url"] == "https://example.com/milk-lidl.png"

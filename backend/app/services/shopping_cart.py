@@ -189,6 +189,7 @@ class ShoppingCartService:
             id=reservation.id,
             status=reservation.status,
             created_at=reservation.created_at,
+            updated_at=reservation.updated_at,
             items=[
                 ReservationItemOut(
                     id=item.id,

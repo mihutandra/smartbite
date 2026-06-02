@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.reservation import ReservationItemOut, ReservationOut
+
 
 class ShoppingCartAddIn(BaseModel):
     supermarket_product_id: UUID
@@ -46,17 +48,3 @@ class ShoppingCartConfirmItemIn(BaseModel):
 class ShoppingCartConfirmIn(BaseModel):
     items: list[ShoppingCartConfirmItemIn]
 
-
-class ReservationItemOut(BaseModel):
-    id: UUID
-    supermarket_product_id: UUID
-    quantity: int
-    reserved_price: Decimal
-    currency: str
-
-
-class ReservationOut(BaseModel):
-    id: UUID
-    status: str
-    items: list[ReservationItemOut]
-    created_at: datetime

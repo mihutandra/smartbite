@@ -8,6 +8,7 @@ from app.routers.product import router as product_router
 from app.routers.supermarket_product import router as supermarket_product_router
 from app.routers.supermarket import router as supermarket_router
 from app.routers.auth import router as auth_router
+from app.routers.reservation import router as reservation_router
 from app.routers.shopping_cart import router as shopping_cart_router
 from app.routers.user_admin import router as user_admin_router
 
@@ -50,6 +51,7 @@ app.include_router(product_router)
 app.include_router(supermarket_product_router)
 app.include_router(supermarket_router)
 app.include_router(shopping_cart_router)
+app.include_router(reservation_router)
 
 
 app.include_router(auth_router)
