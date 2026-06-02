@@ -57,7 +57,7 @@ def list_supermarkets_in_bounds(
     north: float = Query(..., ge=-90, le=90),
     west: float = Query(..., ge=-180, le=180),
     east: float = Query(..., ge=-180, le=180),
-    limit: int = Query(500, ge=1, le=2000),
+    limit: int = Query(500, ge=1, le=500),
     user_lat: float | None = Query(None, ge=-90, le=90),
     user_lng: float | None = Query(None, ge=-180, le=180),
     service: SupermarketService = Depends(get_supermarket_service),

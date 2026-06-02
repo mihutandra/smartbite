@@ -35,7 +35,7 @@ class SupermarketService:
         user_lat: float | None = None,
         user_lng: float | None = None,
     ) -> list[tuple[Supermarket, int, float | None]]:
-    # Latitude sanity
+        # Latitude sanity
         if south > north:
             raise ValidationError(
                 "Invalid bounds: 'south' must be less than or equal to 'north'.",
