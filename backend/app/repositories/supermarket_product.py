@@ -1,13 +1,38 @@
 from uuid import UUID
 import logging
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session, joinedload
 from app.models.product import Product
+from app.models.supermarket import Supermarket
 from app.models.supermarket_products import SupermarketProduct
 from sqlalchemy import func
 
 
 logger = logging.getLogger(__name__)
+
+SEARCH_DIACRITIC_MAP = [
+    ("ă", "a"),
+    ("â", "a"),
+    ("î", "i"),
+    ("ș", "s"),
+    ("ş", "s"),
+    ("ț", "t"),
+    ("ţ", "t"),
+]
+
+
+def normalize_search_term(value: str) -> str:
+    normalized = value.lower()
+    for diacritic, replacement in SEARCH_DIACRITIC_MAP:
+        normalized = normalized.replace(diacritic, replacement)
+    return normalized
+
+
+def normalize_search_expression(expr):
+    result = func.lower(expr)
+    for diacritic, replacement in SEARCH_DIACRITIC_MAP:
+        result = func.replace(result, diacritic, replacement)
+    return result
 
 
 class SupermarketProductRepository:
@@ -79,7 +104,7 @@ class SupermarketProductRepository:
             limit,
             offset,
         )
-        pattern = f"%{query}%"
+        pattern = f"%{normalize_search_term(query)}%"
         stmt = (
             select(SupermarketProduct)
             .options(
@@ -87,7 +112,13 @@ class SupermarketProductRepository:
                 joinedload(SupermarketProduct.supermarket),
             )
             .join(SupermarketProduct.product)
-            .where(Product.name.ilike(pattern))
+            .where(
+                or_(
+                    normalize_search_expression(Product.name).like(pattern),
+                    normalize_search_expression(Product.description).like(pattern),
+                    normalize_search_expression(Product.brand).like(pattern),
+                )
+            )
             .order_by(Product.name, SupermarketProduct.expiration_date)
             .limit(limit)
             .offset(offset)
