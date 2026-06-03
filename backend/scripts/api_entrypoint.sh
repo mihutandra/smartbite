@@ -16,6 +16,9 @@ python scripts/seed_supermarket_products.py
 echo "Seeding users..."
 python scripts/seed_users.py
 
+echo "Seeding orders..."
+python scripts/seed_orders.py
+
 # new seeds !!!!!!!
 echo "Seeding categories from json"
 python scripts/seed_categories_from_json.py
