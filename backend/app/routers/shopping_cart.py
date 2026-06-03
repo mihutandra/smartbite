@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends
 
 from app.auth.jwt_utils import verify_jwt
 from app.factories.shopping_cart import get_shopping_cart_service
-from app.schemas.shopping_cart import ShoppingCartAddIn, ShoppingCartAddOut, ShoppingCartItemOut
+from app.schemas.shopping_cart import (
+    ShoppingCartAddIn,
+    ShoppingCartAddOut,
+    ShoppingCartItemOut,
+    ShoppingCartSavingsOut,
+)
 from app.services.shopping_cart import ShoppingCartService
 
 
@@ -18,6 +23,15 @@ def get_my_shopping_cart(
 ):
     user_id = UUID(current_user["user_id"])
     return service.get_user_cart(user_id=user_id)
+
+
+@router.get("/savings", response_model=ShoppingCartSavingsOut)
+def get_my_shopping_cart_savings(
+    current_user: dict = Depends(verify_jwt),
+    service: ShoppingCartService = Depends(get_shopping_cart_service),
+):
+    user_id = UUID(current_user["user_id"])
+    return service.get_user_savings(user_id=user_id)
 
 
 @router.post("/", response_model=ShoppingCartAddOut)

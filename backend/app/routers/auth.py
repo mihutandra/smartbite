@@ -1,9 +1,19 @@
 from fastapi import APIRouter, Depends, status
 
 from app.auth.jwt_utils import oauth2_scheme, verify_jwt
+from app.factories.shopping_cart import get_shopping_cart_service
 from app.factories.user import get_auth_service
-from app.schemas.user import DeleteAccountOut, LogoutOut, TokenOut, UserLoginRequest, UserOut, UserRegisterRequest
+from app.schemas.user import (
+    DeleteAccountOut,
+    LogoutOut,
+    TokenOut,
+    UserLoginRequest,
+    UserOut,
+    UserRegisterRequest,
+    UserSavingsOut,
+)
 from app.services.auth import AuthService
+from app.services.shopping_cart import ShoppingCartService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -45,6 +55,16 @@ def me(
     from uuid import UUID
     result = service.get_by_id(id=UUID(current_user["user_id"]))
     return result
+
+
+@router.get("/me/savings", response_model=UserSavingsOut)
+def my_profile_savings(
+        current_user: dict = Depends(verify_jwt),
+        service: ShoppingCartService = Depends(get_shopping_cart_service),
+):
+    logger.debug(f"GET /api/auth/me/savings user_id={current_user['user_id']}")
+    from uuid import UUID
+    return service.get_user_savings(user_id=UUID(current_user["user_id"]))
 
 
 @router.post("/logout", response_model=LogoutOut)

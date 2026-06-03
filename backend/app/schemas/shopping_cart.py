@@ -16,6 +16,13 @@ class ShoppingCartAddOut(BaseModel):
     cart_replaced: bool = False
 
 
+class ShoppingCartSavingsOut(BaseModel):
+    total_original_price: Decimal
+    total_discount_price: Decimal
+    total_lei_saved: Decimal
+    currency: str = "RON"
+
+
 class ShoppingCartItemOut(BaseModel):
     id: UUID
     quantity: int
@@ -29,6 +36,8 @@ class ShoppingCartItemOut(BaseModel):
 
     original_price: Decimal | None = None
     discount_price: Decimal | None = None
+    savings_per_unit: Decimal | None = None
+    savings_total: Decimal | None = None
     currency: str | None = None
     expiration_date: date | None = None
     stock_quantity: int | None = None

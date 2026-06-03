@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from app.exceptions.exceptions import DomainError, NotFound, ValidationError
@@ -5,7 +6,30 @@ from app.models.shopping_cart import ShoppingCart
 from app.repositories.supermarket_product import SupermarketProductRepository
 from app.repositories.shopping_cart import ShoppingCartRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.shopping_cart import ShoppingCartAddOut, ShoppingCartItemOut
+from app.schemas.shopping_cart import (
+    ShoppingCartAddOut,
+    ShoppingCartItemOut,
+    ShoppingCartSavingsOut,
+)
+
+
+TWOPLACES = Decimal("0.01")
+
+
+def _money(value: Decimal) -> Decimal:
+    return value.quantize(TWOPLACES)
+
+
+def _calculate_line_savings(
+    original_price: Decimal,
+    discount_price: Decimal,
+    quantity: int,
+) -> tuple[Decimal, Decimal, Decimal, Decimal]:
+    line_original = _money(original_price * quantity)
+    line_discount = _money(discount_price * quantity)
+    savings_per_unit = _money(max(original_price - discount_price, Decimal("0.00")))
+    savings_total = _money(savings_per_unit * quantity)
+    return line_original, line_discount, savings_per_unit, savings_total
 
 
 class ShoppingCartService:
@@ -84,6 +108,42 @@ class ShoppingCartService:
         self.shopping_cart_repo.create(new_item)
         return ShoppingCartAddOut(message="Item added to cart.")
 
+    def get_user_savings(self, user_id: UUID) -> ShoppingCartSavingsOut:
+        user = self.user_repo.get_by_id(user_id)
+        if user is None or user.is_deleted:
+            raise NotFound(entity="User", identifier=str(user_id))
+
+        return self.calculate_savings(self.shopping_cart_repo.get_by_user_id(user_id))
+
+    @staticmethod
+    def calculate_savings(cart_items: list[ShoppingCart]) -> ShoppingCartSavingsOut:
+        total_original = Decimal("0.00")
+        total_discount = Decimal("0.00")
+        total_saved = Decimal("0.00")
+        currency = "RON"
+
+        for item in cart_items:
+            supermarket_product = item.supermarket_product
+            if supermarket_product is None:
+                continue
+
+            currency = supermarket_product.currency or currency
+            line_original, line_discount, _, savings_total = _calculate_line_savings(
+                supermarket_product.original_price,
+                supermarket_product.discount_price,
+                item.quantity,
+            )
+            total_original += line_original
+            total_discount += line_discount
+            total_saved += savings_total
+
+        return ShoppingCartSavingsOut(
+            total_original_price=_money(total_original),
+            total_discount_price=_money(total_discount),
+            total_lei_saved=_money(total_saved),
+            currency=currency,
+        )
+
     def get_user_cart(self, user_id: UUID) -> list[ShoppingCartItemOut]:
         user = self.user_repo.get_by_id(user_id)
         if user is None or user.is_deleted:
@@ -97,6 +157,15 @@ class ShoppingCartService:
             product = supermarket_product.product if supermarket_product else None
             supermarket = supermarket_product.supermarket if supermarket_product else None
 
+            savings_per_unit = None
+            savings_total = None
+            if supermarket_product is not None:
+                _, _, savings_per_unit, savings_total = _calculate_line_savings(
+                    supermarket_product.original_price,
+                    supermarket_product.discount_price,
+                    item.quantity,
+                )
+
             output.append(
                 ShoppingCartItemOut(
                     id=item.id,
@@ -108,6 +177,8 @@ class ShoppingCartService:
                     supermarket_name=supermarket.name if supermarket else None,
                     original_price=supermarket_product.original_price if supermarket_product else None,
                     discount_price=supermarket_product.discount_price if supermarket_product else None,
+                    savings_per_unit=savings_per_unit,
+                    savings_total=savings_total,
                     currency=supermarket_product.currency if supermarket_product else None,
                     expiration_date=supermarket_product.expiration_date if supermarket_product else None,
                     stock_quantity=supermarket_product.stock_quantity if supermarket_product else None,

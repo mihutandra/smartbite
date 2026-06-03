@@ -60,3 +60,45 @@ def test_shopping_cart_single_supermarket_replacement_flow(test_client, db_sessi
     assert cart_items[0]["supermarket_product_id"] == data["kaufland_item_id"]
     assert cart_items[0]["supermarket_id"] == data["kaufland_supermarket_id"]
     assert cart_items[0]["quantity"] == 1
+
+
+def test_shopping_cart_and_profile_savings_endpoints(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+
+    login_response = test_client.post(
+        "/api/auth/login",
+        json={"email": data["email"], "password": data["password"]},
+    )
+    assert login_response.status_code == 200
+    headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+
+    add_response = test_client.post(
+        "/api/shopping-cart/",
+        json={
+            "supermarket_product_id": data["lidl_item_id"],
+            "quantity": 2,
+            "confirm_replace": False,
+        },
+        headers=headers,
+    )
+    assert add_response.status_code == 200
+
+    cart_response = test_client.get("/api/shopping-cart/", headers=headers)
+    assert cart_response.status_code == 200
+    cart_items = cart_response.json()
+    assert len(cart_items) == 1
+    assert cart_items[0]["savings_per_unit"] == "2.50"
+    assert cart_items[0]["savings_total"] == "5.00"
+
+    savings_response = test_client.get("/api/shopping-cart/savings", headers=headers)
+    assert savings_response.status_code == 200
+    assert savings_response.json() == {
+        "total_original_price": "20.00",
+        "total_discount_price": "15.00",
+        "total_lei_saved": "5.00",
+        "currency": "RON",
+    }
+
+    profile_savings_response = test_client.get("/api/auth/me/savings", headers=headers)
+    assert profile_savings_response.status_code == 200
+    assert profile_savings_response.json() == savings_response.json()
