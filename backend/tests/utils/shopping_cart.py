@@ -31,12 +31,14 @@ def seed_shopping_cart_flow_data(session: Session) -> dict[str, object]:
         description="Low fat milk",
         category=category,
         brand="LidlBrand",
+        image_url="https://example.com/milk-lidl.png",
     )
     product_kaufland = Product(
         name="Milk Kaufland",
         description="Whole milk",
         category=category,
         brand="KauflandBrand",
+        image_url="https://example.com/milk-kaufland.png",
     )
 
     lidl = Supermarket(
@@ -79,10 +81,13 @@ def seed_shopping_cart_flow_data(session: Session) -> dict[str, object]:
     session.commit()
 
     return {
+        "user_id": str(user.id),
         "email": user.email,
         "password": "password123",
         "lidl_item_id": str(lidl_item.id),
         "kaufland_item_id": str(kaufland_item.id),
         "lidl_supermarket_id": str(lidl.id),
         "kaufland_supermarket_id": str(kaufland.id),
+        "lidl_initial_stock": lidl_item.stock_quantity,
+        "kaufland_initial_stock": kaufland_item.stock_quantity,
     }

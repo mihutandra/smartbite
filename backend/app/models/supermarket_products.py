@@ -27,6 +27,7 @@ class SupermarketProduct(Base):
     supermarket = relationship("Supermarket", back_populates="supermarket_products")
     product = relationship("Product", back_populates="supermarket_products")
     shopping_cart_items = relationship("ShoppingCart", back_populates="supermarket_product", cascade="all, delete-orphan")
+    reservation_items = relationship("ReservationItem", back_populates="supermarket_product")
 
     @property
     def product_name(self) -> str | None:
