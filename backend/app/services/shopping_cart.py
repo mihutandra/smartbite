@@ -1,4 +1,5 @@
 from uuid import UUID
+from decimal import Decimal
 
 from app.exceptions.exceptions import DomainError, NotFound, ValidationError
 from app.models.reservation import Reservation, ReservationItem
@@ -12,6 +13,7 @@ from app.schemas.shopping_cart import (
     ShoppingCartAddOut,
     ShoppingCartConfirmIn,
     ShoppingCartItemOut,
+    ShoppingCartSavingsOut,
 )
 
 
@@ -74,6 +76,12 @@ class ShoppingCartService:
             supermarket_product = item.supermarket_product
             product = supermarket_product.product if supermarket_product else None
             supermarket = supermarket_product.supermarket if supermarket_product else None
+            savings_per_unit = self._calculate_savings_per_unit(supermarket_product)
+            savings_total = (
+                savings_per_unit * Decimal(item.quantity)
+                if savings_per_unit is not None
+                else None
+            )
 
             output.append(
                 ShoppingCartItemOut(
@@ -87,6 +95,8 @@ class ShoppingCartService:
                     supermarket_name=supermarket.name if supermarket else None,
                     original_price=supermarket_product.original_price if supermarket_product else None,
                     discount_price=supermarket_product.discount_price if supermarket_product else None,
+                    savings_per_unit=savings_per_unit,
+                    savings_total=savings_total,
                     currency=supermarket_product.currency if supermarket_product else None,
                     expiration_date=supermarket_product.expiration_date if supermarket_product else None,
                     stock_quantity=supermarket_product.stock_quantity if supermarket_product else None,
@@ -96,6 +106,19 @@ class ShoppingCartService:
             )
 
         return output
+
+    def get_user_cart_savings(self, user_id: UUID) -> ShoppingCartSavingsOut:
+        user = self.user_repo.get_by_id(user_id)
+        if user is None or user.is_deleted:
+            raise NotFound(entity="User", identifier=str(user_id))
+
+        total_savings = Decimal("0.00")
+        for item in self.shopping_cart_repo.get_by_user_id(user_id):
+            savings_per_unit = self._calculate_savings_per_unit(item.supermarket_product)
+            if savings_per_unit is not None:
+                total_savings += savings_per_unit * Decimal(item.quantity)
+
+        return ShoppingCartSavingsOut(total_savings=total_savings)
 
     def remove_item(self, user_id: UUID, cart_item_id: UUID) -> ShoppingCartAddOut:
         user = self.user_repo.get_by_id(user_id)
@@ -201,3 +224,11 @@ class ShoppingCartService:
                 for item in reservation.items
             ],
         )
+
+    @staticmethod
+    def _calculate_savings_per_unit(supermarket_product) -> Decimal | None:
+        if supermarket_product is None:
+            return None
+
+        savings = supermarket_product.original_price - supermarket_product.discount_price
+        return max(savings, Decimal("0.00"))

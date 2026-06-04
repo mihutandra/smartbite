@@ -10,6 +10,7 @@ from app.routers.supermarket import router as supermarket_router
 from app.routers.auth import router as auth_router
 from app.routers.reservation import router as reservation_router
 from app.routers.shopping_cart import router as shopping_cart_router
+from app.routers.profile import router as profile_router
 from app.routers.user_admin import router as user_admin_router
 
 app = FastAPI(title="SmartBite Backend")
@@ -52,6 +53,7 @@ app.include_router(supermarket_product_router)
 app.include_router(supermarket_router)
 app.include_router(shopping_cart_router)
 app.include_router(reservation_router)
+app.include_router(profile_router)
 
 
 app.include_router(auth_router)
