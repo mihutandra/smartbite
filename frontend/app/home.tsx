@@ -22,7 +22,6 @@ import {
   fetchSupermarketProductCounts,
 } from "../services/supermarkets";
 import { type Supermarket } from "../types/supermarket";
-import { getRenderableImageUrl } from "../utils/images";
 
 const FALLBACK_REGION = {
   latitude: 46.7712,
@@ -135,7 +134,7 @@ export default function HomeScreen() {
         shortLabel: getShortLabel(store.name),
         coordinate: { latitude: store.latitude, longitude: store.longitude },
         accentColor: ACCENT_COLORS[index % ACCENT_COLORS.length],
-        imageSource: getSupermarketImageSource(store.logo_url),
+        logoUrl: store.logo_url,
       })),
     [supermarkets],
   );
@@ -267,7 +266,7 @@ export default function HomeScreen() {
                       key={store.id}
                       address={store.address}
                       distanceKm={getStoreDistanceKm(store.latitude, store.longitude)}
-                      imageSource={getSupermarketImageSource(store.logo_url)}
+                      logoUrl={store.logo_url}
                       name={store.name}
                       offersCount={productCounts[store.id]}
                       // TODO: Add rating once the backend exposes supermarket ratings/reviews.
@@ -329,11 +328,6 @@ export default function HomeScreen() {
       )}
     </SafeAreaView>
   );
-}
-
-function getSupermarketImageSource(url: string | null | undefined) {
-  const imageUrl = getRenderableImageUrl(url);
-  return imageUrl ? { uri: imageUrl } : undefined;
 }
 
 function getShortLabel(name: string) {

@@ -1,16 +1,16 @@
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Image,
   Pressable,
   StyleSheet,
   Text,
   View,
-  type ImageSourcePropType,
   type StyleProp,
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { RemoteLogo } from "./RemoteLogo";
+import { getSupermarketLogoUrls } from "../utils/images";
 
 export type SupermarketCardProps = {
   address: string;
@@ -19,7 +19,7 @@ export type SupermarketCardProps = {
   offersCount?: number;
   rating?: number;
   accentColor?: string;
-  imageSource?: ImageSourcePropType;
+  logoUrl?: string | null;
   logoLabel?: string;
   logoTextStyle?: StyleProp<TextStyle>;
   onPress?: () => void;
@@ -33,24 +33,31 @@ export function SupermarketCard({
   offersCount,
   rating,
   accentColor = "#E95C24",
-  imageSource,
+  logoUrl,
   logoLabel,
   logoTextStyle,
   onPress,
   style,
 }: SupermarketCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const showImage = Boolean(imageSource) && !imageFailed;
+  const logoUrls = getSupermarketLogoUrls(name, logoUrl);
+  const logoUrlsKey = logoUrls.join("|");
+  const showImage = logoUrls.length > 0 && !imageFailed;
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [logoUrlsKey]);
 
   return (
     <Pressable onPress={onPress} style={[styles.card, style]}>
       <View style={[styles.logoContainer, { borderColor: `${accentColor}33` }] }>
         {showImage ? (
-          <Image
-            source={imageSource}
-            style={styles.logoImage}
-            resizeMode="contain"
+          <RemoteLogo
+            height={52}
             onError={() => setImageFailed(true)}
+            style={styles.logoImage}
+            urls={logoUrls}
+            width={52}
           />
         ) : (
           <View style={[styles.logoBadge, { backgroundColor: `${accentColor}14` }] }>

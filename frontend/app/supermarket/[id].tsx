@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,13 +13,14 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomNavBar } from "../../components/BottomNavBar";
 import { ProductCard } from "../../components/ProductCard";
+import { RemoteLogo } from "../../components/RemoteLogo";
 import { useLocation } from "../../context/location-context";
 import {
   fetchAllSupermarketProducts,
   fetchSupermarketDetails,
 } from "../../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../../types/supermarket";
-import { getRenderableImageUrl } from "../../utils/images";
+import { getSupermarketLogoUrls } from "../../utils/images";
 import { getCategoryLabel } from "../../utils/product_detail";
 
 const FALLBACK_REGION = {
@@ -117,7 +117,7 @@ export default function SupermarketProductsScreen() {
         supermarket.longitude,
       ).toFixed(1)
     : "--";
-  const logoUrl = getRenderableImageUrl(supermarket?.logo_url);
+  const logoUrls = supermarket ? getSupermarketLogoUrls(supermarket.name, supermarket.logo_url) : [];
 
   return (
     <SafeAreaView style={styles.screen} edges={["left", "right"]}>
@@ -150,8 +150,18 @@ export default function SupermarketProductsScreen() {
                   </View>
 
                   <View style={styles.logoFrame}>
-                    {logoUrl ? (
-                      <Image source={{ uri: logoUrl }} style={styles.logoImage} resizeMode="contain" />
+                    {logoUrls.length ? (
+                      <RemoteLogo
+                        fallback={
+                          <View style={styles.logoFallback}>
+                            <Text style={styles.logoFallbackText}>{getStoreInitials(supermarket?.name ?? "SM")}</Text>
+                          </View>
+                        }
+                        height={70}
+                        urls={logoUrls}
+                        width={70}
+                        style={styles.logoImage}
+                      />
                     ) : (
                       <View style={styles.logoFallback}>
                         <Text style={styles.logoFallbackText}>{getStoreInitials(supermarket?.name ?? "SM")}</Text>

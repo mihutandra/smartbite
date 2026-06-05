@@ -1,14 +1,14 @@
 import { Feather } from "@expo/vector-icons";
 import {
-  Image,
   StyleSheet,
   Text,
   View,
-  type ImageSourcePropType,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
 import MapView, { Marker, type Region } from "react-native-maps";
+import { RemoteLogo } from "./RemoteLogo";
+import { getSupermarketLogoUrls } from "../utils/images";
 
 type MapCoordinate = {
   latitude: number;
@@ -21,7 +21,7 @@ export type MapMarker = {
   shortLabel?: string;
   coordinate: MapCoordinate;
   accentColor?: string;
-  imageSource?: ImageSourcePropType;
+  logoUrl?: string | null;
 };
 
 export type MapSupermarketCardProps = {
@@ -77,6 +77,7 @@ export function MapSupermarketCard({
           {markers.map((marker) => {
             const accentColor = marker.accentColor ?? "#DF7A3A";
             const isSelected = marker.id === selectedMarkerId;
+            const logoUrls = getSupermarketLogoUrls(marker.name, marker.logoUrl);
 
             if (isSelected) {
               return (
@@ -94,17 +95,17 @@ export function MapSupermarketCard({
                           { backgroundColor: `${accentColor}18`, borderColor: `${accentColor}30` },
                         ]}
                       >
-                        {marker.imageSource ? (
-                          <Image
-                            source={marker.imageSource}
-                            style={styles.selectedLogoImage}
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <Text style={[styles.selectedLogoText, { color: accentColor }]}>
-                            {getShortLabel(marker.name, marker.shortLabel)}
-                          </Text>
-                        )}
+                        <RemoteLogo
+                          fallback={
+                            <Text style={[styles.selectedLogoText, { color: accentColor }]}>
+                              {getShortLabel(marker.name, marker.shortLabel)}
+                            </Text>
+                          }
+                          height={14}
+                          urls={logoUrls}
+                          width={14}
+                          style={styles.selectedLogoImage}
+                        />
                       </View>
                       <Text numberOfLines={1} style={styles.selectedLabel}>
                         {marker.name}
@@ -124,11 +125,15 @@ export function MapSupermarketCard({
                 onPress={() => onMarkerPress?.(marker.id)}
               >
                 <View style={[styles.marker, { backgroundColor: accentColor }]}>
-                  {marker.imageSource ? (
-                    <Image source={marker.imageSource} style={styles.markerImage} resizeMode="contain" />
-                  ) : (
-                    <Text style={styles.markerLabel}>{getShortLabel(marker.name, marker.shortLabel)}</Text>
-                  )}
+                  <RemoteLogo
+                    fallback={
+                      <Text style={styles.markerLabel}>{getShortLabel(marker.name, marker.shortLabel)}</Text>
+                    }
+                    height={16}
+                    urls={logoUrls}
+                    width={16}
+                    style={styles.markerImage}
+                  />
                 </View>
               </Marker>
             );

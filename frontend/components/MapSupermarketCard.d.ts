@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { ImageSourcePropType, StyleProp, ViewStyle } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 
 type MapCoordinate = {
   latitude: number;
@@ -19,7 +19,7 @@ export type MapMarker = {
   shortLabel?: string;
   coordinate: MapCoordinate;
   accentColor?: string;
-  imageSource?: ImageSourcePropType;
+  logoUrl?: string | null;
 };
 
 export type MapSupermarketCardProps = {
