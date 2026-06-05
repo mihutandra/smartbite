@@ -33,6 +33,7 @@ export type MapSupermarketCardProps = {
   style?: StyleProp<ViewStyle>;
   fullScreen?: boolean;
   topInset?: number;
+  userCoordinate?: MapCoordinate | null;
 };
 
 const DEFAULT_REGION: Region = {
@@ -51,6 +52,7 @@ export function MapSupermarketCard({
   style,
   fullScreen = false,
   topInset = 0,
+  userCoordinate,
 }: MapSupermarketCardProps) {
   return (
     <View style={[styles.card, fullScreen && styles.cardFullScreen, style]}>
@@ -74,6 +76,22 @@ export function MapSupermarketCard({
           zoomEnabled
           customMapStyle={MAP_STYLE}
         >
+          {userCoordinate ? (
+            <Marker
+              coordinate={userCoordinate}
+              anchor={{ x: 0.5, y: 0.5 }}
+              title="Locatia ta"
+              zIndex={1000}
+            >
+              <View style={styles.userMarkerOuter}>
+                <View style={styles.userMarkerInner} />
+                <View style={styles.userMarkerLabel}>
+                  <Text style={styles.userMarkerLabelText}>Tu</Text>
+                </View>
+              </View>
+            </Marker>
+          ) : null}
+
           {markers.map((marker) => {
             const accentColor = marker.accentColor ?? "#DF7A3A";
             const isSelected = marker.id === selectedMarkerId;
@@ -315,5 +333,39 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     borderWidth: 3,
     borderColor: "rgba(255,255,255,0.9)",
+  },
+  userMarkerOuter: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(78,139,91,0.24)",
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.95)",
+    shadowColor: "#245C35",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  userMarkerInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#4E8B5B",
+  },
+  userMarkerLabel: {
+    position: "absolute",
+    top: 24,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  userMarkerLabelText: {
+    color: "#3E7C4E",
+    fontSize: 10,
+    fontWeight: "900",
   },
 });

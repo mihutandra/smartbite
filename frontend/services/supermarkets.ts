@@ -1,5 +1,9 @@
 import { API_BASE_URL } from "../constants/api";
-import { type Supermarket, type SupermarketProduct } from "../types/supermarket";
+import {
+  type Supermarket,
+  type SupermarketMapMarker,
+  type SupermarketProduct,
+} from "../types/supermarket";
 
 export class SupermarketServiceError extends Error {
   constructor(message: string) {
@@ -15,6 +19,19 @@ const SUPERMARKET_MAX_PAGES = 10;
 const SUPERMARKET_PRODUCTS_PAGE_SIZE = 100;
 const SUPERMARKET_PRODUCTS_MAX_PAGES = 10;
 const SUPERMARKET_REQUEST_TIMEOUT_MS = 15_000;
+
+type UserLocationQuery = {
+  latitude: number;
+  longitude: number;
+};
+
+type MapBoundsQuery = {
+  south: number;
+  north: number;
+  west: number;
+  east: number;
+  limit?: number;
+};
 
 function withProductProxyImageUrl(product: SupermarketProduct): SupermarketProduct {
   return {
@@ -103,9 +120,18 @@ function createQueryString(params: Record<string, string | number | undefined>) 
   return queryString ? `?${queryString}` : "";
 }
 
-export async function fetchSupermarkets(page = 1, pageSize = 20): Promise<Supermarket[]> {
+export async function fetchSupermarkets(
+  page = 1,
+  pageSize = 20,
+  userLocation?: UserLocationQuery,
+): Promise<Supermarket[]> {
   try {
-    const queryString = createQueryString({ page, page_size: pageSize });
+    const queryString = createQueryString({
+      page,
+      page_size: pageSize,
+      user_lat: userLocation?.latitude,
+      user_lng: userLocation?.longitude,
+    });
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/supermarkets${queryString}`,
     );
@@ -203,13 +229,14 @@ export async function fetchSupermarketProducts(
 
 export async function fetchAllSupermarkets(
   pageSize = SUPERMARKET_PAGE_SIZE,
+  userLocation?: UserLocationQuery,
 ): Promise<Supermarket[]> {
   try {
     const supermarkets: Supermarket[] = [];
     let page = 1;
 
     while (page <= SUPERMARKET_MAX_PAGES) {
-      const currentPage = await fetchSupermarkets(page, pageSize);
+      const currentPage = await fetchSupermarkets(page, pageSize, userLocation);
       supermarkets.push(...currentPage);
 
       if (currentPage.length < pageSize) {
@@ -226,6 +253,39 @@ export async function fetchAllSupermarkets(
     }
 
     throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function fetchSupermarketsInBounds(
+  bounds: MapBoundsQuery,
+  userLocation?: UserLocationQuery,
+): Promise<SupermarketMapMarker[]> {
+  try {
+    const queryString = createQueryString({
+      south: bounds.south,
+      north: bounds.north,
+      west: bounds.west,
+      east: bounds.east,
+      limit: bounds.limit,
+      user_lat: userLocation?.latitude,
+      user_lng: userLocation?.longitude,
+    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/api/supermarkets/map/in-bounds${queryString}`,
+    );
+    const data = await parseApiResponse<SupermarketMapMarker[]>(response);
+
+    if (!Array.isArray(data)) {
+      throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
   }
 }
 

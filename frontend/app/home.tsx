@@ -19,9 +19,10 @@ import { useAuth } from "../context/auth-context";
 import { useLocation } from "../context/location-context";
 import {
   fetchAllSupermarkets,
+  fetchSupermarketsInBounds,
   fetchSupermarketProductCounts,
 } from "../services/supermarkets";
-import { type Supermarket } from "../types/supermarket";
+import { type Supermarket, type SupermarketMapMarker } from "../types/supermarket";
 
 const FALLBACK_REGION = {
   latitude: 46.7712,
@@ -31,18 +32,37 @@ const FALLBACK_REGION = {
 };
 
 const ACCENT_COLORS = ["#E06F34", "#E04935", "#4D8E6A", "#6B8E23", "#C26D3C"];
+const HOME_SUPERMARKET_PAGE_SIZE = 100;
+const HOME_MAP_MARKER_LIMIT = 500;
+
+type MapSupermarketDisplay = SupermarketMapMarker;
 
 export default function HomeScreen() {
   const { view } = useLocalSearchParams<{ view?: string }>();
   const insets = useSafeAreaInsets();
   const { signOut, status, user } = useAuth();
-  const { userLocation } = useLocation();
+  const { isRequestingLocation, requestUserLocation, userLocation } = useLocation();
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
+  const [mapSupermarkets, setMapSupermarkets] = useState<SupermarketMapMarker[]>([]);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [selectedStoreId, setSelectedStoreId] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [loadError, setLoadError] = useState("");
   const [isLoadingStores, setIsLoadingStores] = useState(true);
+  const [isLoadingMapStores, setIsLoadingMapStores] = useState(false);
+  const [mapRenderKey, setMapRenderKey] = useState(0);
+  const userLatitude = userLocation?.latitude;
+  const userLongitude = userLocation?.longitude;
+  const locationQuery = useMemo(
+    () =>
+      typeof userLatitude === "number" && typeof userLongitude === "number"
+        ? {
+            latitude: Number(userLatitude.toFixed(6)),
+            longitude: Number(userLongitude.toFixed(6)),
+          }
+        : undefined,
+    [userLatitude, userLongitude],
+  );
 
   useEffect(() => {
     setViewMode(view === "map" ? "map" : "list");
@@ -62,7 +82,7 @@ export default function HomeScreen() {
       setLoadError("");
 
       try {
-        const supermarketList = await fetchAllSupermarkets();
+        const supermarketList = await fetchAllSupermarkets(HOME_SUPERMARKET_PAGE_SIZE, locationQuery);
 
         if (!isMounted) {
           return;
@@ -91,7 +111,7 @@ export default function HomeScreen() {
     return () => {
       isMounted = false;
     };
-  }, [status]);
+  }, [locationQuery, status]);
 
   useEffect(() => {
     if (status !== "authenticated") {
@@ -126,19 +146,6 @@ export default function HomeScreen() {
     };
   }, [status]);
 
-  const markers = useMemo<MapMarker[]>(
-    () =>
-      supermarkets.map((store, index) => ({
-        id: store.id,
-        name: store.name,
-        shortLabel: getShortLabel(store.name),
-        coordinate: { latitude: store.latitude, longitude: store.longitude },
-        accentColor: ACCENT_COLORS[index % ACCENT_COLORS.length],
-        logoUrl: store.logo_url,
-      })),
-    [supermarkets],
-  );
-
   const locationRegion = useMemo(
     () => ({
       latitude: userLocation?.latitude ?? FALLBACK_REGION.latitude,
@@ -149,37 +156,136 @@ export default function HomeScreen() {
     [userLocation?.latitude, userLocation?.longitude],
   );
 
+  const mapBounds = useMemo(
+    () => getBoundsFromRegion(locationRegion),
+    [locationRegion],
+  );
+
+  useEffect(() => {
+    if (status !== "authenticated" || viewMode !== "map") {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadMapSupermarkets() {
+      setIsLoadingMapStores(true);
+
+      try {
+        const mapResults = await fetchSupermarketsInBounds(
+          {
+            ...mapBounds,
+            limit: HOME_MAP_MARKER_LIMIT,
+          },
+          locationQuery,
+        );
+
+        if (!isMounted) {
+          return;
+        }
+
+        setMapSupermarkets(mapResults);
+        setSelectedStoreId((current) => {
+          if (!mapResults.length || mapResults.some((store) => store.id === current)) {
+            return current;
+          }
+
+          return mapResults[0]?.id ?? current;
+        });
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setMapSupermarkets([]);
+      } finally {
+        if (isMounted) {
+          setIsLoadingMapStores(false);
+        }
+      }
+    }
+
+    void loadMapSupermarkets();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [locationQuery, mapBounds, status, viewMode]);
+
   const getStoreDistanceKm = useMemo(
     () => (latitude: number, longitude: number) =>
       getDistanceKm(locationRegion.latitude, locationRegion.longitude, latitude, longitude),
     [locationRegion.latitude, locationRegion.longitude],
   );
 
-  const sortedStores = useMemo(
-    () =>
-      [...supermarkets].sort((left, right) => {
-        if (left.id === selectedStoreId) {
-          return -1;
-        }
-
-        if (right.id === selectedStoreId) {
-          return 1;
-        }
-
-        return (
-          getStoreDistanceKm(left.latitude, left.longitude) -
-          getStoreDistanceKm(right.latitude, right.longitude)
-        );
-      }),
-    [getStoreDistanceKm, supermarkets, selectedStoreId],
+  const getSupermarketDistanceKm = useMemo(
+    () => (store: Pick<Supermarket, "distance_km" | "latitude" | "longitude">) =>
+      store.distance_km ?? getStoreDistanceKm(store.latitude, store.longitude),
+    [getStoreDistanceKm],
+  );
+  const getMapStoreDistanceKm = useMemo(
+    () => (store: Pick<SupermarketMapMarker, "distance_km" | "latitude" | "longitude">) =>
+      store.distance_km ?? getStoreDistanceKm(store.latitude, store.longitude),
+    [getStoreDistanceKm],
   );
 
-  const selectedStore =
-    supermarkets.find((store) => store.id === selectedStoreId) ?? supermarkets[0];
+  const sortedStores = useMemo(
+    () =>
+      [...supermarkets].sort(
+        (left, right) => getSupermarketDistanceKm(left) - getSupermarketDistanceKm(right),
+      ),
+    [getSupermarketDistanceKm, supermarkets],
+  );
+
+  const mapStoreSource = useMemo<MapSupermarketDisplay[]>(
+    () =>
+      mapSupermarkets.length > 0
+        ? mapSupermarkets
+        : sortedStores.map((store) => ({
+            id: store.id,
+            name: store.name,
+            address: store.address,
+            latitude: store.latitude,
+            longitude: store.longitude,
+            logo_url: store.logo_url,
+            rating: store.rating ?? null,
+            offers_count: productCounts[store.id] ?? 0,
+            distance_km: store.distance_km ?? getStoreDistanceKm(store.latitude, store.longitude),
+          })),
+    [getStoreDistanceKm, mapSupermarkets, productCounts, sortedStores],
+  );
+
+  const markers = useMemo<MapMarker[]>(
+    () =>
+      mapStoreSource.map((store, index) => ({
+        id: store.id,
+        name: store.name,
+        shortLabel: getShortLabel(store.name),
+        coordinate: { latitude: store.latitude, longitude: store.longitude },
+        accentColor: ACCENT_COLORS[index % ACCENT_COLORS.length],
+        logoUrl: store.logo_url,
+      })),
+    [mapStoreSource],
+  );
+
+  const selectedMapStore =
+    mapStoreSource.find((store) => store.id === selectedStoreId) ?? mapStoreSource[0];
+  const nearbyMapStores = useMemo(
+    () =>
+      [...mapStoreSource]
+        .sort((left, right) => getMapStoreDistanceKm(left) - getMapStoreDistanceKm(right))
+        .slice(0, 6),
+    [getMapStoreDistanceKm, mapStoreSource],
+  );
 
   function openStore(storeId: string) {
     setSelectedStoreId(storeId);
     router.push(`/supermarket/${storeId}` as never);
+  }
+
+  async function recenterMap() {
+    await requestUserLocation();
+    setMapRenderKey((current) => current + 1);
   }
 
   if (status === "loading") {
@@ -265,7 +371,7 @@ export default function HomeScreen() {
                     <SupermarketCard
                       key={store.id}
                       address={store.address}
-                      distanceKm={getStoreDistanceKm(store.latitude, store.longitude)}
+                      distanceKm={getSupermarketDistanceKm(store)}
                       logoUrl={store.logo_url}
                       name={store.name}
                       offersCount={productCounts[store.id]}
@@ -282,6 +388,7 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.mapScreen}>
               <MapSupermarketCard
+                key={`map-${mapRenderKey}`}
                 title="Harta Magazine"
                 markers={markers}
                 selectedMarkerId={selectedStoreId}
@@ -289,21 +396,105 @@ export default function HomeScreen() {
                 onMarkerPress={setSelectedStoreId}
                 fullScreen
                 topInset={insets.top}
+                userCoordinate={
+                  userLocation
+                    ? { latitude: userLocation.latitude, longitude: userLocation.longitude }
+                    : null
+                }
               />
-              <View style={styles.mapOverlay}>
-                <Pressable onPress={() => setViewMode("list")} style={styles.backToListButton}>
-                  <Feather color="#4E8B5B" name="list" size={16} />
-                  <Text style={styles.backToListText}>Lista</Text>
+
+              <View style={[styles.mapTopControls, { top: insets.top + 70 }]}>
+                <Pressable onPress={() => setViewMode("list")} style={styles.mapIconButton}>
+                  <Feather color="#4E8B5B" name="list" size={18} />
+                </Pressable>
+                <Pressable onPress={() => router.push("/search" as never)} style={styles.mapIconButton}>
+                  <Feather color="#4E8B5B" name="search" size={18} />
                 </Pressable>
                 <Pressable
-                  disabled={!selectedStore}
-                  onPress={() => selectedStore && openStore(selectedStore.id)}
-                  style={styles.selectedStoreButton}
+                  disabled={isRequestingLocation}
+                  onPress={() => void recenterMap()}
+                  style={styles.mapIconButton}
                 >
-                  <Text style={styles.selectedStoreButtonText}>
-                    {selectedStore ? selectedStore.name : "Selecteaza un magazin"}
-                  </Text>
+                  {isRequestingLocation ? (
+                    <ActivityIndicator color="#4E8B5B" size="small" />
+                  ) : (
+                    <Feather color="#4E8B5B" name="crosshair" size={18} />
+                  )}
                 </Pressable>
+              </View>
+
+              <View style={styles.mapBottomSheet}>
+                <View style={styles.mapSheetHandle} />
+
+                <View style={styles.mapSheetHeader}>
+                  <View style={styles.mapSheetTitleBlock}>
+                    <Text style={styles.mapSheetEyebrow}>
+                      {`${mapStoreSource.length} magazine in zona`}
+                    </Text>
+                    {isLoadingMapStores ? (
+                      <Text style={styles.mapSheetLoadingText}>Se actualizeaza harta...</Text>
+                    ) : null}
+                    <Text numberOfLines={1} style={styles.mapSheetTitle}>
+                      {selectedMapStore ? selectedMapStore.name : "Alege un magazin"}
+                    </Text>
+                    <Text numberOfLines={1} style={styles.mapSheetAddress}>
+                      {selectedMapStore?.address ?? "Selecteaza un pin de pe harta"}
+                    </Text>
+                  </View>
+
+                  <Pressable
+                    disabled={!selectedMapStore}
+                    onPress={() => selectedMapStore && openStore(selectedMapStore.id)}
+                    style={[styles.mapDetailsButton, !selectedMapStore && styles.mapDetailsButtonDisabled]}
+                  >
+                    <Feather color="#FFFDF6" name="arrow-right" size={17} />
+                  </Pressable>
+                </View>
+
+                {selectedMapStore ? (
+                  <View style={styles.mapStatsRow}>
+                    <View style={styles.mapStatPill}>
+                      <Feather color="#4E8B5B" name="navigation" size={13} />
+                      <Text style={styles.mapStatText}>
+                        {formatDistance(getMapStoreDistanceKm(selectedMapStore))}
+                      </Text>
+                    </View>
+                    <View style={styles.mapStatPill}>
+                      <Feather color="#A65E34" name="tag" size={13} />
+                      <Text style={styles.mapStatText}>
+                        {`${selectedMapStore.offers_count} oferte`}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.nearbyStoreStrip}
+                >
+                  {nearbyMapStores.map((store) => {
+                    const isSelected = store.id === selectedStoreId;
+
+                    return (
+                      <Pressable
+                        key={store.id}
+                        onPress={() => setSelectedStoreId(store.id)}
+                        style={[styles.nearbyStoreChip, isSelected && styles.nearbyStoreChipActive]}
+                      >
+                        <Text
+                          numberOfLines={1}
+                          style={[styles.nearbyStoreName, isSelected && styles.nearbyStoreNameActive]}
+                        >
+                          {store.name}
+                        </Text>
+                        <Text style={styles.nearbyStoreDistance}>
+                          {formatDistance(getMapStoreDistanceKm(store))}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
               </View>
             </View>
           )}
@@ -348,6 +539,28 @@ function getDistanceKm(
   const distanceInKm = haversineDistanceKm(fromLatitude, fromLongitude, toLatitude, toLongitude);
 
   return Number(distanceInKm.toFixed(1));
+}
+
+function getBoundsFromRegion(region: {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}) {
+  return {
+    south: region.latitude - region.latitudeDelta / 2,
+    north: region.latitude + region.latitudeDelta / 2,
+    west: region.longitude - region.longitudeDelta / 2,
+    east: region.longitude + region.longitudeDelta / 2,
+  };
+}
+
+function formatDistance(distanceKm: number) {
+  if (distanceKm < 1) {
+    return `${Math.round(distanceKm * 1000)} m`;
+  }
+
+  return `${distanceKm.toFixed(1)} km`;
 }
 
 function haversineDistanceKm(
@@ -557,37 +770,141 @@ const styles = StyleSheet.create({
   mapScreen: {
     flex: 1,
   },
-  mapOverlay: {
+  mapTopControls: {
     position: "absolute",
     right: 14,
-    bottom: 18,
-    left: 14,
-    gap: 10,
+    gap: 8,
   },
-  backToListButton: {
-    alignSelf: "flex-start",
+  mapIconButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.94)",
+    shadowColor: "#80572D",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  mapBottomSheet: {
+    position: "absolute",
+    right: 12,
+    bottom: 14,
+    left: 12,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,253,249,0.97)",
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    paddingBottom: 14,
+    shadowColor: "#80572D",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  mapSheetHandle: {
+    alignSelf: "center",
+    width: 42,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "#E2CDB8",
+    marginBottom: 10,
+  },
+  mapSheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  mapSheetTitleBlock: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mapSheetEyebrow: {
+    color: "#A65E34",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  mapSheetLoadingText: {
+    color: "#8B7668",
+    fontSize: 11,
+    fontWeight: "700",
+    marginTop: 2,
+  },
+  mapSheetTitle: {
+    color: "#3D342D",
+    fontSize: 18,
+    fontWeight: "900",
+    marginTop: 2,
+  },
+  mapSheetAddress: {
+    color: "#837268",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  mapDetailsButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#4E8B5B",
+  },
+  mapDetailsButtonDisabled: {
+    opacity: 0.45,
+  },
+  mapStatsRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    gap: 8,
+  },
+  mapStatPill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.94)",
-    paddingHorizontal: 14,
+    backgroundColor: "#F3E6D8",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  mapStatText: {
+    color: "#5A473B",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  nearbyStoreStrip: {
+    gap: 8,
+    paddingTop: 12,
+  },
+  nearbyStoreChip: {
+    minWidth: 132,
+    maxWidth: 168,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EAD7C1",
+    backgroundColor: "#FFF9F0",
+    paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  backToListText: {
-    color: "#4E8B5B",
-    fontSize: 13,
-    fontWeight: "800",
+  nearbyStoreChipActive: {
+    borderColor: "#4E8B5B",
+    backgroundColor: "#EDF6EF",
   },
-  selectedStoreButton: {
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.94)",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  selectedStoreButtonText: {
+  nearbyStoreName: {
     color: "#3D342D",
-    fontSize: 15,
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  nearbyStoreNameActive: {
+    color: "#3E7C4E",
+  },
+  nearbyStoreDistance: {
+    marginTop: 4,
+    color: "#8B7668",
+    fontSize: 11,
     fontWeight: "800",
   },
 });

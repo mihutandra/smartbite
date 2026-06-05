@@ -9,9 +9,23 @@ export type Supermarket = {
   website: string | null;
   logo_url: string | null;
   opening_hours: Record<string, unknown> | null;
+  rating?: number | null;
+  distance_km?: number | null;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string | null;
+};
+
+export type SupermarketMapMarker = {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  logo_url: string | null;
+  rating: number | null;
+  offers_count: number;
+  distance_km: number | null;
 };
 
 export type SupermarketProduct = {

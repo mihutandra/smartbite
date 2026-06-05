@@ -31,6 +31,7 @@ export type MapSupermarketCardProps = {
   style?: StyleProp<ViewStyle>;
   fullScreen?: boolean;
   topInset?: number;
+  userCoordinate?: MapCoordinate | null;
 };
 
 export const MapSupermarketCard: ComponentType<MapSupermarketCardProps>;
