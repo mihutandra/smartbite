@@ -14,7 +14,14 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomNavBar } from "../../components/BottomNavBar";
+import { useAuth } from "../../context/auth-context";
+import {
+  addShoppingCartItem,
+  fetchShoppingCart,
+  removeShoppingCartItem,
+} from "../../services/shopping-cart";
 import { fetchSupermarketProduct } from "../../services/supermarkets";
+import { type ShoppingCartItem } from "../../types/shopping-cart";
 import { type SupermarketProduct } from "../../types/supermarket";
 import {
   calculateDiscountPercentage,
@@ -27,11 +34,16 @@ import {
 export default function ProductDetailsScreen() {
   const insets = useSafeAreaInsets();
   const { id, supermarketId } = useLocalSearchParams<{ id?: string; supermarketId?: string }>();
+  const { accessToken } = useAuth();
   const [product, setProduct] = useState<SupermarketProduct | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [reserveError, setReserveError] = useState("");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isReserveNoticeVisible, setIsReserveNoticeVisible] = useState(false);
+  const [replaceCartItems, setReplaceCartItems] = useState<ShoppingCartItem[]>([]);
+  const [isReplaceCartModalVisible, setIsReplaceCartModalVisible] = useState(false);
 
   useEffect(() => {
     if (typeof id !== "string") {
@@ -39,13 +51,14 @@ export default function ProductDetailsScreen() {
     }
 
     let isMounted = true;
+    const productId = id;
 
     async function loadProduct() {
       setIsLoading(true);
       setLoadError("");
 
       try {
-        const response = await fetchSupermarketProduct(id);
+        const response = await fetchSupermarketProduct(productId);
 
         if (!isMounted) {
           return;
@@ -90,12 +103,67 @@ export default function ProductDetailsScreen() {
     });
   }, [maxQuantity]);
 
-  function reserveProduct() {
-    if (!product || product.stock_quantity < 1) {
+  async function reserveProduct() {
+    if (!product || product.stock_quantity < 1 || !accessToken) {
       return;
     }
 
-    setIsReserveNoticeVisible(true);
+    setIsAddingToCart(true);
+    setReserveError("");
+
+    try {
+      const currentCartItems = await fetchShoppingCart(accessToken);
+      const hasDifferentSupermarketItem = currentCartItems.some(
+        (item) =>
+          Boolean(item.supermarket_id) &&
+          Boolean(product.supermarket_id) &&
+          item.supermarket_id !== product.supermarket_id,
+      );
+
+      if (hasDifferentSupermarketItem) {
+        setReplaceCartItems(currentCartItems);
+        setIsReplaceCartModalVisible(true);
+        return;
+      }
+
+      await addProductToCart();
+      setIsReserveNoticeVisible(true);
+    } catch (error) {
+      setReserveError(error instanceof Error ? error.message : "Nu am putut adauga produsul in cos.");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  }
+
+  async function addProductToCart() {
+    if (!product || !accessToken) {
+      return;
+    }
+
+    await addShoppingCartItem(accessToken, product.id, quantity);
+  }
+
+  async function replaceCartAndReserveProduct() {
+    if (!accessToken) {
+      return;
+    }
+
+    setIsAddingToCart(true);
+    setReserveError("");
+
+    try {
+      await Promise.all(
+        replaceCartItems.map((item) => removeShoppingCartItem(accessToken, item.id)),
+      );
+      await addProductToCart();
+      setReplaceCartItems([]);
+      setIsReplaceCartModalVisible(false);
+      setIsReserveNoticeVisible(true);
+    } catch (error) {
+      setReserveError(error instanceof Error ? error.message : "Nu am putut inlocui cosul.");
+    } finally {
+      setIsAddingToCart(false);
+    }
   }
 
   return (
@@ -201,16 +269,20 @@ export default function ProductDetailsScreen() {
                   </View>
 
                   <Pressable
-                    disabled={maxQuantity < 1}
-                    onPress={reserveProduct}
-                    style={[styles.reserveButton, maxQuantity < 1 && styles.reserveButtonDisabled]}
+                    disabled={maxQuantity < 1 || isAddingToCart}
+                    onPress={() => void reserveProduct()}
+                    style={[
+                      styles.reserveButton,
+                      (maxQuantity < 1 || isAddingToCart) && styles.reserveButtonDisabled,
+                    ]}
                   >
                     <Feather color="#FFF8F0" name="shopping-bag" size={16} />
                     <Text style={styles.reserveButtonText}>
-                      {maxQuantity < 1 ? "Stoc epuizat" : "Rezerva acum"}
+                      {maxQuantity < 1 ? "Stoc epuizat" : isAddingToCart ? "Se adauga..." : "Rezerva acum"}
                     </Text>
                   </Pressable>
                 </View>
+                {reserveError ? <Text style={styles.reserveErrorText}>{reserveError}</Text> : null}
               </View>
             </View>
           </ScrollView>
@@ -229,7 +301,7 @@ export default function ProductDetailsScreen() {
               }
 
               if (tab === "cart") {
-                router.push("/cart" as never);
+                router.push("/shopping-cart" as never);
                 return;
               }
 
@@ -269,11 +341,56 @@ export default function ProductDetailsScreen() {
                   <Pressable
                     onPress={() => {
                       setIsReserveNoticeVisible(false);
-                      router.push("/cart" as never);
+                      router.push("/shopping-cart" as never);
                     }}
                     style={styles.modalPrimaryButton}
                   >
                     <Text style={styles.modalPrimaryButtonText}>Mergi la cos</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </Modal>
+
+          <Modal
+            animationType="fade"
+            transparent
+            visible={isReplaceCartModalVisible}
+            onRequestClose={() => {
+              setIsReplaceCartModalVisible(false);
+              setReplaceCartItems([]);
+            }}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalCard}>
+                <View style={styles.replaceIconWrap}>
+                  <Feather color="#FFF8F0" name="refresh-cw" size={22} />
+                </View>
+                <Text style={styles.modalTitle}>Cos din alt magazin</Text>
+                <Text style={styles.modalText}>
+                  Cosul poate contine produse dintr-un singur supermarket. Pentru a adauga acest produs, inlocuieste produsele existente.
+                </Text>
+
+                <View style={styles.modalActions}>
+                  <Pressable
+                    disabled={isAddingToCart}
+                    onPress={() => {
+                      setIsReplaceCartModalVisible(false);
+                      setReplaceCartItems([]);
+                    }}
+                    style={styles.modalSecondaryButton}
+                  >
+                    <Text style={styles.modalSecondaryButtonText}>Pastreaza cosul</Text>
+                  </Pressable>
+
+                  <Pressable
+                    disabled={isAddingToCart}
+                    onPress={() => void replaceCartAndReserveProduct()}
+                    style={[styles.replacePrimaryButton, isAddingToCart && styles.reserveButtonDisabled]}
+                  >
+                    <Text style={styles.modalPrimaryButtonText}>
+                      {isAddingToCart ? "Se inlocuieste..." : "Inlocuieste cosul"}
+                    </Text>
                   </Pressable>
                 </View>
               </View>
@@ -614,6 +731,13 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "900",
   },
+  reserveErrorText: {
+    color: "#B95335",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 19,
+    textAlign: "center",
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(53, 38, 28, 0.42)",
@@ -646,6 +770,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#4F8C62",
     shadowColor: "#4F8C62",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  replaceIconWrap: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#D66C2D",
+    shadowColor: "#D66C2D",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -686,6 +823,19 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   modalPrimaryButton: {
+    minHeight: 52,
+    borderRadius: 16,
+    backgroundColor: "#D66C2D",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    shadowColor: "#D66C2D",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+  replacePrimaryButton: {
     minHeight: 52,
     borderRadius: 16,
     backgroundColor: "#D66C2D",

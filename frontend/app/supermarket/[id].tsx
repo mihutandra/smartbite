@@ -41,6 +41,7 @@ export default function SupermarketProductsScreen() {
     }
 
     let isMounted = true;
+    const supermarketId = id;
 
     async function loadData() {
       setIsLoading(true);
@@ -48,8 +49,8 @@ export default function SupermarketProductsScreen() {
 
       try {
         const [supermarketResponse, productsResponse] = await Promise.all([
-          fetchSupermarketDetails(id),
-          fetchAllSupermarketProducts(id),
+          fetchSupermarketDetails(supermarketId),
+          fetchAllSupermarketProducts(supermarketId),
         ]);
 
         if (!isMounted) {
@@ -226,7 +227,7 @@ export default function SupermarketProductsScreen() {
               }
 
               if (tab === "cart") {
-                router.push("/cart" as never);
+                router.push("/shopping-cart" as never);
                 return;
               }
 

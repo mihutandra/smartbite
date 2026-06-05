@@ -289,7 +289,7 @@ export default function SearchScreen() {
           }
 
           if (tab === "cart") {
-            router.push("/cart" as never);
+            router.push("/shopping-cart" as never);
           }
         }}
       />
