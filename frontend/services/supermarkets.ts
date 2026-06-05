@@ -14,6 +14,7 @@ const SUPERMARKET_PAGE_SIZE = 100;
 const SUPERMARKET_MAX_PAGES = 10;
 const SUPERMARKET_PRODUCTS_PAGE_SIZE = 100;
 const SUPERMARKET_PRODUCTS_MAX_PAGES = 10;
+const SUPERMARKET_REQUEST_TIMEOUT_MS = 15_000;
 
 function withProductProxyImageUrl(product: SupermarketProduct): SupermarketProduct {
   return {
@@ -64,6 +65,30 @@ async function parseApiResponse<T>(response: Response): Promise<T> {
   return data as T;
 }
 
+async function fetchWithTimeout(url: string, options?: RequestInit) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), SUPERMARKET_REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function createConnectionError(error: unknown) {
+  if (error instanceof Error && error.name === "AbortError") {
+    return new SupermarketServiceError(
+      "Cererea dureaza prea mult. Verifica serverul si incearca din nou.",
+    );
+  }
+
+  return new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+}
+
 function createQueryString(params: Record<string, string | number | undefined>) {
   const searchParams = new URLSearchParams();
 
@@ -81,7 +106,7 @@ function createQueryString(params: Record<string, string | number | undefined>) 
 export async function fetchSupermarkets(page = 1, pageSize = 20): Promise<Supermarket[]> {
   try {
     const queryString = createQueryString({ page, page_size: pageSize });
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/supermarkets${queryString}`,
     );
 
@@ -97,13 +122,13 @@ export async function fetchSupermarkets(page = 1, pageSize = 20): Promise<Superm
       throw error;
     }
 
-    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 
 export async function fetchSupermarket(supermarketId: string): Promise<Supermarket> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/supermarkets/${supermarketId}`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/supermarkets/${supermarketId}`);
     const data = await parseApiResponse<Supermarket>(response);
 
     if (typeof data?.id !== "string") {
@@ -116,13 +141,13 @@ export async function fetchSupermarket(supermarketId: string): Promise<Supermark
       throw error;
     }
 
-    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 
 export async function fetchSupermarketDetails(supermarketId: string): Promise<Supermarket> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/supermarkets/${supermarketId}/details`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/supermarkets/${supermarketId}/details`);
     const data = await parseApiResponse<Supermarket>(response);
 
     if (Array.isArray(data)) {
@@ -143,7 +168,7 @@ export async function fetchSupermarketDetails(supermarketId: string): Promise<Su
       throw error;
     }
 
-    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 
@@ -153,7 +178,7 @@ export async function fetchSupermarketProducts(
   pageSize = 100,
 ): Promise<SupermarketProduct[]> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/supermarket-products/${supermarketId}/products${createQueryString({
         page,
         page_size: pageSize,
@@ -172,7 +197,7 @@ export async function fetchSupermarketProducts(
       throw error;
     }
 
-    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 

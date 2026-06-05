@@ -16,16 +16,15 @@ import { MapSupermarketCard, type MapMarker } from "../components/MapSupermarket
 import { SupermarketCard } from "../components/SupermarketCard";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 import { useAuth } from "../context/auth-context";
+import { useLocation } from "../context/location-context";
 import {
   fetchAllSupermarkets,
   fetchSupermarketProductCounts,
 } from "../services/supermarkets";
 import { type Supermarket } from "../types/supermarket";
+import { getRenderableImageUrl } from "../utils/images";
 
-const INITIAL_REGION = {
-  // Temporary fallback centered on Cluj until the backend exposes the user's
-  // actual location or a region tailored to the returned supermarket set.
-  // TODO: Replace with actual user location or server-driven region once supported by the backend
+const FALLBACK_REGION = {
   latitude: 46.7712,
   longitude: 23.6236,
   latitudeDelta: 0.12,
@@ -38,6 +37,7 @@ export default function HomeScreen() {
   const { view } = useLocalSearchParams<{ view?: string }>();
   const insets = useSafeAreaInsets();
   const { signOut, status, user } = useAuth();
+  const { userLocation } = useLocation();
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [selectedStoreId, setSelectedStoreId] = useState("");
@@ -135,14 +135,26 @@ export default function HomeScreen() {
         shortLabel: getShortLabel(store.name),
         coordinate: { latitude: store.latitude, longitude: store.longitude },
         accentColor: ACCENT_COLORS[index % ACCENT_COLORS.length],
-        imageSource: store.logo_url ? { uri: store.logo_url } : undefined,
+        imageSource: getSupermarketImageSource(store.logo_url),
       })),
     [supermarkets],
   );
 
-  // TODO: Harta Magazine is still in progress. The screen UI is in place,
-  // but it still relies on the supermarket list response plus a temporary
-  // fallback region until dedicated backend map/location endpoints exist.
+  const locationRegion = useMemo(
+    () => ({
+      latitude: userLocation?.latitude ?? FALLBACK_REGION.latitude,
+      longitude: userLocation?.longitude ?? FALLBACK_REGION.longitude,
+      latitudeDelta: FALLBACK_REGION.latitudeDelta,
+      longitudeDelta: FALLBACK_REGION.longitudeDelta,
+    }),
+    [userLocation?.latitude, userLocation?.longitude],
+  );
+
+  const getStoreDistanceKm = useMemo(
+    () => (latitude: number, longitude: number) =>
+      getDistanceKm(locationRegion.latitude, locationRegion.longitude, latitude, longitude),
+    [locationRegion.latitude, locationRegion.longitude],
+  );
 
   const sortedStores = useMemo(
     () =>
@@ -155,9 +167,12 @@ export default function HomeScreen() {
           return 1;
         }
 
-        return getDistanceKm(left.latitude, left.longitude) - getDistanceKm(right.latitude, right.longitude);
+        return (
+          getStoreDistanceKm(left.latitude, left.longitude) -
+          getStoreDistanceKm(right.latitude, right.longitude)
+        );
       }),
-    [supermarkets, selectedStoreId],
+    [getStoreDistanceKm, supermarkets, selectedStoreId],
   );
 
   const selectedStore =
@@ -251,8 +266,8 @@ export default function HomeScreen() {
                     <SupermarketCard
                       key={store.id}
                       address={store.address}
-                      distanceKm={getDistanceKm(store.latitude, store.longitude)}
-                      imageSource={store.logo_url ? { uri: store.logo_url } : undefined}
+                      distanceKm={getStoreDistanceKm(store.latitude, store.longitude)}
+                      imageSource={getSupermarketImageSource(store.logo_url)}
                       name={store.name}
                       offersCount={productCounts[store.id]}
                       // TODO: Add rating once the backend exposes supermarket ratings/reviews.
@@ -271,10 +286,7 @@ export default function HomeScreen() {
                 title="Harta Magazine"
                 markers={markers}
                 selectedMarkerId={selectedStoreId}
-                initialRegion={INITIAL_REGION}
-                // The map still uses frontend-derived marker positions and selection.
-                // If we add backend map/filter endpoints later, this view should switch
-                // to server-driven regions, clustering, and map-specific search results.
+                initialRegion={locationRegion}
                 onMarkerPress={setSelectedStoreId}
                 fullScreen
                 topInset={insets.top}
@@ -319,6 +331,11 @@ export default function HomeScreen() {
   );
 }
 
+function getSupermarketImageSource(url: string | null | undefined) {
+  const imageUrl = getRenderableImageUrl(url);
+  return imageUrl ? { uri: imageUrl } : undefined;
+}
+
 function getShortLabel(name: string) {
   return name
     .split(" ")
@@ -328,9 +345,13 @@ function getShortLabel(name: string) {
     .join("");
 }
 
-function getDistanceKm(latitude: number, longitude: number) {
-  const distanceInKm =
-    haversineDistanceKm(INITIAL_REGION.latitude, INITIAL_REGION.longitude, latitude, longitude);
+function getDistanceKm(
+  fromLatitude: number,
+  fromLongitude: number,
+  toLatitude: number,
+  toLongitude: number,
+) {
+  const distanceInKm = haversineDistanceKm(fromLatitude, fromLongitude, toLatitude, toLongitude);
 
   return Number(distanceInKm.toFixed(1));
 }
