@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from pydantic import BaseModel, EmailStr, Field
 
 from app.models.enums import UserRole
@@ -60,3 +61,8 @@ class LogoutOut(BaseModel):
 
 class DeleteAccountOut(BaseModel):
     message: str
+
+
+class ProfileSavingsOut(BaseModel):
+    total_savings: Decimal
+    currency: str = "RON"

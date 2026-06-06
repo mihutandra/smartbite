@@ -1,10 +1,12 @@
 from uuid import UUID
+from decimal import Decimal
 
 from app.exceptions.exceptions import NotFound
 from app.models.reservation import Reservation
 from app.repositories.reservation import ReservationRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.reservation import ReservationItemOut, ReservationOut, ReservationStatus
+from app.schemas.user import ProfileSavingsOut
 
 
 class ReservationService:
@@ -41,6 +43,23 @@ class ReservationService:
             raise NotFound(entity="Reservation", identifier=str(reservation_id))
 
         return self._to_out(reservation)
+
+    def get_user_total_savings(self, user_id: UUID) -> ProfileSavingsOut:
+        user = self.user_repo.get_by_id(user_id)
+        if user is None or user.is_deleted:
+            raise NotFound(entity="User", identifier=str(user_id))
+
+        total_savings = Decimal("0.00")
+        for reservation in self.reservation_repo.get_by_user_id(user_id=user_id):
+            for item in reservation.items:
+                supermarket_product = item.supermarket_product
+                if supermarket_product is None:
+                    continue
+
+                savings_per_unit = supermarket_product.original_price - item.reserved_price
+                total_savings += max(savings_per_unit, Decimal("0.00")) * Decimal(item.quantity)
+
+        return ProfileSavingsOut(total_savings=total_savings)
 
     def _to_out(self, reservation: Reservation) -> ReservationOut:
         return ReservationOut(

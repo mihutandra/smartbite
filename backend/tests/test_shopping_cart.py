@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import select
@@ -49,8 +50,18 @@ def test_shopping_cart_allows_multiple_supermarkets_and_returns_images(test_clie
     assert len(cart_items) == 2
     items_by_product = {item["supermarket_product_id"]: item for item in cart_items}
     assert items_by_product[data["lidl_item_id"]]["product_image_url"] == "https://example.com/milk-lidl.png"
+    assert Decimal(str(items_by_product[data["lidl_item_id"]]["savings_per_unit"])) == Decimal("2.50")
+    assert Decimal(str(items_by_product[data["lidl_item_id"]]["savings_total"])) == Decimal("2.50")
     assert items_by_product[data["kaufland_item_id"]]["product_image_url"] == "https://example.com/milk-kaufland.png"
     assert items_by_product[data["kaufland_item_id"]]["quantity"] == 2
+    assert Decimal(str(items_by_product[data["kaufland_item_id"]]["savings_per_unit"])) == Decimal("3.10")
+    assert Decimal(str(items_by_product[data["kaufland_item_id"]]["savings_total"])) == Decimal("6.20")
+
+    savings_response = test_client.get("/api/shopping-cart/savings", headers=headers)
+    assert savings_response.status_code == 200
+    savings = savings_response.json()
+    assert Decimal(str(savings["total_savings"])) == Decimal("8.70")
+    assert savings["currency"] == "RON"
 
 
 def test_shopping_cart_remove_item_requires_user_owned_cart_item(test_client, db_session):
@@ -220,3 +231,28 @@ def test_user_can_get_reservation_detail(test_client, db_session):
     assert reservation["id"] == reservation_id
     assert reservation["status"] == "active"
     assert reservation["items"][0]["product_image_url"] == "https://example.com/milk-lidl.png"
+
+
+def test_profile_savings_returns_total_confirmed_reservation_savings(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+    headers = _auth_headers(test_client, data["email"], data["password"])
+
+    test_client.post(
+        "/api/shopping-cart/",
+        json={"supermarket_product_id": data["lidl_item_id"], "quantity": 1},
+        headers=headers,
+    )
+    cart_item = test_client.get("/api/shopping-cart/", headers=headers).json()[0]
+    confirm_response = test_client.post(
+        "/api/shopping-cart/confirm",
+        json={"items": [{"cart_item_id": cart_item["id"], "quantity": 3}]},
+        headers=headers,
+    )
+    assert confirm_response.status_code == 200
+
+    savings_response = test_client.get("/api/profile/savings", headers=headers)
+
+    assert savings_response.status_code == 200
+    savings = savings_response.json()
+    assert Decimal(str(savings["total_savings"])) == Decimal("7.50")
+    assert savings["currency"] == "RON"
