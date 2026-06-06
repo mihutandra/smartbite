@@ -32,12 +32,19 @@ class ShoppingCartItemOut(BaseModel):
 
     original_price: Decimal | None = None
     discount_price: Decimal | None = None
+    savings_per_unit: Decimal | None = None
+    savings_total: Decimal | None = None
     currency: str | None = None
     expiration_date: date | None = None
     stock_quantity: int | None = None
 
     created_at: datetime
     updated_at: datetime
+
+
+class ShoppingCartSavingsOut(BaseModel):
+    total_savings: Decimal
+    currency: str = "RON"
 
 
 class ShoppingCartConfirmItemIn(BaseModel):
@@ -47,4 +54,3 @@ class ShoppingCartConfirmItemIn(BaseModel):
 
 class ShoppingCartConfirmIn(BaseModel):
     items: list[ShoppingCartConfirmItemIn]
-
