@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -15,7 +16,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BottomNavBar } from "../../components/BottomNavBar";
 import { ProductCard } from "../../components/ProductCard";
 import {
-  fetchAllSupermarketProducts,
+  fetchAllSupermarketProductsIncludingUnavailable,
   fetchSupermarketDetails,
 } from "../../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../../types/supermarket";
@@ -35,9 +36,10 @@ export default function SupermarketProductsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     if (typeof id !== "string") {
-      return;
+      return undefined;
     }
 
     let isMounted = true;
@@ -50,7 +52,7 @@ export default function SupermarketProductsScreen() {
       try {
         const [supermarketResponse, productsResponse] = await Promise.all([
           fetchSupermarketDetails(supermarketId),
-          fetchAllSupermarketProducts(supermarketId),
+          fetchAllSupermarketProductsIncludingUnavailable(supermarketId),
         ]);
 
         if (!isMounted) {
@@ -79,7 +81,8 @@ export default function SupermarketProductsScreen() {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+    }, [id]),
+  );
 
   const categories = useMemo(() => {
     const values = Array.from(new Set(products.map((product) => getCategoryLabel(product))));
@@ -87,11 +90,12 @@ export default function SupermarketProductsScreen() {
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "Toate") {
-      return products;
-    }
+    const categoryProducts =
+      selectedCategory === "Toate"
+        ? products
+        : products.filter((product) => getCategoryLabel(product) === selectedCategory);
 
-    return products.filter((product) => getCategoryLabel(product) === selectedCategory);
+    return [...categoryProducts].sort(compareProductsByStockStatus);
   }, [products, selectedCategory]);
 
   const displayedRows = useMemo(() => {
@@ -238,6 +242,22 @@ export default function SupermarketProductsScreen() {
       )}
     </SafeAreaView>
   );
+}
+
+function isOutOfStock(product: SupermarketProduct) {
+  const stockQuantity = Number(product.stock_quantity);
+  return product.is_available === false || (Number.isFinite(stockQuantity) && stockQuantity <= 0);
+}
+
+function compareProductsByStockStatus(left: SupermarketProduct, right: SupermarketProduct) {
+  const leftOutOfStock = isOutOfStock(left);
+  const rightOutOfStock = isOutOfStock(right);
+
+  if (leftOutOfStock === rightOutOfStock) {
+    return 0;
+  }
+
+  return leftOutOfStock ? 1 : -1;
 }
 
 function InfoChip({

@@ -233,6 +233,51 @@ export async function fetchAllSupermarketProducts(
   }
 }
 
+export async function fetchAllSupermarketProductsIncludingUnavailable(
+  supermarketId: string,
+  pageSize = SUPERMARKET_PRODUCTS_PAGE_SIZE,
+): Promise<SupermarketProduct[]> {
+  try {
+    const products: SupermarketProduct[] = [];
+    let page = 1;
+
+    while (page <= SUPERMARKET_PRODUCTS_MAX_PAGES) {
+      const response = await fetch(
+        `${API_BASE_URL}/api/supermarket-products${createQueryString({
+          page,
+          page_size: pageSize,
+        })}`,
+      );
+
+      const data = await parseApiResponse<SupermarketProduct[]>(response);
+
+      if (!Array.isArray(data)) {
+        throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
+      }
+
+      products.push(
+        ...data
+          .filter((product) => product.supermarket_id === supermarketId)
+          .map(withProductProxyImageUrl),
+      );
+
+      if (data.length < pageSize) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return products;
+  } catch (error) {
+    if (error instanceof SupermarketServiceError) {
+      throw error;
+    }
+
+    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
 export async function fetchSupermarketProduct(
   supermarketProductId: string,
 ): Promise<SupermarketProduct> {

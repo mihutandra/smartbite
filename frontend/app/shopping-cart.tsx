@@ -227,6 +227,15 @@ export default function CartScreen() {
                     isBusy={busyItemId === item.id}
                     onDecrease={() => updateItemQuantity(item.id, "decrease")}
                     onIncrease={() => updateItemQuantity(item.id, "increase")}
+                    onOpen={() =>
+                      router.push({
+                        pathname: "/product/[id]",
+                        params: {
+                          id: item.supermarket_product_id,
+                          supermarketId: item.supermarket_id ?? undefined,
+                        },
+                      })
+                    }
                     onRemove={() => void removeItem(item.id)}
                   />
                 ))}
@@ -340,12 +349,14 @@ function CartItemCard({
   isBusy,
   onDecrease,
   onIncrease,
+  onOpen,
   onRemove,
 }: {
   item: ShoppingCartItem;
   isBusy: boolean;
   onDecrease: () => void;
   onIncrease: () => void;
+  onOpen: () => void;
   onRemove: () => void;
 }) {
   const discountPercentage = getDiscountPercentage(item);
@@ -356,31 +367,33 @@ function CartItemCard({
 
   return (
     <View style={styles.itemCard}>
-      <View style={styles.itemImageWrap}>
-        {item.product_image_url ? (
-          <Image source={{ uri: item.product_image_url }} resizeMode="cover" style={styles.itemImage} />
-        ) : (
-          <View style={styles.itemImageFallback}>
-            <Text style={styles.itemImageFallbackText}>
-              {(item.product_name ?? "P").slice(0, 1).toUpperCase()}
-            </Text>
-          </View>
-        )}
-        {discountPercentage > 0 ? (
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountBadgeText}>{`-${discountPercentage}%`}</Text>
-          </View>
-        ) : null}
-      </View>
-
-      <View style={styles.itemDetails}>
-        <Text numberOfLines={2} style={styles.itemName}>{item.product_name ?? "Produs"}</Text>
-        <Text numberOfLines={1} style={styles.storeName}>{item.supermarket_name ?? "SmartBite Market"}</Text>
-        <View style={styles.priceRow}>
-          <Text style={styles.discountPrice}>{formatMoney(toNumber(item.discount_price), currency)}</Text>
-          <Text style={styles.originalPrice}>{formatMoney(toNumber(item.original_price), currency)}</Text>
+      <Pressable onPress={onOpen} style={styles.itemOpenArea}>
+        <View style={styles.itemImageWrap}>
+          {item.product_image_url ? (
+            <Image source={{ uri: item.product_image_url }} resizeMode="cover" style={styles.itemImage} />
+          ) : (
+            <View style={styles.itemImageFallback}>
+              <Text style={styles.itemImageFallbackText}>
+                {(item.product_name ?? "P").slice(0, 1).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          {discountPercentage > 0 ? (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountBadgeText}>{`-${discountPercentage}%`}</Text>
+            </View>
+          ) : null}
         </View>
-      </View>
+
+        <View style={styles.itemDetails}>
+          <Text numberOfLines={2} style={styles.itemName}>{item.product_name ?? "Produs"}</Text>
+          <Text numberOfLines={1} style={styles.storeName}>{item.supermarket_name ?? "SmartBite Market"}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.discountPrice}>{formatMoney(toNumber(item.discount_price), currency)}</Text>
+            <Text style={styles.originalPrice}>{formatMoney(toNumber(item.original_price), currency)}</Text>
+          </View>
+        </View>
+      </Pressable>
 
       <View style={styles.itemActions}>
         <Pressable disabled={isBusy} onPress={onRemove} style={styles.deleteButton}>
@@ -549,6 +562,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 14,
     elevation: 4,
+  },
+  itemOpenArea: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    gap: 14,
   },
   itemImageWrap: {
     width: 88,
