@@ -34,6 +34,7 @@ const FALLBACK_REGION = {
 const ACCENT_COLORS = ["#E06F34", "#E04935", "#4D8E6A", "#6B8E23", "#C26D3C"];
 const HOME_SUPERMARKET_PAGE_SIZE = 100;
 const HOME_MAP_MARKER_LIMIT = 500;
+const LOCATION_QUERY_PRECISION = 3;
 
 type MapSupermarketDisplay = SupermarketMapMarker;
 
@@ -57,8 +58,8 @@ export default function HomeScreen() {
     () =>
       typeof userLatitude === "number" && typeof userLongitude === "number"
         ? {
-            latitude: Number(userLatitude.toFixed(6)),
-            longitude: Number(userLongitude.toFixed(6)),
+            latitude: Number(userLatitude.toFixed(LOCATION_QUERY_PRECISION)),
+            longitude: Number(userLongitude.toFixed(LOCATION_QUERY_PRECISION)),
           }
         : undefined,
     [userLatitude, userLongitude],

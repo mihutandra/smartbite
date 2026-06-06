@@ -2,6 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 import * as Location from "expo-location";
 import {
   getStoredUserLocation,
+  removeStoredUserLocation,
   setStoredUserLocation,
   type StoredUserLocation,
 } from "../services/session-storage";
@@ -72,11 +73,16 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   }, [saveLocation]);
 
   useEffect(() => {
-    if (authStatus !== "authenticated") {
+    if (authStatus === "unauthenticated") {
       setStatus("idle");
       setUserLocation(null);
       setError("");
       setHasHydratedLocation(false);
+      void removeStoredUserLocation();
+      return;
+    }
+
+    if (authStatus !== "authenticated") {
       return;
     }
 

@@ -82,6 +82,15 @@ export async function setStoredUserLocation(location: StoredUserLocation) {
   await SecureStore.setItemAsync(USER_LOCATION_KEY, value);
 }
 
+export async function removeStoredUserLocation() {
+  if (canUseLocalStorage()) {
+    window.localStorage.removeItem(USER_LOCATION_KEY);
+    return;
+  }
+
+  await SecureStore.deleteItemAsync(USER_LOCATION_KEY);
+}
+
 function isValidCoordinate(value: unknown, minimum: number, maximum: number): value is number {
   return (
     typeof value === "number" &&
