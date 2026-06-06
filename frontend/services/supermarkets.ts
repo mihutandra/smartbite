@@ -252,7 +252,7 @@ export async function fetchAllSupermarkets(
       throw error;
     }
 
-    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 

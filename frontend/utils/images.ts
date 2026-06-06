@@ -3,7 +3,10 @@ export function normalizeImageUrl(url: string | null | undefined) {
     return null;
   }
 
-  const trimmedUrl = url.trim().replace(/^hhttps:\/\//i, "https://");
+  const trimmedUrl = url
+    .trim()
+    .replace(/^hhttps:\/\//i, "https://")
+    .replace(/^http:\/\//i, "https://");
 
   if (!trimmedUrl || !isHttpUrl(trimmedUrl)) {
     return null;
@@ -27,31 +30,31 @@ function getBrandLogoUrl(name: string) {
   const normalizedName = name.toLowerCase();
 
   if (normalizedName.includes("kaufland")) {
-    return "https://www.google.com/s2/favicons?domain=kaufland.ro&sz=128";
+    return "https://www.kaufland.ro/favicon.ico";
   }
 
   if (normalizedName.includes("lidl")) {
-    return "https://www.google.com/s2/favicons?domain=lidl.ro&sz=128";
+    return "https://www.lidl.ro/favicon.ico";
   }
 
   if (normalizedName.includes("mega image")) {
-    return "https://www.google.com/s2/favicons?domain=mega-image.ro&sz=128";
+    return "https://www.mega-image.ro/favicon.ico";
   }
 
   if (normalizedName.includes("penny")) {
-    return "https://www.google.com/s2/favicons?domain=penny.ro&sz=128";
+    return "https://www.penny.ro/favicon.ico";
   }
 
   if (normalizedName.includes("carrefour")) {
-    return "https://www.google.com/s2/favicons?domain=carrefour.ro&sz=128";
+    return "https://carrefour.ro/favicon.ico";
   }
 
   if (normalizedName.includes("auchan")) {
-    return "https://www.google.com/s2/favicons?domain=auchan.ro&sz=128";
+    return "https://www.auchan.ro/favicon.ico";
   }
 
   if (normalizedName.includes("profi")) {
-    return "https://images.seeklogo.com/logo-png/22/2/profi-logo-png_seeklogo-225900.png";
+    return "https://www.profi.ro/favicon.ico";
   }
 
   return null;

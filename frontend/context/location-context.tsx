@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as Location from "expo-location";
 import {
   getStoredUserLocation,
@@ -21,6 +21,7 @@ type LocationContextValue = {
 };
 
 const LocationContext = createContext<LocationContextValue | undefined>(undefined);
+const LOCATION_PERSIST_INTERVAL_MS = 60_000;
 
 export function LocationProvider({ children }: { children: ReactNode }) {
   const { status: authStatus, user } = useAuth();
@@ -28,16 +29,25 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [error, setError] = useState("");
   const [hasHydratedLocation, setHasHydratedLocation] = useState(false);
+  const lastPersistedLocationAtRef = useRef(0);
 
-  const saveLocation = useCallback(async (position: Location.LocationObject) => {
+  const saveLocation = useCallback(async (position: Location.LocationObject, options?: { forcePersist?: boolean }) => {
+    const capturedAt = new Date();
     const nextLocation: UserLocation = {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,
       accuracy: typeof position.coords.accuracy === "number" ? position.coords.accuracy : null,
-      capturedAt: new Date().toISOString(),
+      capturedAt: capturedAt.toISOString(),
     };
 
-    await setStoredUserLocation(nextLocation);
+    if (
+      options?.forcePersist ||
+      capturedAt.getTime() - lastPersistedLocationAtRef.current >= LOCATION_PERSIST_INTERVAL_MS
+    ) {
+      await setStoredUserLocation(nextLocation);
+      lastPersistedLocationAtRef.current = capturedAt.getTime();
+    }
+
     setUserLocation(nextLocation);
     setStatus("granted");
     setError("");
@@ -62,7 +72,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         accuracy: Location.Accuracy.Balanced,
       });
 
-      return await saveLocation(position);
+      return await saveLocation(position, { forcePersist: true });
     } catch (locationError) {
       const message = "Nu am putut detecta locatia curenta.";
 
@@ -78,6 +88,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       setUserLocation(null);
       setError("");
       setHasHydratedLocation(false);
+      lastPersistedLocationAtRef.current = 0;
       void removeStoredUserLocation();
       return;
     }
@@ -99,6 +110,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         setUserLocation(storedLocation);
         setStatus("granted");
         setHasHydratedLocation(true);
+        lastPersistedLocationAtRef.current = Date.now();
         return;
       }
 
@@ -114,6 +126,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           capturedAt: profileUpdatedAt,
         });
         setStatus("granted");
+        lastPersistedLocationAtRef.current = Date.now();
       }
 
       setHasHydratedLocation(true);
@@ -159,7 +172,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        await saveLocation(currentPosition);
+        await saveLocation(currentPosition, { forcePersist: true });
 
         const nextSubscription = await Location.watchPositionAsync(
           {
