@@ -252,13 +252,18 @@ export default function ProductDetailsScreen() {
                   <View style={styles.quantityCard}>
                     <Pressable
                       onPress={() => setQuantity((current) => Math.max(1, current - 1))}
-                      style={styles.quantityButton}
+                      disabled={quantity <= 1 || maxQuantity < 1}
+                      style={[
+                        styles.quantityButton,
+                        (quantity <= 1 || maxQuantity < 1) && styles.quantityButtonDisabled,
+                      ]}
                     >
                       <Text style={styles.quantityButtonText}>-</Text>
                     </Pressable>
                     <Text style={styles.quantityValue}>{quantity}</Text>
                     <Pressable
                       onPress={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
+                      disabled={quantity >= maxQuantity || maxQuantity < 1}
                       style={[
                         styles.quantityButton,
                         (quantity >= maxQuantity || maxQuantity < 1) && styles.quantityButtonDisabled,

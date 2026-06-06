@@ -18,9 +18,10 @@ import { useAuth } from "../context/auth-context";
 import {
   confirmShoppingCart,
   fetchShoppingCart,
+  fetchShoppingCartSavings,
   removeShoppingCartItem,
 } from "../services/shopping-cart";
-import { type ShoppingCartItem } from "../types/shopping-cart";
+import { type ShoppingCartItem, type ShoppingCartSavings } from "../types/shopping-cart";
 import { formatCurrency } from "../utils/product_detail";
 
 export default function CartScreen() {
@@ -30,6 +31,7 @@ export default function CartScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
   const [confirmedReservationId, setConfirmedReservationId] = useState("");
+  const [cartSavings, setCartSavings] = useState<ShoppingCartSavings | null>(null);
   const [busyItemId, setBusyItemId] = useState("");
   const [error, setError] = useState("");
 
@@ -43,8 +45,12 @@ export default function CartScreen() {
     setError("");
 
     try {
-      const items = await fetchShoppingCart(accessToken);
+      const [items, savings] = await Promise.all([
+        fetchShoppingCart(accessToken),
+        fetchShoppingCartSavings(accessToken),
+      ]);
       setCartItems(items);
+      setCartSavings(savings);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Nu am putut incarca cosul.");
     } finally {
@@ -74,10 +80,23 @@ export default function CartScreen() {
     );
   }, [cartItems]);
 
-  // TODO: Replace this client-side savings calculation with the backend-provided
-  // "lei economisiti" value once that shopping cart summary endpoint lands on main.
-  const savings = Math.max(0, totals.original - totals.discounted);
-  const currency = cartItems.find((item) => item.currency)?.currency ?? "lei";
+  const savings = useMemo(() => {
+    const hasBackendItemSavings = cartItems.some((item) => item.savings_per_unit !== null);
+
+    if (hasBackendItemSavings) {
+      return cartItems.reduce(
+        (current, item) => current + toNumber(item.savings_per_unit) * item.quantity,
+        0,
+      );
+    }
+
+    if (cartSavings) {
+      return toNumber(cartSavings.total_savings);
+    }
+
+    return Math.max(0, totals.original - totals.discounted);
+  }, [cartItems, cartSavings, totals.discounted, totals.original]);
+  const currency = cartSavings?.currency ?? cartItems.find((item) => item.currency)?.currency ?? "lei";
 
   async function removeItem(itemId: string) {
     if (!accessToken) {
@@ -90,6 +109,7 @@ export default function CartScreen() {
     try {
       await removeShoppingCartItem(accessToken, itemId);
       setCartItems((currentItems) => currentItems.filter((item) => item.id !== itemId));
+      setCartSavings(null);
     } catch (removeError) {
       setError(removeError instanceof Error ? removeError.message : "Nu am putut elimina produsul.");
     } finally {
@@ -136,6 +156,7 @@ export default function CartScreen() {
       );
 
       setCartItems([]);
+      setCartSavings(null);
       setConfirmedReservationId(reservation.id);
     } catch (confirmError) {
       setError(confirmError instanceof Error ? confirmError.message : "Nu am putut confirma rezervarea.");

@@ -9,6 +9,8 @@ export type ShoppingCartItem = {
   supermarket_name: string | null;
   original_price: string | null;
   discount_price: string | null;
+  savings_per_unit: string | null;
+  savings_total: string | null;
   currency: string | null;
   expiration_date: string | null;
   stock_quantity: number | null;
@@ -19,6 +21,11 @@ export type ShoppingCartItem = {
 export type ShoppingCartAddResponse = {
   message: string;
   cart_replaced: boolean;
+};
+
+export type ShoppingCartSavings = {
+  total_savings: string;
+  currency: string;
 };
 
 export type ShoppingCartReservation = {

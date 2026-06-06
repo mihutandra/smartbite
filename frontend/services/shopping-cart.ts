@@ -3,6 +3,7 @@ import {
   type ShoppingCartAddResponse,
   type ShoppingCartItem,
   type ShoppingCartReservation,
+  type ShoppingCartSavings,
 } from "../types/shopping-cart";
 
 export class ShoppingCartServiceError extends Error {
@@ -99,6 +100,31 @@ export async function addShoppingCartItem(
     });
 
     return await parseApiResponse<ShoppingCartAddResponse>(response);
+  } catch (error) {
+    if (error instanceof ShoppingCartServiceError) {
+      throw error;
+    }
+
+    throw new ShoppingCartServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+  }
+}
+
+export async function fetchShoppingCartSavings(accessToken: string): Promise<ShoppingCartSavings> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/shopping-cart/savings`, {
+      method: "GET",
+      headers: createJsonHeaders(accessToken),
+    });
+    const data = await parseApiResponse<ShoppingCartSavings>(response);
+
+    if (typeof data?.total_savings !== "string" && typeof data?.total_savings !== "number") {
+      throw new ShoppingCartServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return {
+      total_savings: String(data.total_savings),
+      currency: data.currency || "RON",
+    };
   } catch (error) {
     if (error instanceof ShoppingCartServiceError) {
       throw error;
