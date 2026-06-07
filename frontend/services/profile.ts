@@ -1,0 +1,105 @@
+import { API_BASE_URL } from "../constants/api";
+import { type ProfileSavings } from "../types/profile";
+
+export class ProfileServiceError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProfileServiceError";
+  }
+}
+
+const PROFILE_REQUEST_TIMEOUT_MS = 15_000;
+
+function extractErrorMessage(data: unknown, fallbackMessage: string) {
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (typeof data !== "object" || data === null) {
+    return fallbackMessage;
+  }
+
+  const detail = "detail" in data ? data.detail : undefined;
+
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  return fallbackMessage;
+}
+
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  const rawText = await response.text();
+  let data: unknown = null;
+
+  if (rawText) {
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = rawText;
+    }
+  }
+
+  if (!response.ok) {
+    throw new ProfileServiceError(
+      extractErrorMessage(
+        data ?? rawText,
+        rawText.trim() || "Nu am reusit sa procesam cererea. Incearca din nou.",
+      ),
+    );
+  }
+
+  return data as T;
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), PROFILE_REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function createConnectionError(error: unknown) {
+  if (error instanceof Error && error.name === "AbortError") {
+    return new ProfileServiceError(
+      "Cererea dureaza prea mult. Verifica serverul si incearca din nou.",
+    );
+  }
+
+  return new ProfileServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+}
+
+export async function fetchProfileSavings(accessToken: string): Promise<ProfileSavings> {
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/profile/savings`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const data = await parseApiResponse<ProfileSavings>(response);
+
+    if (typeof data?.total_savings !== "string" && typeof data?.total_savings !== "number") {
+      throw new ProfileServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return {
+      total_savings: String(data.total_savings),
+      currency: data.currency || "RON",
+    };
+  } catch (error) {
+    if (error instanceof ProfileServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
+  }
+}

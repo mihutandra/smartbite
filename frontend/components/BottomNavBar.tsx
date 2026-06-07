@@ -10,9 +10,11 @@ const NAV_ITEMS = [
   { icon: "user", label: "PROFIL", key: "profile" },
 ] as const;
 
+type BottomNavTab = (typeof NAV_ITEMS)[number]["key"];
+
 type BottomNavBarProps = {
-  activeTab?: "home" | "map" | "search" | "cart";
-  onTabPress?: (tab: "home" | "map" | "search" | "cart") => void;
+  activeTab?: BottomNavTab;
+  onTabPress?: (tab: BottomNavTab) => void;
 };
 
 export function BottomNavBar({ activeTab = "home", onTabPress }: BottomNavBarProps) {
@@ -26,11 +28,8 @@ export function BottomNavBar({ activeTab = "home", onTabPress }: BottomNavBarPro
         return (
           <Pressable
             key={item.label}
-            disabled={item.key !== "home" && item.key !== "map" && item.key !== "search" && item.key !== "cart"}
             onPress={() => {
-              if (item.key === "home" || item.key === "map" || item.key === "search" || item.key === "cart") {
-                onTabPress?.(item.key);
-              }
+              onTabPress?.(item.key);
             }}
             style={styles.navItem}
           >
