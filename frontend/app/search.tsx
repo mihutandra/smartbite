@@ -233,11 +233,7 @@ export default function SearchScreen() {
                 </View>
 
                 <View style={styles.productPreviewRow}>
-                  {group.products.map((product) => {
-                    const stockQuantity = Number(product.stock_quantity);
-                    const isOutOfStock = Number.isFinite(stockQuantity) && stockQuantity <= 0;
-
-                    return (
+                  {group.products.map((product) => (
                       <Pressable
                         key={product.id}
                         onPress={() =>
@@ -246,52 +242,35 @@ export default function SearchScreen() {
                             params: { id: product.id, supermarketId: product.supermarket_id },
                           })
                         }
-                        style={[styles.productPreviewCard, isOutOfStock && styles.productPreviewCardOutOfStock]}
+                        style={styles.productPreviewCard}
                       >
-                        <View style={[styles.productImageWrap, isOutOfStock && styles.productImageWrapOutOfStock]}>
+                        <View style={styles.productImageWrap}>
                           {product.product_image_url ? (
                             <Image
                               source={{ uri: product.product_image_url }}
-                              style={[styles.productImage, isOutOfStock && styles.productImageOutOfStock]}
+                              style={styles.productImage}
                               resizeMode="cover"
                             />
                           ) : (
-                            <View
-                              style={[
-                                styles.productImageFallback,
-                                isOutOfStock && styles.productImageFallbackOutOfStock,
-                              ]}
-                            >
-                              <Text
-                                style={[
-                                  styles.productImageFallbackText,
-                                  isOutOfStock && styles.productImageFallbackTextOutOfStock,
-                                ]}
-                              >
+                            <View style={styles.productImageFallback}>
+                              <Text style={styles.productImageFallbackText}>
                                 {(product.product_name ?? "Produs").slice(0, 1).toUpperCase()}
                               </Text>
                             </View>
                           )}
-
-                          {isOutOfStock ? (
-                            <View style={styles.outOfStockBadge}>
-                              <Text style={styles.outOfStockText}>Stoc epuizat</Text>
-                            </View>
-                          ) : null}
                         </View>
 
                         <Text
                           numberOfLines={2}
-                          style={[styles.productName, isOutOfStock && styles.productNameOutOfStock]}
+                          style={styles.productName}
                         >
                           {product.product_name ?? "Produs"}
                         </Text>
-                        <Text style={[styles.productPrice, isOutOfStock && styles.productPriceOutOfStock]}>
+                        <Text style={styles.productPrice}>
                           {formatCurrency(product.discount_price, product.currency)}
                         </Text>
                       </Pressable>
-                    );
-                  })}
+                    ))}
                 </View>
               </View>
             ))}
@@ -501,23 +480,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFDFC",
     paddingBottom: 14,
   },
-  productPreviewCardOutOfStock: {
-    borderColor: "#D8D1C8",
-    backgroundColor: "#F0EEE9",
-  },
   productImageWrap: {
     height: 106,
     backgroundColor: "#F9E4CB",
   },
-  productImageWrapOutOfStock: {
-    backgroundColor: "#DCD8D2",
-  },
   productImage: {
     width: "100%",
     height: "100%",
-  },
-  productImageOutOfStock: {
-    opacity: 0.42,
   },
   productImageFallback: {
     flex: 1,
@@ -525,33 +494,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#F5C58F",
   },
-  productImageFallbackOutOfStock: {
-    backgroundColor: "#D7D3CD",
-  },
   productImageFallbackText: {
     color: "#A85928",
     fontSize: 34,
     fontWeight: "900",
-  },
-  productImageFallbackTextOutOfStock: {
-    color: "#8E877F",
-  },
-  outOfStockBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    left: 8,
-    alignItems: "center",
-    borderRadius: 999,
-    backgroundColor: "#8E877F",
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-  },
-  outOfStockText: {
-    color: "#FFFDF9",
-    fontSize: 10,
-    fontWeight: "900",
-    textTransform: "uppercase",
   },
   productName: {
     minHeight: 46,
@@ -562,19 +508,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 12,
   },
-  productNameOutOfStock: {
-    color: "#7D756D",
-  },
   productPrice: {
     color: "#347949",
     fontSize: 14,
     fontWeight: "900",
     paddingHorizontal: 12,
     paddingTop: 6,
-  },
-  productPriceOutOfStock: {
-    color: "#8E877F",
-    textDecorationLine: "line-through",
   },
   feedbackCard: {
     borderRadius: 24,

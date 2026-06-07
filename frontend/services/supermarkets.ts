@@ -40,6 +40,11 @@ function withProductProxyImageUrl(product: SupermarketProduct): SupermarketProdu
   };
 }
 
+function isAvailableProduct(product: SupermarketProduct) {
+  const stockQuantity = Number(product.stock_quantity);
+  return product.is_available !== false && Number.isFinite(stockQuantity) && stockQuantity > 0;
+}
+
 function extractErrorMessage(data: unknown, fallbackMessage: string) {
   if (typeof data === "string" && data.trim()) {
     return data;
@@ -299,54 +304,9 @@ export async function fetchAllSupermarketProducts(
 
     while (page <= SUPERMARKET_PRODUCTS_MAX_PAGES) {
       const currentPage = await fetchSupermarketProducts(supermarketId, page, pageSize);
-      products.push(...currentPage);
+      products.push(...currentPage.filter(isAvailableProduct));
 
       if (currentPage.length < pageSize) {
-        break;
-      }
-
-      page += 1;
-    }
-
-    return products;
-  } catch (error) {
-    if (error instanceof SupermarketServiceError) {
-      throw error;
-    }
-
-    throw new SupermarketServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
-  }
-}
-
-export async function fetchAllSupermarketProductsIncludingUnavailable(
-  supermarketId: string,
-  pageSize = SUPERMARKET_PRODUCTS_PAGE_SIZE,
-): Promise<SupermarketProduct[]> {
-  try {
-    const products: SupermarketProduct[] = [];
-    let page = 1;
-
-    while (page <= SUPERMARKET_PRODUCTS_MAX_PAGES) {
-      const response = await fetch(
-        `${API_BASE_URL}/api/supermarket-products${createQueryString({
-          page,
-          page_size: pageSize,
-        })}`,
-      );
-
-      const data = await parseApiResponse<SupermarketProduct[]>(response);
-
-      if (!Array.isArray(data)) {
-        throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
-      }
-
-      products.push(
-        ...data
-          .filter((product) => product.supermarket_id === supermarketId)
-          .map(withProductProxyImageUrl),
-      );
-
-      if (data.length < pageSize) {
         break;
       }
 
@@ -405,7 +365,7 @@ export async function fetchAllSupermarketCatalogProducts(
         throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
       }
 
-      products.push(...data);
+      products.push(...data.filter(isAvailableProduct));
 
       if (data.length < pageSize) {
         break;
@@ -443,7 +403,7 @@ export async function fetchSupermarketProductCounts(
         throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
       }
 
-      data.forEach((product) => {
+      data.filter(isAvailableProduct).forEach((product) => {
         counts[product.supermarket_id] = (counts[product.supermarket_id] ?? 0) + 1;
       });
 

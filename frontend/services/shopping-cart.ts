@@ -88,6 +88,7 @@ export async function addShoppingCartItem(
   accessToken: string,
   supermarketProductId: string,
   quantity: number,
+  confirmReplace = false,
 ): Promise<ShoppingCartAddResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/shopping-cart/`, {
@@ -96,6 +97,7 @@ export async function addShoppingCartItem(
       body: JSON.stringify({
         supermarket_product_id: supermarketProductId,
         quantity,
+        confirm_replace: confirmReplace,
       }),
     });
 

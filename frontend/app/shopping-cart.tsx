@@ -118,6 +118,7 @@ export default function CartScreen() {
   }
 
   function updateItemQuantity(itemId: string, direction: "decrease" | "increase") {
+    setCartSavings(null);
     setCartItems((currentItems) =>
       currentItems.map((item) => {
         if (item.id !== itemId) {

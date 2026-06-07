@@ -1,8 +1,7 @@
 import { Feather } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -17,7 +16,7 @@ import { ProductCard } from "../../components/ProductCard";
 import { RemoteLogo } from "../../components/RemoteLogo";
 import { useLocation } from "../../context/location-context";
 import {
-  fetchAllSupermarketProductsIncludingUnavailable,
+  fetchAllSupermarketProducts,
   fetchSupermarketDetails,
 } from "../../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../../types/supermarket";
@@ -39,8 +38,7 @@ export default function SupermarketProductsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(() => {
     if (typeof id !== "string") {
       setIsLoading(false);
       setLoadError("Magazinul selectat este invalid.");
@@ -57,7 +55,7 @@ export default function SupermarketProductsScreen() {
       try {
         const [supermarketResponse, productsResponse] = await Promise.all([
           fetchSupermarketDetails(supermarketId),
-          fetchAllSupermarketProductsIncludingUnavailable(supermarketId),
+          fetchAllSupermarketProducts(supermarketId),
         ]);
 
         if (!isMounted) {
@@ -86,8 +84,7 @@ export default function SupermarketProductsScreen() {
     return () => {
       isMounted = false;
     };
-    }, [id]),
-  );
+  }, [id]);
 
   const categories = useMemo(() => {
     const values = Array.from(new Set(products.map((product) => getCategoryLabel(product))));
@@ -100,7 +97,7 @@ export default function SupermarketProductsScreen() {
         ? products
         : products.filter((product) => getCategoryLabel(product) === selectedCategory);
 
-    return [...categoryProducts].sort(compareProductsByStockStatus);
+    return categoryProducts;
   }, [products, selectedCategory]);
 
   const displayedRows = useMemo(() => {
@@ -263,22 +260,6 @@ export default function SupermarketProductsScreen() {
       )}
     </SafeAreaView>
   );
-}
-
-function isOutOfStock(product: SupermarketProduct) {
-  const stockQuantity = Number(product.stock_quantity);
-  return product.is_available === false || (Number.isFinite(stockQuantity) && stockQuantity <= 0);
-}
-
-function compareProductsByStockStatus(left: SupermarketProduct, right: SupermarketProduct) {
-  const leftOutOfStock = isOutOfStock(left);
-  const rightOutOfStock = isOutOfStock(right);
-
-  if (leftOutOfStock === rightOutOfStock) {
-    return 0;
-  }
-
-  return leftOutOfStock ? 1 : -1;
 }
 
 function InfoChip({

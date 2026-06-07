@@ -18,10 +18,8 @@ import { useAuth } from "../../context/auth-context";
 import {
   addShoppingCartItem,
   fetchShoppingCart,
-  removeShoppingCartItem,
 } from "../../services/shopping-cart";
 import { fetchSupermarketProduct } from "../../services/supermarkets";
-import { type ShoppingCartItem } from "../../types/shopping-cart";
 import { type SupermarketProduct } from "../../types/supermarket";
 import {
   calculateDiscountPercentage,
@@ -42,7 +40,6 @@ export default function ProductDetailsScreen() {
   const [reserveError, setReserveError] = useState("");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isReserveNoticeVisible, setIsReserveNoticeVisible] = useState(false);
-  const [replaceCartItems, setReplaceCartItems] = useState<ShoppingCartItem[]>([]);
   const [isReplaceCartModalVisible, setIsReplaceCartModalVisible] = useState(false);
 
   useEffect(() => {
@@ -94,6 +91,7 @@ export default function ProductDetailsScreen() {
     [product],
   );
   const maxQuantity = Math.max(0, product?.stock_quantity ?? 0);
+  const isUnavailable = product?.is_available === false || maxQuantity < 1;
 
   useEffect(() => {
     setQuantity((current) => {
@@ -106,7 +104,11 @@ export default function ProductDetailsScreen() {
   }, [maxQuantity]);
 
   async function reserveProduct() {
-    if (!product || product.stock_quantity < 1 || !accessToken) {
+    if (!product || isUnavailable) {
+      return;
+    }
+    if (!accessToken) {
+      router.push("/login" as never);
       return;
     }
 
@@ -123,7 +125,6 @@ export default function ProductDetailsScreen() {
       );
 
       if (hasDifferentSupermarketItem) {
-        setReplaceCartItems(currentCartItems);
         setIsReplaceCartModalVisible(true);
         return;
       }
@@ -137,12 +138,12 @@ export default function ProductDetailsScreen() {
     }
   }
 
-  async function addProductToCart() {
+  async function addProductToCart(confirmReplace = false) {
     if (!product || !accessToken) {
       return;
     }
 
-    await addShoppingCartItem(accessToken, product.id, quantity);
+    await addShoppingCartItem(accessToken, product.id, quantity, confirmReplace);
   }
 
   async function replaceCartAndReserveProduct() {
@@ -154,11 +155,7 @@ export default function ProductDetailsScreen() {
     setReserveError("");
 
     try {
-      await Promise.all(
-        replaceCartItems.map((item) => removeShoppingCartItem(accessToken, item.id)),
-      );
-      await addProductToCart();
-      setReplaceCartItems([]);
+      await addProductToCart(true);
       setIsReplaceCartModalVisible(false);
       setIsReserveNoticeVisible(true);
     } catch (error) {
@@ -276,16 +273,16 @@ export default function ProductDetailsScreen() {
                   </View>
 
                   <Pressable
-                    disabled={maxQuantity < 1 || isAddingToCart}
+                    disabled={isUnavailable || isAddingToCart}
                     onPress={() => void reserveProduct()}
                     style={[
                       styles.reserveButton,
-                      (maxQuantity < 1 || isAddingToCart) && styles.reserveButtonDisabled,
+                      (isUnavailable || isAddingToCart) && styles.reserveButtonDisabled,
                     ]}
                   >
                     <Feather color="#FFF8F0" name="shopping-bag" size={16} />
                     <Text style={styles.reserveButtonText}>
-                      {maxQuantity < 1 ? "Stoc epuizat" : isAddingToCart ? "Se adauga..." : "Rezerva acum"}
+                      {isUnavailable ? "Indisponibil" : isAddingToCart ? "Se adauga..." : "Rezerva acum"}
                     </Text>
                   </Pressable>
                 </View>
@@ -365,7 +362,7 @@ export default function ProductDetailsScreen() {
             visible={isReplaceCartModalVisible}
             onRequestClose={() => {
               setIsReplaceCartModalVisible(false);
-              setReplaceCartItems([]);
+              setReserveError("");
             }}
           >
             <View style={styles.modalOverlay}>
@@ -377,13 +374,14 @@ export default function ProductDetailsScreen() {
                 <Text style={styles.modalText}>
                   Cosul poate contine produse dintr-un singur supermarket. Pentru a adauga acest produs, inlocuieste produsele existente.
                 </Text>
+                {reserveError ? <Text style={styles.modalErrorText}>{reserveError}</Text> : null}
 
                 <View style={styles.modalActions}>
                   <Pressable
                     disabled={isAddingToCart}
                     onPress={() => {
                       setIsReplaceCartModalVisible(false);
-                      setReplaceCartItems([]);
+                      setReserveError("");
                     }}
                     style={styles.modalSecondaryButton}
                   >
@@ -807,6 +805,14 @@ const styles = StyleSheet.create({
     color: "#7A685C",
     fontSize: 14,
     lineHeight: 22,
+    textAlign: "center",
+  },
+  modalErrorText: {
+    marginTop: 12,
+    color: "#B95335",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 19,
     textAlign: "center",
   },
   modalActions: {
