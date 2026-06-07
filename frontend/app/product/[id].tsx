@@ -47,6 +47,8 @@ export default function ProductDetailsScreen() {
 
   useEffect(() => {
     if (typeof id !== "string") {
+      setIsLoading(false);
+      setLoadError("Produsul selectat este invalid.");
       return;
     }
 

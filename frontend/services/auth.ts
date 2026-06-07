@@ -13,6 +13,8 @@ export class AuthServiceError extends Error {
   }
 }
 
+const AUTH_REQUEST_TIMEOUT_MS = 15_000;
+
 function formatValidationPath(path: unknown) {
   if (!Array.isArray(path) || path.length === 0) {
     return "Camp invalid";
@@ -96,9 +98,31 @@ function createJsonHeaders(accessToken?: string) {
   };
 }
 
+async function fetchWithTimeout(url: string, options: RequestInit) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function createConnectionError(error: unknown) {
+  if (error instanceof Error && error.name === "AbortError") {
+    return new AuthServiceError("Conectarea dureaza prea mult. Verifica serverul si incearca din nou.");
+  }
+
+  return new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
       headers: createJsonHeaders(),
       body: JSON.stringify({
@@ -119,13 +143,13 @@ export async function login(email: string, password: string): Promise<LoginRespo
       throw error;
     }
 
-    throw new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 
 export async function register(payload: RegisterPayload): Promise<RegisterResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: createJsonHeaders(),
       body: JSON.stringify({
@@ -148,13 +172,13 @@ export async function register(payload: RegisterPayload): Promise<RegisterRespon
       throw error;
     }
 
-    throw new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }
 
 export async function fetchCurrentUser(accessToken: string): Promise<UserProfile> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/me`, {
       method: "GET",
       headers: createJsonHeaders(accessToken),
     });
@@ -171,6 +195,6 @@ export async function fetchCurrentUser(accessToken: string): Promise<UserProfile
       throw error;
     }
 
-    throw new AuthServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
+    throw createConnectionError(error);
   }
 }

@@ -39,7 +39,14 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SmartBite foloseste locatia ta pentru a afisa supermarketurile din apropiere."
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

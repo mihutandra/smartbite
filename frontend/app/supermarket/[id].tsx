@@ -5,7 +5,6 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,11 +14,14 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomNavBar } from "../../components/BottomNavBar";
 import { ProductCard } from "../../components/ProductCard";
+import { RemoteLogo } from "../../components/RemoteLogo";
+import { useLocation } from "../../context/location-context";
 import {
   fetchAllSupermarketProductsIncludingUnavailable,
   fetchSupermarketDetails,
 } from "../../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../../types/supermarket";
+import { getSupermarketLogoUrls } from "../../utils/images";
 import { getCategoryLabel } from "../../utils/product_detail";
 
 const FALLBACK_REGION = {
@@ -30,6 +32,7 @@ const FALLBACK_REGION = {
 export default function SupermarketProductsScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const { userLocation } = useLocation();
   const [supermarket, setSupermarket] = useState<Supermarket | null>(null);
   const [products, setProducts] = useState<SupermarketProduct[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Toate");
@@ -39,7 +42,9 @@ export default function SupermarketProductsScreen() {
   useFocusEffect(
     useCallback(() => {
     if (typeof id !== "string") {
-      return undefined;
+      setIsLoading(false);
+      setLoadError("Magazinul selectat este invalid.");
+      return;
     }
 
     let isMounted = true;
@@ -109,8 +114,14 @@ export default function SupermarketProductsScreen() {
   }, [filteredProducts]);
 
   const distanceKm = supermarket
-    ? getDistanceKm(supermarket.latitude, supermarket.longitude).toFixed(1)
+    ? getDistanceKm(
+        userLocation?.latitude ?? FALLBACK_REGION.latitude,
+        userLocation?.longitude ?? FALLBACK_REGION.longitude,
+        supermarket.latitude,
+        supermarket.longitude,
+      ).toFixed(1)
     : "--";
+  const logoUrls = supermarket ? getSupermarketLogoUrls(supermarket.name, supermarket.logo_url) : [];
 
   return (
     <SafeAreaView style={styles.screen} edges={["left", "right"]}>
@@ -143,8 +154,18 @@ export default function SupermarketProductsScreen() {
                   </View>
 
                   <View style={styles.logoFrame}>
-                    {supermarket?.logo_url ? (
-                      <Image source={{ uri: supermarket.logo_url }} style={styles.logoImage} resizeMode="contain" />
+                    {logoUrls.length ? (
+                      <RemoteLogo
+                        fallback={
+                          <View style={styles.logoFallback}>
+                            <Text style={styles.logoFallbackText}>{getStoreInitials(supermarket?.name ?? "SM")}</Text>
+                          </View>
+                        }
+                        height={70}
+                        urls={logoUrls}
+                        width={70}
+                        style={styles.logoImage}
+                      />
                     ) : (
                       <View style={styles.logoFallback}>
                         <Text style={styles.logoFallbackText}>{getStoreInitials(supermarket?.name ?? "SM")}</Text>
@@ -286,13 +307,13 @@ function getStoreInitials(name: string) {
     .join("");
 }
 
-function getDistanceKm(latitude: number, longitude: number) {
-  const distanceInKm = haversineDistanceKm(
-    FALLBACK_REGION.latitude,
-    FALLBACK_REGION.longitude,
-    latitude,
-    longitude,
-  );
+function getDistanceKm(
+  fromLatitude: number,
+  fromLongitude: number,
+  toLatitude: number,
+  toLongitude: number,
+) {
+  const distanceInKm = haversineDistanceKm(fromLatitude, fromLongitude, toLatitude, toLongitude);
 
   return Number(distanceInKm.toFixed(1));
 }
