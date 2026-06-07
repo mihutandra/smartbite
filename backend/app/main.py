@@ -30,6 +30,7 @@ async def domain_error_handler(request: Request, exc: DomainError):
         "already_exists": 409,
         "validation_error": 422,
         "invalid_state": 409,
+        "status_error": 409,
         "domain_error": 400,
         "unauthorized": 401,
         "forbidden": 403,

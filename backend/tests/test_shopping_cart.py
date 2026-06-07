@@ -3,8 +3,10 @@ from uuid import UUID
 
 from sqlalchemy import select
 
+from app.core.security import hash_password
 from app.models.reservation import Reservation
 from app.models.supermarket_products import SupermarketProduct
+from app.models.user import User
 from tests.utils.shopping_cart import seed_shopping_cart_flow_data
 
 
@@ -134,6 +136,93 @@ def test_confirm_cart_creates_reservation_decrements_stock_and_clears_cart(test_
     }
     assert lidl_item.stock_quantity == data["lidl_initial_stock"] - reserved_by_product[data["lidl_item_id"]]
     assert kaufland_item.stock_quantity == data["kaufland_initial_stock"] - reserved_by_product[data["kaufland_item_id"]]
+
+
+def test_user_can_cancel_active_reservation_and_restore_stock(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+    headers = _auth_headers(test_client, data["email"], data["password"])
+
+    test_client.post(
+        "/api/shopping-cart/",
+        json={"supermarket_product_id": data["lidl_item_id"], "quantity": 1},
+        headers=headers,
+    )
+    cart_item = test_client.get("/api/shopping-cart/", headers=headers).json()[0]
+    confirm_response = test_client.post(
+        "/api/shopping-cart/confirm",
+        json={"items": [{"cart_item_id": cart_item["id"], "quantity": data["lidl_initial_stock"]}]},
+        headers=headers,
+    )
+    assert confirm_response.status_code == 200
+    reservation_id = confirm_response.json()["id"]
+
+    depleted_item = db_session.scalars(
+        select(SupermarketProduct).where(SupermarketProduct.id == UUID(data["lidl_item_id"]))
+    ).one()
+    assert depleted_item.stock_quantity == 0
+    assert depleted_item.is_available is False
+
+    cancel_response = test_client.post(f"/api/reservations/{reservation_id}/cancel", headers=headers)
+
+    assert cancel_response.status_code == 200
+    cancelled_reservation = cancel_response.json()
+    assert cancelled_reservation["id"] == reservation_id
+    assert cancelled_reservation["status"] == "cancelled"
+
+    restored_item = db_session.scalars(
+        select(SupermarketProduct).where(SupermarketProduct.id == UUID(data["lidl_item_id"]))
+    ).one()
+    assert restored_item.stock_quantity == data["lidl_initial_stock"]
+    assert restored_item.is_available is True
+
+
+def test_cancel_reservation_requires_owner_and_active_status(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+    owner_headers = _auth_headers(test_client, data["email"], data["password"])
+
+    other_user = User(
+        name="Other User",
+        email="other.user@example.com",
+        password_hash=hash_password("password123"),
+        phone="0700000001",
+        location="Bucharest",
+    )
+    db_session.add(other_user)
+    db_session.commit()
+    other_headers = _auth_headers(test_client, other_user.email, "password123")
+
+    test_client.post(
+        "/api/shopping-cart/",
+        json={"supermarket_product_id": data["lidl_item_id"], "quantity": 1},
+        headers=owner_headers,
+    )
+    cart_item = test_client.get("/api/shopping-cart/", headers=owner_headers).json()[0]
+    confirm_response = test_client.post(
+        "/api/shopping-cart/confirm",
+        json={"items": [{"cart_item_id": cart_item["id"], "quantity": 1}]},
+        headers=owner_headers,
+    )
+    assert confirm_response.status_code == 200
+    reservation_id = confirm_response.json()["id"]
+
+    other_cancel_response = test_client.post(
+        f"/api/reservations/{reservation_id}/cancel",
+        headers=other_headers,
+    )
+    assert other_cancel_response.status_code == 404
+
+    owner_cancel_response = test_client.post(
+        f"/api/reservations/{reservation_id}/cancel",
+        headers=owner_headers,
+    )
+    assert owner_cancel_response.status_code == 200
+
+    second_cancel_response = test_client.post(
+        f"/api/reservations/{reservation_id}/cancel",
+        headers=owner_headers,
+    )
+    assert second_cancel_response.status_code == 409
+    assert second_cancel_response.json()["code"] == "status_error"
 
 
 def test_user_can_have_multiple_active_reservations(test_client, db_session):
