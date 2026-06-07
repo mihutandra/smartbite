@@ -35,17 +35,20 @@ export default function ProductDetailsScreen() {
 
   useEffect(() => {
     if (typeof id !== "string") {
+      setIsLoading(false);
+      setLoadError("Produsul selectat este invalid.");
       return;
     }
 
     let isMounted = true;
+    const productId = id;
 
     async function loadProduct() {
       setIsLoading(true);
       setLoadError("");
 
       try {
-        const response = await fetchSupermarketProduct(id);
+        const response = await fetchSupermarketProduct(productId);
 
         if (!isMounted) {
           return;
