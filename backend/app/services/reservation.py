@@ -1,7 +1,7 @@
 from uuid import UUID
 from decimal import Decimal
 
-from app.exceptions.exceptions import NotFound
+from app.exceptions.exceptions import NotFound, StatusError
 from app.models.reservation import Reservation
 from app.repositories.reservation import ReservationRepository
 from app.repositories.user_repository import UserRepository
@@ -41,6 +41,42 @@ class ReservationService:
         )
         if reservation is None:
             raise NotFound(entity="Reservation", identifier=str(reservation_id))
+
+        return self._to_out(reservation)
+
+    def cancel_user_reservation(self, user_id: UUID, reservation_id: UUID) -> ReservationOut:
+        user = self.user_repo.get_by_id(user_id)
+        if user is None or user.is_deleted:
+            raise NotFound(entity="User", identifier=str(user_id))
+
+        reservation = self.reservation_repo.get_by_id_for_user(
+            reservation_id=reservation_id,
+            user_id=user_id,
+        )
+        if reservation is None:
+            raise NotFound(entity="Reservation", identifier=str(reservation_id))
+
+        if reservation.status != "active":
+            raise StatusError(
+                entity="Reservation",
+                identifier=str(reservation_id),
+                message="Only active reservations can be cancelled.",
+            )
+
+        try:
+            for item in reservation.items:
+                supermarket_product = item.supermarket_product
+                if supermarket_product is None:
+                    continue
+
+                supermarket_product.stock_quantity = (supermarket_product.stock_quantity or 0) + item.quantity
+                supermarket_product.is_available = supermarket_product.stock_quantity > 0
+
+            reservation.status = "cancelled"
+            reservation = self.reservation_repo.save(reservation)
+        except Exception:
+            self.reservation_repo.session.rollback()
+            raise
 
         return self._to_out(reservation)
 
