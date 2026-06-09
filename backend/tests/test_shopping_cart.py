@@ -87,7 +87,7 @@ def test_shopping_cart_requires_confirmation_to_replace_different_supermarket(te
     assert savings["currency"] == "RON"
 
 
-def test_shopping_cart_add_caps_same_product_by_available_stock(test_client, db_session):
+def test_shopping_cart_add_rejects_quantity_exceeding_available_stock(test_client, db_session):
     data = seed_shopping_cart_flow_data(db_session)
     headers = _auth_headers(test_client, data["email"], data["password"])
 
