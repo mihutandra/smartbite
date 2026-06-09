@@ -64,6 +64,10 @@ class ShoppingCartService:
                 )
 
             if existing_supermarket_id != incoming_supermarket_id and confirm_replace:
+                self._ensure_quantity_available(
+                    supermarket_product=supermarket_product,
+                    requested_quantity=quantity,
+                )
                 new_item = ShoppingCart(
                     user_id=user_id,
                     supermarket_product_id=supermarket_product_id,
@@ -81,10 +85,18 @@ class ShoppingCartService:
         )
 
         if existing_item_same_product:
+            self._ensure_quantity_available(
+                supermarket_product=supermarket_product,
+                requested_quantity=existing_item_same_product.quantity + quantity,
+            )
             existing_item_same_product.quantity += quantity
             self.shopping_cart_repo.update(existing_item_same_product)
             return ShoppingCartAddOut(message="Item quantity updated in cart.")
 
+        self._ensure_quantity_available(
+            supermarket_product=supermarket_product,
+            requested_quantity=quantity,
+        )
         new_item = ShoppingCart(
             user_id=user_id,
             supermarket_product_id=supermarket_product_id,
@@ -261,3 +273,18 @@ class ShoppingCartService:
 
         savings = supermarket_product.original_price - supermarket_product.discount_price
         return max(savings, Decimal("0.00"))
+
+    @staticmethod
+    def _ensure_quantity_available(supermarket_product, requested_quantity: int) -> None:
+        available_stock = supermarket_product.stock_quantity or 0
+        if not supermarket_product.is_available or requested_quantity > available_stock:
+            raise DomainError(
+                message="Requested quantity exceeds available stock.",
+                code="invalid_state",
+                entity="supermarket_product",
+                identifier={
+                    "supermarket_product_id": str(supermarket_product.id),
+                    "requested_quantity": requested_quantity,
+                    "available_stock": available_stock,
+                },
+            )
