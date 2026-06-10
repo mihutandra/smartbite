@@ -2,7 +2,7 @@
 set -e
 
 echo "Running migrations..."
-alembic -c /base/alembic.ini upgrade head
+alembic upgrade head
 
 echo "Seeding supermarkets..."
 python scripts/seed_supermarkets.py
