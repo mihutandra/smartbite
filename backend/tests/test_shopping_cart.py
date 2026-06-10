@@ -103,6 +103,14 @@ def test_shopping_cart_add_rejects_quantity_exceeding_available_stock(test_clien
         headers=headers,
     )
     assert initial_over_stock_response.status_code == 409
+    initial_over_stock_body = initial_over_stock_response.json()
+    assert initial_over_stock_body["code"] == "invalid_state"
+    assert initial_over_stock_body["entity"] == "supermarket_product"
+    assert initial_over_stock_body["identifier"] == {
+        "supermarket_product_id": data["lidl_item_id"],
+        "requested_quantity": 6,
+        "available_stock": 5,
+    }
     assert test_client.get("/api/shopping-cart/", headers=headers).json() == []
 
     add_response = test_client.post(
