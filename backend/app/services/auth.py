@@ -185,7 +185,7 @@ class AuthService:
         logger.info(f"Profile updated id={id}")
         return UserOut.model_validate(updated)
 
-    def change_password(self, id: UUID, password_data: ChangePasswordRequest, token: str) -> ChangePasswordOut:
+    def change_password(self, id: UUID, password_data: ChangePasswordRequest) -> ChangePasswordOut:
         logger.debug(f"Changing password id={id}")
         user = self._get_active_user_or_404(id)
         if not verify_password(password_data.current_password, user.password_hash):
@@ -198,7 +198,6 @@ class AuthService:
 
         user.password_hash = hash_password(password_data.new_password)
         self.repo.update(user)
-        revoke_jwt_token(token)
         logger.info(f"Password changed id={id}")
         return ChangePasswordOut(message="Password changed successfully")
 
