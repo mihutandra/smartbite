@@ -568,11 +568,15 @@ function getBoundsFromRegion(region: {
   longitudeDelta: number;
 }) {
   return {
-    south: region.latitude - region.latitudeDelta / 2,
-    north: region.latitude + region.latitudeDelta / 2,
-    west: region.longitude - region.longitudeDelta / 2,
-    east: region.longitude + region.longitudeDelta / 2,
+    south: clampCoordinate(region.latitude - region.latitudeDelta / 2, -90, 90),
+    north: clampCoordinate(region.latitude + region.latitudeDelta / 2, -90, 90),
+    west: clampCoordinate(region.longitude - region.longitudeDelta / 2, -180, 180),
+    east: clampCoordinate(region.longitude + region.longitudeDelta / 2, -180, 180),
   };
+}
+
+function clampCoordinate(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function areMapRegionsClose(left: MapRegion, right: MapRegion) {
