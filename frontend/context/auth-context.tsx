@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AuthServiceError,
   fetchCurrentUser,
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  async function signIn(email: string, password: string) {
+  const signIn = useCallback(async (email: string, password: string) => {
     setError("");
     const loginResult = await login(email, password);
     const currentUser = await fetchCurrentUser(loginResult.access_token);
@@ -89,15 +89,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(currentUser);
     setError("");
     setStatus("authenticated");
-  }
+  }, []);
 
-  async function signUp(payload: RegisterPayload) {
+  const signUp = useCallback(async (payload: RegisterPayload) => {
     setError("");
     await register(payload);
     setError("");
-  }
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     // TODO: This currently performs only a local sign-out by clearing the stored token.
     // Call the backend logout endpoint too once that flow is ready to be implemented.
     await removeStoredAccessToken();
@@ -105,9 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setError("");
     setStatus("unauthenticated");
-  }
+  }, []);
 
-  async function updateProfile(payload: UpdateProfilePayload) {
+  const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
     if (!accessToken) {
       throw new ProfileServiceError("Trebuie sa fii autentificat pentru a actualiza profilul.");
     }
@@ -117,9 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(updatedUser);
     setError("");
     return updatedUser;
-  }
+  }, [accessToken]);
 
-  const value: AuthContextValue = {
+  const value = useMemo<AuthContextValue>(() => ({
     accessToken,
     error,
     isAuthenticated: status === "authenticated",
@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     user,
-  };
+  }), [accessToken, error, signIn, signOut, signUp, status, updateProfile, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

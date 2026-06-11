@@ -14,15 +14,18 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomNavBar } from "../components/BottomNavBar";
 import { useAuth } from "../context/auth-context";
+import { useLocation } from "../context/location-context";
 import { type UpdateProfilePayload, type UserProfile } from "../types/auth";
 import { formatShortDate } from "../utils/product_detail";
 
 export default function PersonalInfoScreen() {
   const insets = useSafeAreaInsets();
   const { status, updateProfile, user } = useAuth();
+  const { requestUserLocation } = useLocation();
   const [form, setForm] = useState<ProfileFormState>(() => createFormState(user));
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const [feedback, setFeedback] = useState<ProfileFeedback | null>(null);
 
   useEffect(() => {
@@ -38,8 +41,7 @@ export default function PersonalInfoScreen() {
     return (
       form.name.trim() !== user.name ||
       form.email.trim() !== user.email ||
-      normalizeOptionalInput(form.phone) !== user.phone ||
-      normalizeOptionalInput(form.location) !== user.location
+      normalizeOptionalInput(form.phone) !== user.phone
     );
   }, [form, user]);
 
@@ -77,7 +79,6 @@ export default function PersonalInfoScreen() {
   async function saveProfile() {
     const trimmedName = form.name.trim();
     const trimmedEmail = form.email.trim();
-    const nextLocation = normalizeOptionalInput(form.location);
 
     if (!trimmedName) {
       setFeedback({ type: "error", message: "Numele este obligatoriu." });
@@ -93,13 +94,7 @@ export default function PersonalInfoScreen() {
       name: trimmedName,
       email: trimmedEmail,
       phone: normalizeOptionalInput(form.phone),
-      location: nextLocation,
     };
-
-    if (nextLocation !== currentUser.location) {
-      payload.latitude = null;
-      payload.longitude = null;
-    }
 
     setIsSaving(true);
     setFeedback(null);
@@ -115,6 +110,32 @@ export default function PersonalInfoScreen() {
       });
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function updateCurrentLocation() {
+    setIsUpdatingLocation(true);
+    setFeedback(null);
+
+    try {
+      const nextLocation = await requestUserLocation({ waitForProfileSync: true });
+
+      if (!nextLocation) {
+        setFeedback({
+          type: "error",
+          message: "Nu am putut actualiza locatia. Verifica permisiunea pentru locatie.",
+        });
+        return;
+      }
+
+      setFeedback({ type: "success", message: "Locatia a fost actualizata." });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message: error instanceof Error ? error.message : "Nu am putut actualiza locatia.",
+      });
+    } finally {
+      setIsUpdatingLocation(false);
     }
   }
 
@@ -189,14 +210,6 @@ export default function PersonalInfoScreen() {
                   placeholder="Necompletat"
                   value={form.phone}
                 />
-                <View style={styles.divider} />
-                <EditableInfoRow
-                  icon="map-pin"
-                  label="Locatie"
-                  onChangeText={(value) => updateField("location", value)}
-                  placeholder="Necompletata"
-                  value={form.location}
-                />
               </View>
             ) : (
               <View style={styles.infoGroup}>
@@ -205,8 +218,6 @@ export default function PersonalInfoScreen() {
                 <InfoRow icon="mail" label="Email" value={user.email} />
                 <View style={styles.divider} />
                 <InfoRow icon="phone" label="Telefon" value={user.phone || "Necompletat"} />
-                <View style={styles.divider} />
-                <InfoRow icon="map-pin" label="Locatie" value={user.location || "Necompletata"} />
               </View>
             )}
 
@@ -270,6 +281,39 @@ export default function PersonalInfoScreen() {
             ) : null}
 
             <View style={styles.sectionLabel}>
+              <Text style={styles.sectionLabelText}>LOCATIE</Text>
+            </View>
+
+            <View style={styles.infoGroup}>
+              <InfoRow icon="map-pin" label="Locatie curenta" value={user.location || "Necompletata"} />
+              <View style={styles.divider} />
+              <Pressable
+                disabled={isUpdatingLocation}
+                onPress={() => void updateCurrentLocation()}
+                style={({ pressed }) => [
+                  styles.locationAction,
+                  isUpdatingLocation && styles.disabledButton,
+                  pressed ? styles.pressedButton : null,
+                ]}
+              >
+                {isUpdatingLocation ? (
+                  <ActivityIndicator color="#4F9465" size="small" />
+                ) : (
+                  <View style={styles.infoIcon}>
+                    <Feather color="#4E8B5B" name="crosshair" size={18} />
+                  </View>
+                )}
+                <View style={styles.infoTextBlock}>
+                  <Text style={styles.infoLabel}>Actualizare</Text>
+                  <Text style={styles.infoValue}>
+                    {isUpdatingLocation ? "Se actualizeaza locatia..." : "Foloseste locatia dispozitivului"}
+                  </Text>
+                </View>
+                <Feather color="#D8BDA5" name="chevron-right" size={20} />
+              </Pressable>
+            </View>
+
+            <View style={styles.sectionLabel}>
               <Text style={styles.sectionLabelText}>CONT</Text>
             </View>
 
@@ -314,7 +358,6 @@ export default function PersonalInfoScreen() {
 
 type ProfileFormState = {
   email: string;
-  location: string;
   name: string;
   phone: string;
 };
@@ -389,7 +432,6 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
 function createFormState(user: UserProfile | null): ProfileFormState {
   return {
     email: user?.email ?? "",
-    location: user?.location ?? "",
     name: user?.name ?? "",
     phone: user?.phone ?? "",
   };
@@ -561,6 +603,15 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
+  },
+  locationAction: {
+    minHeight: 74,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#FFFFFF",
   },
   infoIcon: {
     width: 42,
