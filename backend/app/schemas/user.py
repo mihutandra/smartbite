@@ -42,9 +42,13 @@ class ProfileUpdateRequest(BaseModel):
     longitude: float | None = None
 
     @model_validator(mode="after")
-    def require_at_least_one_field(self) -> "ProfileUpdateRequest":
+    def validate_payload(self) -> "ProfileUpdateRequest":
         if not self.model_fields_set:
             raise ValueError("At least one profile field must be provided")
+        if "email" in self.model_fields_set and self.email is None:
+            raise ValueError("Email cannot be null")
+        if "name" in self.model_fields_set and self.name is None:
+            raise ValueError("Name cannot be null")
         return self
 
 
