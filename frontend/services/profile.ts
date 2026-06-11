@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../constants/api";
+import { type UpdateProfilePayload, type UserProfile } from "../types/auth";
 import { type ProfileSavings } from "../types/profile";
 
 export class ProfileServiceError extends Error {
@@ -95,6 +96,36 @@ export async function fetchProfileSavings(accessToken: string): Promise<ProfileS
       total_savings: String(data.total_savings),
       currency: data.currency || "RON",
     };
+  } catch (error) {
+    if (error instanceof ProfileServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
+  }
+}
+
+export async function updateProfile(
+  accessToken: string,
+  payload: UpdateProfilePayload,
+): Promise<UserProfile> {
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/profile`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await parseApiResponse<UserProfile>(response);
+
+    if (typeof data?.id !== "string" || typeof data?.email !== "string") {
+      throw new ProfileServiceError("Serverul a returnat un raspuns invalid.");
+    }
+
+    return data;
   } catch (error) {
     if (error instanceof ProfileServiceError) {
       throw error;

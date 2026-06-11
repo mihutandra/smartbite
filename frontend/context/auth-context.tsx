@@ -5,12 +5,13 @@ import {
   login,
   register,
 } from "../services/auth";
+import { ProfileServiceError, updateProfile as updateProfileRequest } from "../services/profile";
 import {
   getStoredAccessToken,
   removeStoredAccessToken,
   setStoredAccessToken,
 } from "../services/session-storage";
-import { type RegisterPayload, type UserProfile } from "../types/auth";
+import { type RegisterPayload, type UpdateProfilePayload, type UserProfile } from "../types/auth";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -22,6 +23,7 @@ type AuthContextValue = {
   signOut: () => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<void>;
   status: AuthStatus;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<UserProfile>;
   user: UserProfile | null;
 };
 
@@ -105,6 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("unauthenticated");
   }
 
+  async function updateProfile(payload: UpdateProfilePayload) {
+    if (!accessToken) {
+      throw new ProfileServiceError("Trebuie sa fii autentificat pentru a actualiza profilul.");
+    }
+
+    setError("");
+    const updatedUser = await updateProfileRequest(accessToken, payload);
+    setUser(updatedUser);
+    setError("");
+    return updatedUser;
+  }
+
   const value: AuthContextValue = {
     accessToken,
     error,
@@ -137,6 +151,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     status,
+    updateProfile: async (payload: UpdateProfilePayload) => {
+      try {
+        return await updateProfile(payload);
+      } catch (err) {
+        const message =
+          err instanceof ProfileServiceError || err instanceof AuthServiceError
+            ? err.message
+            : "A aparut o eroare neasteptata. Incearca din nou.";
+
+        setError(message);
+        throw err;
+      }
+    },
     user,
   };
 
