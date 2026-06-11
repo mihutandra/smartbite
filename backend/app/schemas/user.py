@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 from app.models.enums import UserRole
 
@@ -33,6 +33,30 @@ class UserUpdate(BaseModel):
     longitude: float | None = None
 
 
+class ProfileUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    email: EmailStr | None = None
+    phone: str | None = Field(default=None, max_length=50)
+    location: str | None = Field(default=None, max_length=255)
+    latitude: float | None = None
+    longitude: float | None = None
+
+    @model_validator(mode="after")
+    def validate_payload(self) -> "ProfileUpdateRequest":
+        if not self.model_fields_set:
+            raise ValueError("At least one profile field must be provided")
+        if "email" in self.model_fields_set and self.email is None:
+            raise ValueError("Email cannot be null")
+        if "name" in self.model_fields_set and self.name is None:
+            raise ValueError("Name cannot be null")
+        return self
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
 # ── Response schemas ─────────────────────────────────────────────────────────
 
 class UserOut(BaseModel):
@@ -60,6 +84,10 @@ class LogoutOut(BaseModel):
 
 
 class DeleteAccountOut(BaseModel):
+    message: str
+
+
+class ChangePasswordOut(BaseModel):
     message: str
 
 
