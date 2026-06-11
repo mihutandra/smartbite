@@ -138,6 +138,10 @@ def test_change_password_updates_login_credentials(test_client, db_session):
     assert response.status_code == 200
     assert response.json()["message"] == "Password changed successfully"
 
+    profile_response = test_client.get("/api/profile", headers=headers)
+    assert profile_response.status_code == 401
+    assert profile_response.json()["detail"] == "Token revoked"
+
     db_session.refresh(user)
     assert verify_password("new-password123", user.password_hash) is True
 

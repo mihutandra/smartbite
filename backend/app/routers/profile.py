@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from app.auth.jwt_utils import verify_jwt
+from app.auth.jwt_utils import oauth2_scheme, verify_jwt
 from app.factories.reservation import get_reservation_service
 from app.factories.user import get_auth_service
 from app.schemas.user import (
@@ -42,10 +42,11 @@ def update_my_profile(
 def change_my_password(
     payload: ChangePasswordRequest,
     current_user: dict = Depends(verify_jwt),
+    token: str = Depends(oauth2_scheme),
     service: AuthService = Depends(get_auth_service),
 ):
     user_id = UUID(current_user["user_id"])
-    return service.change_password(id=user_id, password_data=payload)
+    return service.change_password(id=user_id, password_data=payload, token=token)
 
 
 @router.get("/savings", response_model=ProfileSavingsOut)
