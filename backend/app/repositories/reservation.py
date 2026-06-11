@@ -48,3 +48,9 @@ class ReservationRepository:
             )
         )
         return self.session.scalars(stmt).unique().first()
+
+    def save(self, reservation: Reservation) -> Reservation:
+        self.session.add(reservation)
+        self.session.commit()
+        self.session.refresh(reservation)
+        return reservation

@@ -8,9 +8,19 @@ from app.auth.jwt_utils import create_jwt_token, revoke_jwt_token
 from app.core.security import hash_password, verify_password
 from app.models.enums import UserRole
 from app.models.user import User
-from app.repositories.user_repository import UserRepository
-from app.schemas.user import DeleteAccountOut, LogoutOut, TokenOut, UserOut, UserRegisterRequest, UserUpdate
 from app.exceptions.exceptions import Unauthorized
+from app.repositories.user_repository import UserRepository
+from app.schemas.user import (
+    ChangePasswordOut,
+    ChangePasswordRequest,
+    DeleteAccountOut,
+    LogoutOut,
+    ProfileUpdateRequest,
+    TokenOut,
+    UserOut,
+    UserRegisterRequest,
+    UserUpdate,
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,6 +29,16 @@ logger = logging.getLogger(__name__)
 class AuthService:
     def __init__(self, session: Session):
         self.repo = UserRepository(session)
+
+    def _get_active_user_or_404(self, id: UUID) -> User:
+        user = self.repo.get_by_id(id)
+        if user is None or user.is_deleted:
+            logger.warning(f"User id={id} not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+        return user
 
     # ── Auth ─────────────────────────────────────────────────────────────────
 
@@ -97,13 +117,7 @@ class AuthService:
 
     def get_by_id(self, id: UUID) -> UserOut:
         logger.debug(f"Fetching user id={id}")
-        user = self.repo.get_by_id(id)
-        if user is None:
-            logger.warning(f"User id={id} not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
+        user = self._get_active_user_or_404(id)
         return UserOut.model_validate(user)
 
     def list_all(self, page: int, page_size: int) -> list[UserOut]:
@@ -122,13 +136,7 @@ class AuthService:
 
     def update_user(self, id: UUID, user_data: UserUpdate) -> UserOut:
         logger.debug(f"Updating user id={id}")
-        user = self.repo.get_by_id(id)
-        if user is None:
-            logger.warning(f"User id={id} not found for update")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
+        user = self._get_active_user_or_404(id)
         if user_data.name is not None:
             user.name = user_data.name
         if user_data.phone is not None:
@@ -142,6 +150,56 @@ class AuthService:
         updated = self.repo.update(user)
         logger.info(f"User updated id={id}")
         return UserOut.model_validate(updated)
+
+    def update_profile(self, id: UUID, profile_data: ProfileUpdateRequest) -> UserOut:
+        logger.debug(f"Updating profile id={id}")
+        user = self._get_active_user_or_404(id)
+        fields_set = profile_data.model_fields_set
+
+        if (
+            "email" in fields_set
+            and profile_data.email is not None
+            and profile_data.email != user.email
+        ):
+            existing = self.repo.get_by_email(profile_data.email)
+            if existing is not None and existing.id != user.id:
+                logger.warning(f"Profile update failed - email already exists: {profile_data.email}")
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Email already registered",
+                )
+            user.email = profile_data.email
+
+        if "name" in fields_set and profile_data.name is not None:
+            user.name = profile_data.name
+        if "phone" in fields_set:
+            user.phone = profile_data.phone
+        if "location" in fields_set:
+            user.location = profile_data.location
+        if "latitude" in fields_set:
+            user.latitude = profile_data.latitude
+        if "longitude" in fields_set:
+            user.longitude = profile_data.longitude
+
+        updated = self.repo.update(user)
+        logger.info(f"Profile updated id={id}")
+        return UserOut.model_validate(updated)
+
+    def change_password(self, id: UUID, password_data: ChangePasswordRequest) -> ChangePasswordOut:
+        logger.debug(f"Changing password id={id}")
+        user = self._get_active_user_or_404(id)
+        if not verify_password(password_data.current_password, user.password_hash):
+            logger.warning(f"Password change failed for id={id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Current password is incorrect",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user.password_hash = hash_password(password_data.new_password)
+        self.repo.update(user)
+        logger.info(f"Password changed id={id}")
+        return ChangePasswordOut(message="Password changed successfully")
 
     def promote_to_admin(self, id: UUID) -> UserOut:
         logger.debug(f"Promoting user id={id} to ADMIN")

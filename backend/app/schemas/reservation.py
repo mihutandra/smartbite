@@ -6,7 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-ReservationStatus = Literal["active", "inactive"]
+ReservationStatus = Literal["active", "cancelled", "completed", "expired", "inactive"]
 
 
 class ReservationItemOut(BaseModel):

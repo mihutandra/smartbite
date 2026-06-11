@@ -29,3 +29,13 @@ def get_my_reservation(
 ):
     user_id = UUID(current_user["user_id"])
     return service.get_user_reservation(user_id=user_id, reservation_id=reservation_id)
+
+
+@router.post("/{reservation_id}/cancel", response_model=ReservationOut)
+def cancel_my_reservation(
+    reservation_id: UUID,
+    current_user: dict = Depends(verify_jwt),
+    service: ReservationService = Depends(get_reservation_service),
+):
+    user_id = UUID(current_user["user_id"])
+    return service.cancel_user_reservation(user_id=user_id, reservation_id=reservation_id)

@@ -46,16 +46,57 @@ class ShoppingCartService:
         if supermarket_product is None:
             raise NotFound(entity="SupermarketProduct", identifier=str(supermarket_product_id))
 
+        existing_cart_item = self.shopping_cart_repo.get_first_for_user(user_id)
+        if existing_cart_item and existing_cart_item.supermarket_product is not None:
+            existing_supermarket_id = existing_cart_item.supermarket_product.supermarket_id
+            incoming_supermarket_id = supermarket_product.supermarket_id
+
+            if existing_supermarket_id != incoming_supermarket_id and not confirm_replace:
+                raise DomainError(
+                    message="Your cart contains items from another supermarket. Confirm to replace them.",
+                    code="invalid_state",
+                    entity="shopping_cart",
+                    identifier={
+                        "requires_confirmation": True,
+                        "current_supermarket_id": str(existing_supermarket_id),
+                        "new_supermarket_id": str(incoming_supermarket_id),
+                    },
+                )
+
+            if existing_supermarket_id != incoming_supermarket_id and confirm_replace:
+                self._ensure_quantity_available(
+                    supermarket_product=supermarket_product,
+                    requested_quantity=quantity,
+                )
+                new_item = ShoppingCart(
+                    user_id=user_id,
+                    supermarket_product_id=supermarket_product_id,
+                    quantity=quantity,
+                )
+                self.shopping_cart_repo.replace_cart_and_add_item(user_id=user_id, cart_item=new_item)
+                return ShoppingCartAddOut(
+                    message="Cart replaced with items from the selected supermarket.",
+                    cart_replaced=True,
+                )
+
         existing_item_same_product = self.shopping_cart_repo.get_by_user_and_supermarket_product(
             user_id=user_id,
             supermarket_product_id=supermarket_product_id,
         )
 
         if existing_item_same_product:
+            self._ensure_quantity_available(
+                supermarket_product=supermarket_product,
+                requested_quantity=existing_item_same_product.quantity + quantity,
+            )
             existing_item_same_product.quantity += quantity
             self.shopping_cart_repo.update(existing_item_same_product)
             return ShoppingCartAddOut(message="Item quantity updated in cart.")
 
+        self._ensure_quantity_available(
+            supermarket_product=supermarket_product,
+            requested_quantity=quantity,
+        )
         new_item = ShoppingCart(
             user_id=user_id,
             supermarket_product_id=supermarket_product_id,
@@ -232,3 +273,18 @@ class ShoppingCartService:
 
         savings = supermarket_product.original_price - supermarket_product.discount_price
         return max(savings, Decimal("0.00"))
+
+    @staticmethod
+    def _ensure_quantity_available(supermarket_product, requested_quantity: int) -> None:
+        available_stock = supermarket_product.stock_quantity or 0
+        if not supermarket_product.is_available or requested_quantity > available_stock:
+            raise DomainError(
+                message="Requested quantity exceeds available stock.",
+                code="invalid_state",
+                entity="supermarket_product",
+                identifier={
+                    "supermarket_product_id": str(supermarket_product.id),
+                    "requested_quantity": requested_quantity,
+                    "available_stock": available_stock,
+                },
+            )
