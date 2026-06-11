@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -14,68 +14,43 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BottomNavBar } from "../components/BottomNavBar";
 import { useAuth } from "../context/auth-context";
 import { fetchProfileSavings } from "../services/profile";
-import { fetchMyReservations } from "../services/reservations";
-import { type Reservation } from "../types/reservation";
-import { formatCurrency, formatShortDate } from "../utils/product_detail";
+import { formatCurrency } from "../utils/product_detail";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { accessToken, signOut, status, user } = useAuth();
-  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [savings, setSavings] = useState("0.00");
   const [savingsCurrency, setSavingsCurrency] = useState("RON");
-  const [isLoadingReservations, setIsLoadingReservations] = useState(true);
-  const [reservationsError, setReservationsError] = useState("");
 
   useEffect(() => {
     if (status !== "authenticated" || !accessToken) {
-      setIsLoadingReservations(false);
       return;
     }
 
     const token = accessToken;
     let isMounted = true;
 
-    async function loadReservations() {
-      setIsLoadingReservations(true);
-      setReservationsError("");
-
+    async function loadProfileSavings() {
       try {
-        const [reservationList, profileSavings] = await Promise.all([
-          fetchMyReservations(token),
-          fetchProfileSavings(token),
-        ]);
+        const profileSavings = await fetchProfileSavings(token);
 
         if (!isMounted) {
           return;
         }
 
-        setReservations(reservationList);
         setSavings(profileSavings.total_savings);
         setSavingsCurrency(profileSavings.currency);
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        setReservationsError(
-          error instanceof Error ? error.message : "Nu am putut incarca rezervarile.",
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoadingReservations(false);
-        }
+      } catch {
+        // Savings are supplemental profile data; keep the default value if unavailable.
       }
     }
 
-    void loadReservations();
+    void loadProfileSavings();
 
     return () => {
       isMounted = false;
     };
   }, [accessToken, status]);
-
-  const visibleReservations = useMemo(() => reservations.slice(0, 3), [reservations]);
 
   if (status === "loading") {
     return (
@@ -134,31 +109,15 @@ export default function ProfileScreen() {
               />
             </View>
 
-            <View style={styles.sectionHeaderRow}>
-              <SectionLabel label="REZERVARILE MELE" />
-              <Text style={styles.sectionCount}>{`${reservations.length} total`}</Text>
-            </View>
-            <View style={styles.reservationGroup}>
-              {isLoadingReservations ? (
-                <View style={styles.reservationFeedback}>
-                  <ActivityIndicator color="#5D9B68" size="small" />
-                  <Text style={styles.reservationFeedbackText}>Se incarca rezervarile...</Text>
-                </View>
-              ) : reservationsError ? (
-                <View style={styles.reservationFeedback}>
-                  <Feather color="#C4623B" name="alert-circle" size={18} />
-                  <Text style={styles.reservationFeedbackText}>{reservationsError}</Text>
-                </View>
-              ) : visibleReservations.length ? (
-                visibleReservations.map((reservation) => (
-                  <ReservationCard key={reservation.id} reservation={reservation} />
-                ))
-              ) : (
-                <View style={styles.reservationFeedback}>
-                  <Feather color="#5D9B68" name="calendar" size={18} />
-                  <Text style={styles.reservationFeedbackText}>Nu ai rezervari active momentan.</Text>
-                </View>
-              )}
+            <SectionLabel label="REZERVARILE MELE" />
+            <View style={styles.reservationPlaceholderCard}>
+              <View style={styles.reservationPlaceholderIcon}>
+                <Feather color="#FFFFFF" name="shopping-bag" size={18} />
+              </View>
+              <View style={styles.reservationPlaceholderTextBlock}>
+                <Text style={styles.reservationPlaceholderTitle}>Rezervarile mele</Text>
+                <Text style={styles.reservationPlaceholderText}>In curand</Text>
+              </View>
             </View>
 
             <SectionLabel label="SUPORT" />
@@ -240,47 +199,6 @@ function ProfileAction({ icon, iconBackground, iconColor, label, onPress }: Prof
       <Text style={styles.actionLabel}>{label}</Text>
       <Feather color="#D8BDA5" name="chevron-right" size={20} />
     </Pressable>
-  );
-}
-
-function ReservationCard({ reservation }: { reservation: Reservation }) {
-  const itemCount = reservation.items.reduce((total, item) => total + item.quantity, 0);
-  const total = reservation.items.reduce(
-    (sum, item) => sum + Number(item.reserved_price) * item.quantity,
-    0,
-  );
-  const firstItem = reservation.items[0];
-  const storeName = firstItem?.supermarket_name ?? "SmartBite";
-  const title = firstItem?.product_name
-    ? `${firstItem.product_name}${reservation.items.length > 1 ? ` +${reservation.items.length - 1}` : ""}`
-    : "Rezervare SmartBite";
-
-  return (
-    <View style={styles.reservationCard}>
-      <View style={styles.reservationTopRow}>
-        <View style={styles.reservationIcon}>
-          <Feather color="#FFFFFF" name="shopping-bag" size={18} />
-        </View>
-        <View style={styles.reservationTextBlock}>
-          <Text numberOfLines={1} style={styles.reservationTitle}>
-            {title}
-          </Text>
-          <Text numberOfLines={1} style={styles.reservationStore}>
-            {storeName}
-          </Text>
-        </View>
-        <View style={styles.statusPill}>
-          <Text style={styles.statusText}>
-            {reservation.status === "active" ? "Activa" : "Inactiva"}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.reservationMetaRow}>
-        <Text style={styles.reservationMeta}>{`${itemCount} produse`}</Text>
-        <Text style={styles.reservationMeta}>{formatShortDate(reservation.created_at)}</Text>
-        <Text style={styles.reservationTotal}>{formatCurrency(total.toFixed(2), "RON")}</Text>
-      </View>
-    </View>
   );
 }
 
@@ -397,12 +315,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingTop: 24,
   },
-  sectionHeaderRow: {
-    marginTop: 22,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   sectionLabel: {
     alignSelf: "flex-start",
     borderRadius: 999,
@@ -415,11 +327,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
     letterSpacing: 0.5,
-  },
-  sectionCount: {
-    color: "#A98B73",
-    fontSize: 12,
-    fontWeight: "800",
   },
   cardGroup: {
     overflow: "hidden",
@@ -462,96 +369,47 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: "#F0E3D4",
   },
-  reservationGroup: {
-    gap: 10,
-    marginTop: 12,
-    marginBottom: 22,
-  },
-  reservationCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#F0E3D4",
-    backgroundColor: "#FFFFFF",
-    padding: 14,
-    shadowColor: "#B89573",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  reservationTopRow: {
+  reservationPlaceholderCard: {
+    minHeight: 76,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 14,
+    marginTop: 12,
+    marginBottom: 22,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#F0E3D4",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    shadowColor: "#B89573",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  reservationIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  reservationPlaceholderIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#5D9B68",
   },
-  reservationTextBlock: {
+  reservationPlaceholderTextBlock: {
     flex: 1,
     minWidth: 0,
   },
-  reservationTitle: {
-    color: "#332C27",
-    fontSize: 14,
+  reservationPlaceholderTitle: {
+    color: "#36302B",
+    fontSize: 15,
     fontWeight: "900",
   },
-  reservationStore: {
+  reservationPlaceholderText: {
     marginTop: 4,
-    color: "#867165",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  statusPill: {
-    borderRadius: 999,
-    backgroundColor: "#EAF4EE",
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-  },
-  statusText: {
-    color: "#477D60",
-    fontSize: 11,
-    fontWeight: "900",
-  },
-  reservationMetaRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  reservationMeta: {
-    color: "#9C806E",
+    color: "#A98B73",
     fontSize: 12,
     fontWeight: "800",
-  },
-  reservationTotal: {
-    marginLeft: "auto",
-    color: "#4E8B5B",
-    fontSize: 13,
-    fontWeight: "900",
-  },
-  reservationFeedback: {
-    minHeight: 76,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#F0E3D4",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 14,
-  },
-  reservationFeedbackText: {
-    flex: 1,
-    color: "#6F5E53",
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 19,
   },
   footer: {
     alignItems: "center",
