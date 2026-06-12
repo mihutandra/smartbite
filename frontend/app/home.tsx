@@ -41,7 +41,7 @@ type MapSupermarketDisplay = SupermarketMapMarker;
 export default function HomeScreen() {
   const { view } = useLocalSearchParams<{ view?: string }>();
   const insets = useSafeAreaInsets();
-  const { signOut, status, user } = useAuth();
+  const { status, user } = useAuth();
   const { isRequestingLocation, requestUserLocation, userLocation } = useLocation();
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
   const [mapSupermarkets, setMapSupermarkets] = useState<SupermarketMapMarker[]>([]);
@@ -327,18 +327,6 @@ export default function HomeScreen() {
                       <Text style={styles.brandOrange}>BITE</Text>
                     </Text>
                     <Text style={styles.heroSubtitle}>Alege inteligent. Traieste sustenabil</Text>
-                  </View>
-                  <View style={styles.heroControls}>
-                    <Pressable style={styles.heroSignOutButton} onPress={() => void signOut()}>
-                      <Feather color="#A55D31" name="log-out" size={14} />
-                      <Text style={styles.heroSignOutText}>Delogheaza-te</Text>
-                    </Pressable>
-
-                    <View style={styles.heroActionRow}>
-                      <Pressable style={styles.heroIconButton} onPress={() => setViewMode("map")}>
-                        <Feather color="#FFFDF6" name="map" size={12} />
-                      </Pressable>
-                    </View>
                   </View>
                 </View>
 
@@ -667,36 +655,6 @@ const styles = StyleSheet.create({
     color: "#FFF8F0",
     fontSize: 12,
     fontWeight: "600",
-  },
-  heroControls: {
-    alignItems: "flex-end",
-    gap: 10,
-  },
-  heroActionRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  heroSignOutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,251,246,0.94)",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  heroSignOutText: {
-    color: "#A55D31",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  heroIconButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.22)",
   },
   searchWrap: {
     marginTop: 20,
