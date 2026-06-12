@@ -225,7 +225,7 @@ export default function CartScreen() {
                   <CartItemCard
                     key={item.id}
                     item={item}
-                    isBusy={busyItemId === item.id}
+                    isBusy={isConfirming || busyItemId === item.id}
                     onDecrease={() => updateItemQuantity(item.id, "decrease")}
                     onIncrease={() => updateItemQuantity(item.id, "increase")}
                     onOpen={() =>
@@ -368,7 +368,7 @@ function CartItemCard({
 
   return (
     <View style={styles.itemCard}>
-      <Pressable onPress={onOpen} style={styles.itemOpenArea}>
+      <Pressable disabled={isBusy} onPress={onOpen} style={styles.itemOpenArea}>
         <View style={styles.itemImageWrap}>
           {item.product_image_url ? (
             <Image source={{ uri: item.product_image_url }} resizeMode="cover" style={styles.itemImage} />

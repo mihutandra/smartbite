@@ -41,6 +41,8 @@ export default function ProductDetailsScreen() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isReserveNoticeVisible, setIsReserveNoticeVisible] = useState(false);
   const [isReplaceCartModalVisible, setIsReplaceCartModalVisible] = useState(false);
+  const [existingCartQuantity, setExistingCartQuantity] = useState(0);
+  const [lastAddedQuantity, setLastAddedQuantity] = useState(1);
 
   useEffect(() => {
     if (typeof id !== "string") {
@@ -91,17 +93,51 @@ export default function ProductDetailsScreen() {
     [product],
   );
   const maxQuantity = Math.max(0, product?.stock_quantity ?? 0);
+  const maxAddQuantity = accessToken ? Math.max(0, maxQuantity - existingCartQuantity) : maxQuantity;
   const isUnavailable = product?.is_available === false || maxQuantity < 1;
+  const isAddUnavailable = isUnavailable || maxAddQuantity < 1;
+
+  useEffect(() => {
+    if (!product || !accessToken) {
+      setExistingCartQuantity(0);
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadExistingCartQuantity() {
+      try {
+        const currentCartItems = await fetchShoppingCart(accessToken);
+        const existingItem = currentCartItems.find(
+          (item) => item.supermarket_product_id === product.id,
+        );
+
+        if (isMounted) {
+          setExistingCartQuantity(existingItem?.quantity ?? 0);
+        }
+      } catch {
+        if (isMounted) {
+          setExistingCartQuantity(0);
+        }
+      }
+    }
+
+    void loadExistingCartQuantity();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken, product]);
 
   useEffect(() => {
     setQuantity((current) => {
-      if (maxQuantity < 1) {
+      if (maxAddQuantity < 1) {
         return 0;
       }
 
-      return Math.min(Math.max(1, current), maxQuantity);
+      return Math.min(Math.max(1, current), maxAddQuantity);
     });
-  }, [maxQuantity]);
+  }, [maxAddQuantity]);
 
   async function reserveProduct() {
     if (!product || isUnavailable) {
@@ -129,7 +165,28 @@ export default function ProductDetailsScreen() {
         return;
       }
 
-      await addProductToCart();
+      const existingItem = currentCartItems.find(
+        (item) => item.supermarket_product_id === product.id,
+      );
+      const latestExistingQuantity = existingItem?.quantity ?? 0;
+      const remainingQuantity = Math.max(0, maxQuantity - latestExistingQuantity);
+
+      setExistingCartQuantity(latestExistingQuantity);
+
+      if (remainingQuantity < 1) {
+        setReserveError("Ai deja in cos tot stocul disponibil pentru acest produs.");
+        return;
+      }
+
+      if (quantity > remainingQuantity) {
+        setQuantity(remainingQuantity);
+        setReserveError(`Mai poti adauga cel mult ${remainingQuantity} bucati.`);
+        return;
+      }
+
+      await addProductToCart(quantity);
+      setExistingCartQuantity(latestExistingQuantity + quantity);
+      setLastAddedQuantity(quantity);
       setIsReserveNoticeVisible(true);
     } catch (error) {
       setReserveError(error instanceof Error ? error.message : "Nu am putut adauga produsul in cos.");
@@ -138,12 +195,12 @@ export default function ProductDetailsScreen() {
     }
   }
 
-  async function addProductToCart(confirmReplace = false) {
+  async function addProductToCart(quantityToAdd = quantity, confirmReplace = false) {
     if (!product || !accessToken) {
       return;
     }
 
-    await addShoppingCartItem(accessToken, product.id, quantity, confirmReplace);
+    await addShoppingCartItem(accessToken, product.id, quantityToAdd, confirmReplace);
   }
 
   async function replaceCartAndReserveProduct() {
@@ -155,7 +212,9 @@ export default function ProductDetailsScreen() {
     setReserveError("");
 
     try {
-      await addProductToCart(true);
+      await addProductToCart(quantity, true);
+      setExistingCartQuantity(quantity);
+      setLastAddedQuantity(quantity);
       setIsReplaceCartModalVisible(false);
       setIsReserveNoticeVisible(true);
     } catch (error) {
@@ -251,21 +310,21 @@ export default function ProductDetailsScreen() {
                   <View style={styles.quantityCard}>
                     <Pressable
                       onPress={() => setQuantity((current) => Math.max(1, current - 1))}
-                      disabled={quantity <= 1 || maxQuantity < 1}
+                      disabled={quantity <= 1 || maxAddQuantity < 1}
                       style={[
                         styles.quantityButton,
-                        (quantity <= 1 || maxQuantity < 1) && styles.quantityButtonDisabled,
+                        (quantity <= 1 || maxAddQuantity < 1) && styles.quantityButtonDisabled,
                       ]}
                     >
                       <Text style={styles.quantityButtonText}>-</Text>
                     </Pressable>
                     <Text style={styles.quantityValue}>{quantity}</Text>
                     <Pressable
-                      onPress={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
-                      disabled={quantity >= maxQuantity || maxQuantity < 1}
+                      onPress={() => setQuantity((current) => Math.min(maxAddQuantity, current + 1))}
+                      disabled={quantity >= maxAddQuantity || maxAddQuantity < 1}
                       style={[
                         styles.quantityButton,
-                        (quantity >= maxQuantity || maxQuantity < 1) && styles.quantityButtonDisabled,
+                        (quantity >= maxAddQuantity || maxAddQuantity < 1) && styles.quantityButtonDisabled,
                       ]}
                     >
                       <Text style={styles.quantityButtonText}>+</Text>
@@ -273,16 +332,22 @@ export default function ProductDetailsScreen() {
                   </View>
 
                   <Pressable
-                    disabled={isUnavailable || isAddingToCart}
+                    disabled={isAddUnavailable || isAddingToCart}
                     onPress={() => void reserveProduct()}
                     style={[
                       styles.reserveButton,
-                      (isUnavailable || isAddingToCart) && styles.reserveButtonDisabled,
+                      (isAddUnavailable || isAddingToCart) && styles.reserveButtonDisabled,
                     ]}
                   >
                     <Feather color="#FFF8F0" name="shopping-bag" size={16} />
                     <Text style={styles.reserveButtonText}>
-                      {isUnavailable ? "Indisponibil" : isAddingToCart ? "Se adauga..." : "Rezerva acum"}
+                      {isUnavailable
+                        ? "Indisponibil"
+                        : maxAddQuantity < 1
+                          ? "Stoc in cos"
+                          : isAddingToCart
+                            ? "Se adauga..."
+                            : "Rezerva acum"}
                     </Text>
                   </Pressable>
                 </View>
@@ -331,7 +396,7 @@ export default function ProductDetailsScreen() {
                 </View>
                 <Text style={styles.modalTitle}>Produs rezervat</Text>
                 <Text style={styles.modalText}>
-                  {`Ai adaugat ${quantity} x ${product.product_name ?? "produs"} in cos.`}
+                  {`Ai adaugat ${lastAddedQuantity} x ${product.product_name ?? "produs"} in cos.`}
                 </Text>
 
                 <View style={styles.modalActions}>

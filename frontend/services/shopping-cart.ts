@@ -28,6 +28,22 @@ function extractErrorMessage(data: unknown, fallbackMessage: string) {
     return detail;
   }
 
+  if (Array.isArray(detail) && detail.length > 0) {
+    const firstError = detail[0];
+
+    if (typeof firstError === "string" && firstError.trim()) {
+      return firstError;
+    }
+
+    if (typeof firstError === "object" && firstError !== null) {
+      const message = "msg" in firstError && typeof firstError.msg === "string" ? firstError.msg : undefined;
+
+      if (message?.trim()) {
+        return message;
+      }
+    }
+  }
+
   return fallbackMessage;
 }
 
