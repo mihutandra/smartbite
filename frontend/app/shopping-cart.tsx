@@ -97,6 +97,7 @@ export default function CartScreen() {
     return Math.max(0, totals.original - totals.discounted);
   }, [cartItems, cartSavings, totals.discounted, totals.original]);
   const currency = cartSavings?.currency ?? cartItems.find((item) => item.currency)?.currency ?? "lei";
+  const isCheckoutDisabled = cartItems.length === 0 || isConfirming || isLoading || Boolean(busyItemId);
 
   async function removeItem(itemId: string) {
     if (!accessToken) {
@@ -265,11 +266,11 @@ export default function CartScreen() {
 
         <View style={[styles.checkoutWrap, { paddingBottom: Math.max(insets.bottom, 14) }]}>
           <Pressable
-            disabled={cartItems.length === 0 || isConfirming || isLoading}
+            disabled={isCheckoutDisabled}
             onPress={() => void confirmReservation()}
             style={[
               styles.confirmButton,
-              (cartItems.length === 0 || isConfirming || isLoading) && styles.confirmButtonDisabled,
+              isCheckoutDisabled && styles.confirmButtonDisabled,
             ]}
           >
             <Text style={styles.confirmText}>

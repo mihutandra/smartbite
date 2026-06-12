@@ -104,12 +104,14 @@ export default function ProductDetailsScreen() {
     }
 
     let isMounted = true;
+    const selectedProduct = product;
+    const token = accessToken;
 
     async function loadExistingCartQuantity() {
       try {
-        const currentCartItems = await fetchShoppingCart(accessToken);
+        const currentCartItems = await fetchShoppingCart(token);
         const existingItem = currentCartItems.find(
-          (item) => item.supermarket_product_id === product.id,
+          (item) => item.supermarket_product_id === selectedProduct.id,
         );
 
         if (isMounted) {
