@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomNavBar } from "../components/BottomNavBar";
-import { MapSupermarketCard, type MapMarker } from "../components/MapSupermarketCard";
+import { MapSupermarketCard } from "../components/MapSupermarketCard";
 import { SupermarketCard } from "../components/SupermarketCard";
 import { authHeroStyles } from "../constants/auth-hero-styles";
 import { useAuth } from "../context/auth-context";
@@ -22,6 +22,7 @@ import {
   fetchSupermarketsInBounds,
   fetchSupermarketProductCounts,
 } from "../services/supermarkets";
+import { type MapMarker, type MapRegion } from "../types/map";
 import { type Supermarket, type SupermarketMapMarker } from "../types/supermarket";
 
 const FALLBACK_REGION = {
@@ -50,8 +51,9 @@ export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [loadError, setLoadError] = useState("");
   const [isLoadingStores, setIsLoadingStores] = useState(true);
-  const [isLoadingMapStores, setIsLoadingMapStores] = useState(false);
   const [mapRenderKey, setMapRenderKey] = useState(0);
+  const [mapRegion, setMapRegion] = useState<MapRegion>(FALLBACK_REGION);
+  const [hasCenteredMapOnUserLocation, setHasCenteredMapOnUserLocation] = useState(false);
   const userLatitude = userLocation?.latitude;
   const userLongitude = userLocation?.longitude;
   const locationQuery = useMemo(
@@ -157,10 +159,26 @@ export default function HomeScreen() {
     [userLocation?.latitude, userLocation?.longitude],
   );
 
+  useEffect(() => {
+    if (!userLocation || hasCenteredMapOnUserLocation) {
+      return;
+    }
+
+    setMapRegion(locationRegion);
+    setMapRenderKey((current) => current + 1);
+    setHasCenteredMapOnUserLocation(true);
+  }, [hasCenteredMapOnUserLocation, locationRegion, userLocation]);
+
   const mapBounds = useMemo(
-    () => getBoundsFromRegion(locationRegion),
-    [locationRegion],
+    () => getBoundsFromRegion(mapRegion),
+    [mapRegion],
   );
+
+  const handleMapRegionChange = useCallback((nextRegion: MapRegion) => {
+    setMapRegion((currentRegion) =>
+      areMapRegionsClose(currentRegion, nextRegion) ? currentRegion : nextRegion,
+    );
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated" || viewMode !== "map") {
@@ -170,8 +188,6 @@ export default function HomeScreen() {
     let isMounted = true;
 
     async function loadMapSupermarkets() {
-      setIsLoadingMapStores(true);
-
       try {
         const mapResults = await fetchSupermarketsInBounds(
           {
@@ -199,10 +215,6 @@ export default function HomeScreen() {
         }
 
         setMapSupermarkets([]);
-      } finally {
-        if (isMounted) {
-          setIsLoadingMapStores(false);
-        }
       }
     }
 
@@ -285,7 +297,16 @@ export default function HomeScreen() {
   }
 
   async function recenterMap() {
-    await requestUserLocation();
+    const nextLocation = await requestUserLocation();
+    setMapRegion(
+      nextLocation
+        ? {
+            ...locationRegion,
+            latitude: nextLocation.latitude,
+            longitude: nextLocation.longitude,
+          }
+        : locationRegion,
+    );
     setMapRenderKey((current) => current + 1);
   }
 
@@ -381,8 +402,9 @@ export default function HomeScreen() {
                 title="Harta Magazine"
                 markers={markers}
                 selectedMarkerId={selectedStoreId}
-                initialRegion={locationRegion}
+                initialRegion={mapRegion}
                 onMarkerPress={setSelectedStoreId}
+                onRegionChangeComplete={handleMapRegionChange}
                 fullScreen
                 topInset={insets.top}
                 userCoordinate={
@@ -420,9 +442,6 @@ export default function HomeScreen() {
                     <Text style={styles.mapSheetEyebrow}>
                       {`${mapStoreSource.length} magazine in zona`}
                     </Text>
-                    {isLoadingMapStores ? (
-                      <Text style={styles.mapSheetLoadingText}>Se actualizeaza harta...</Text>
-                    ) : null}
                     <Text numberOfLines={1} style={styles.mapSheetTitle}>
                       {selectedMapStore ? selectedMapStore.name : "Alege un magazin"}
                     </Text>
@@ -537,11 +556,24 @@ function getBoundsFromRegion(region: {
   longitudeDelta: number;
 }) {
   return {
-    south: region.latitude - region.latitudeDelta / 2,
-    north: region.latitude + region.latitudeDelta / 2,
-    west: region.longitude - region.longitudeDelta / 2,
-    east: region.longitude + region.longitudeDelta / 2,
+    south: clampCoordinate(region.latitude - region.latitudeDelta / 2, -90, 90),
+    north: clampCoordinate(region.latitude + region.latitudeDelta / 2, -90, 90),
+    west: clampCoordinate(region.longitude - region.longitudeDelta / 2, -180, 180),
+    east: clampCoordinate(region.longitude + region.longitudeDelta / 2, -180, 180),
   };
+}
+
+function clampCoordinate(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function areMapRegionsClose(left: MapRegion, right: MapRegion) {
+  return (
+    Math.abs(left.latitude - right.latitude) < 0.0005 &&
+    Math.abs(left.longitude - right.longitude) < 0.0005 &&
+    Math.abs(left.latitudeDelta - right.latitudeDelta) < 0.001 &&
+    Math.abs(left.longitudeDelta - right.longitudeDelta) < 0.001
+  );
 }
 
 function formatDistance(distanceKm: number) {
@@ -785,12 +817,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase",
-  },
-  mapSheetLoadingText: {
-    color: "#8B7668",
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 2,
   },
   mapSheetTitle: {
     color: "#3D342D",

@@ -1,32 +1,15 @@
 import type { ComponentType } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
+import { type MapCoordinate, type MapMarker, type MapRegion } from "../types/map";
 
-type MapCoordinate = {
-  latitude: number;
-  longitude: number;
-};
-
-type Region = {
-  latitude: number;
-  longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
-};
-
-export type MapMarker = {
-  id: string;
-  name: string;
-  shortLabel?: string;
-  coordinate: MapCoordinate;
-  accentColor?: string;
-  logoUrl?: string | null;
-};
+export { type MapCoordinate, type MapMarker, type MapRegion };
 
 export type MapSupermarketCardProps = {
   title?: string;
   markers: MapMarker[];
   selectedMarkerId?: string;
-  initialRegion?: Region;
+  initialRegion?: MapRegion;
+  onRegionChangeComplete?: (region: MapRegion) => void;
   onMarkerPress?: (markerId: string) => void;
   style?: StyleProp<ViewStyle>;
   fullScreen?: boolean;
