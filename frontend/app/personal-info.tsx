@@ -344,7 +344,7 @@ export default function PersonalInfoScreen() {
             }
 
             if (tab === "cart") {
-              router.push("/cart" as never);
+              router.push("/shopping-cart" as never);
               return;
             }
 

@@ -100,3 +100,25 @@ export async function fetchMyReservations(accessToken: string): Promise<Reservat
     throw createConnectionError(error);
   }
 }
+
+export async function cancelReservation(
+  accessToken: string,
+  reservationId: string,
+): Promise<Reservation> {
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/reservations/${reservationId}/cancel`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return await parseApiResponse<Reservation>(response);
+  } catch (error) {
+    if (error instanceof ReservationServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
+  }
+}
