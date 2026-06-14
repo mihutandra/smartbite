@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,9 +19,10 @@ import { formatCurrency } from "../utils/product_detail";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { accessToken, signOut, status, user } = useAuth();
+  const { accessToken, deleteAccount, signOut, status, user } = useAuth();
   const [savings, setSavings] = useState("0.00");
   const [savingsCurrency, setSavingsCurrency] = useState("RON");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated" || !accessToken) {
@@ -62,6 +64,35 @@ export default function ProfileScreen() {
 
   if (status !== "authenticated" || !user) {
     return <Redirect href="/login" />;
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      "Sterge contul?",
+      "Contul tau va fi sters si vei fi deconectat. Aceasta actiune nu poate fi anulata.",
+      [
+        { text: "Anuleaza", style: "cancel" },
+        {
+          text: "Sterge",
+          style: "destructive",
+          onPress: () => void handleDeleteAccount(),
+        },
+      ],
+    );
+  }
+
+  async function handleDeleteAccount() {
+    setIsDeletingAccount(true);
+
+    try {
+      await deleteAccount();
+    } catch (error) {
+      Alert.alert(
+        "Nu am putut sterge contul",
+        error instanceof Error ? error.message : "Incearca din nou.",
+      );
+      setIsDeletingAccount(false);
+    }
   }
 
   return (
@@ -134,8 +165,9 @@ export default function ProfileScreen() {
                 icon="help-circle"
                 iconColor="#A65E34"
                 iconBackground="#FFF2E4"
-                label="Sterge cont (in curand)"
-                onPress={() => undefined}
+                isLoading={isDeletingAccount}
+                label={isDeletingAccount ? "Se sterge contul..." : "Sterge cont"}
+                onPress={confirmDeleteAccount}
               />
             </View>
 
@@ -186,15 +218,20 @@ type ProfileActionProps = {
   icon: keyof typeof Feather.glyphMap;
   iconBackground: string;
   iconColor: string;
+  isLoading?: boolean;
   label: string;
   onPress: () => void;
 };
 
-function ProfileAction({ icon, iconBackground, iconColor, label, onPress }: ProfileActionProps) {
+function ProfileAction({ icon, iconBackground, iconColor, isLoading = false, label, onPress }: ProfileActionProps) {
   return (
-    <Pressable onPress={onPress} style={styles.profileAction}>
+    <Pressable disabled={isLoading} onPress={onPress} style={styles.profileAction}>
       <View style={[styles.actionIcon, { backgroundColor: iconBackground }]}>
-        <Feather color={iconColor} name={icon} size={18} />
+        {isLoading ? (
+          <ActivityIndicator color={iconColor} size="small" />
+        ) : (
+          <Feather color={iconColor} name={icon} size={18} />
+        )}
       </View>
       <Text style={styles.actionLabel}>{label}</Text>
       <Feather color="#D8BDA5" name="chevron-right" size={20} />

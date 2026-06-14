@@ -198,3 +198,20 @@ export async function fetchCurrentUser(accessToken: string): Promise<UserProfile
     throw createConnectionError(error);
   }
 }
+
+export async function deleteAccount(accessToken: string): Promise<void> {
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/auth/delete-account`, {
+      method: "DELETE",
+      headers: createJsonHeaders(accessToken),
+    });
+
+    await parseApiResponse<{ message: string }>(response);
+  } catch (error) {
+    if (error instanceof AuthServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
+  }
+}

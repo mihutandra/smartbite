@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AuthServiceError,
+  deleteAccount as deleteAccountRequest,
   fetchCurrentUser,
   login,
   register,
@@ -8,6 +9,7 @@ import {
 import { ProfileServiceError, updateProfile as updateProfileRequest } from "../services/profile";
 import {
   getStoredAccessToken,
+  removeStoredUserLocation,
   removeStoredAccessToken,
   setStoredAccessToken,
 } from "../services/session-storage";
@@ -18,6 +20,7 @@ type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 type AuthContextValue = {
   accessToken: string | null;
   error: string;
+  deleteAccount: () => Promise<void>;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -107,6 +110,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("unauthenticated");
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    if (!accessToken) {
+      throw new AuthServiceError("Trebuie sa fii autentificat pentru a sterge contul.");
+    }
+
+    setError("");
+    await deleteAccountRequest(accessToken);
+    await removeStoredAccessToken();
+    await removeStoredUserLocation();
+    setAccessToken(null);
+    setUser(null);
+    setError("");
+    setStatus("unauthenticated");
+  }, [accessToken]);
+
   const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
     if (!accessToken) {
       throw new ProfileServiceError("Trebuie sa fii autentificat pentru a actualiza profilul.");
@@ -121,6 +139,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(() => ({
     accessToken,
+    deleteAccount: async () => {
+      try {
+        await deleteAccount();
+      } catch (err) {
+        const message =
+          err instanceof AuthServiceError
+            ? err.message
+            : "A aparut o eroare neasteptata. Incearca din nou.";
+
+        setError(message);
+        throw err;
+      }
+    },
     error,
     isAuthenticated: status === "authenticated",
     signIn: async (email: string, password: string) => {
@@ -165,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     user,
-  }), [accessToken, error, signIn, signOut, signUp, status, updateProfile, user]);
+  }), [accessToken, deleteAccount, error, signIn, signOut, signUp, status, updateProfile, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
