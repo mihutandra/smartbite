@@ -92,11 +92,12 @@ export default function SupermarketProductsScreen() {
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "Toate") {
-      return products;
-    }
+    const categoryProducts =
+      selectedCategory === "Toate"
+        ? products
+        : products.filter((product) => getCategoryLabel(product) === selectedCategory);
 
-    return products.filter((product) => getCategoryLabel(product) === selectedCategory);
+    return categoryProducts;
   }, [products, selectedCategory]);
 
   const displayedRows = useMemo(() => {
@@ -248,7 +249,7 @@ export default function SupermarketProductsScreen() {
               }
 
               if (tab === "cart") {
-                router.push("/cart" as never);
+                router.push("/shopping-cart" as never);
                 return;
               }
 

@@ -234,40 +234,43 @@ export default function SearchScreen() {
 
                 <View style={styles.productPreviewRow}>
                   {group.products.map((product) => (
-                    <Pressable
-                      key={product.id}
-                      onPress={() =>
-                        router.push({
-                          pathname: "/product/[id]",
-                          params: { id: product.id, supermarketId: product.supermarket_id },
-                        })
-                      }
-                      style={styles.productPreviewCard}
-                    >
-                      <View style={styles.productImageWrap}>
-                        {product.product_image_url ? (
-                          <Image
-                            source={{ uri: product.product_image_url }}
-                            style={styles.productImage}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={styles.productImageFallback}>
-                            <Text style={styles.productImageFallbackText}>
-                              {(product.product_name ?? "Produs").slice(0, 1).toUpperCase()}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
+                      <Pressable
+                        key={product.id}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/product/[id]",
+                            params: { id: product.id, supermarketId: product.supermarket_id },
+                          })
+                        }
+                        style={styles.productPreviewCard}
+                      >
+                        <View style={styles.productImageWrap}>
+                          {product.product_image_url ? (
+                            <Image
+                              source={{ uri: product.product_image_url }}
+                              style={styles.productImage}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <View style={styles.productImageFallback}>
+                              <Text style={styles.productImageFallbackText}>
+                                {(product.product_name ?? "Produs").slice(0, 1).toUpperCase()}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
 
-                      <Text numberOfLines={2} style={styles.productName}>
-                        {product.product_name ?? "Produs"}
-                      </Text>
-                      <Text style={styles.productPrice}>
-                        {formatCurrency(product.discount_price, product.currency)}
-                      </Text>
-                    </Pressable>
-                  ))}
+                        <Text
+                          numberOfLines={2}
+                          style={styles.productName}
+                        >
+                          {product.product_name ?? "Produs"}
+                        </Text>
+                        <Text style={styles.productPrice}>
+                          {formatCurrency(product.discount_price, product.currency)}
+                        </Text>
+                      </Pressable>
+                    ))}
                 </View>
               </View>
             ))}
@@ -289,12 +292,7 @@ export default function SearchScreen() {
           }
 
           if (tab === "cart") {
-            router.push("/cart" as never);
-            return;
-          }
-
-          if (tab === "profile") {
-            router.push("/profile" as never);
+            router.push("/shopping-cart" as never);
           }
         }}
       />

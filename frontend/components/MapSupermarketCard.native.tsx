@@ -6,29 +6,17 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
-import MapView, { Marker, type Region } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { RemoteLogo } from "./RemoteLogo";
+import { type MapCoordinate, type MapMarker, type MapRegion } from "../types/map";
 import { getSupermarketLogoUrls } from "../utils/images";
-
-type MapCoordinate = {
-  latitude: number;
-  longitude: number;
-};
-
-export type MapMarker = {
-  id: string;
-  name: string;
-  shortLabel?: string;
-  coordinate: MapCoordinate;
-  accentColor?: string;
-  logoUrl?: string | null;
-};
 
 export type MapSupermarketCardProps = {
   title?: string;
   markers: MapMarker[];
   selectedMarkerId?: string;
-  initialRegion?: Region;
+  initialRegion?: MapRegion;
+  onRegionChangeComplete?: (region: MapRegion) => void;
   onMarkerPress?: (markerId: string) => void;
   style?: StyleProp<ViewStyle>;
   fullScreen?: boolean;
@@ -36,7 +24,7 @@ export type MapSupermarketCardProps = {
   userCoordinate?: MapCoordinate | null;
 };
 
-const DEFAULT_REGION: Region = {
+const DEFAULT_REGION: MapRegion = {
   latitude: 46.7712,
   longitude: 23.6236,
   latitudeDelta: 0.05,
@@ -48,6 +36,7 @@ export function MapSupermarketCard({
   markers,
   selectedMarkerId,
   initialRegion = DEFAULT_REGION,
+  onRegionChangeComplete,
   onMarkerPress,
   style,
   fullScreen = false,
@@ -68,6 +57,7 @@ export function MapSupermarketCard({
           initialRegion={initialRegion}
           loadingEnabled
           moveOnMarkerPress={false}
+          onRegionChangeComplete={onRegionChangeComplete}
           pitchEnabled={false}
           rotateEnabled={false}
           scrollEnabled

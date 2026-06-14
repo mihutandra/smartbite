@@ -40,6 +40,11 @@ function withProductProxyImageUrl(product: SupermarketProduct): SupermarketProdu
   };
 }
 
+function isAvailableProduct(product: SupermarketProduct) {
+  const stockQuantity = Number(product.stock_quantity);
+  return product.is_available !== false && Number.isFinite(stockQuantity) && stockQuantity > 0;
+}
+
 function extractErrorMessage(data: unknown, fallbackMessage: string) {
   if (typeof data === "string" && data.trim()) {
     return data;
@@ -299,7 +304,7 @@ export async function fetchAllSupermarketProducts(
 
     while (page <= SUPERMARKET_PRODUCTS_MAX_PAGES) {
       const currentPage = await fetchSupermarketProducts(supermarketId, page, pageSize);
-      products.push(...currentPage);
+      products.push(...currentPage.filter(isAvailableProduct));
 
       if (currentPage.length < pageSize) {
         break;
@@ -360,7 +365,7 @@ export async function fetchAllSupermarketCatalogProducts(
         throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
       }
 
-      products.push(...data);
+      products.push(...data.filter(isAvailableProduct));
 
       if (data.length < pageSize) {
         break;
@@ -398,7 +403,7 @@ export async function fetchSupermarketProductCounts(
         throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
       }
 
-      data.forEach((product) => {
+      data.filter(isAvailableProduct).forEach((product) => {
         counts[product.supermarket_id] = (counts[product.supermarket_id] ?? 0) + 1;
       });
 
