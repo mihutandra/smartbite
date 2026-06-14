@@ -47,7 +47,9 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
         <Text numberOfLines={2} style={styles.title}>
           {product.product_name ?? "Produs"}
         </Text>
-        <Text style={styles.price}>{formatCurrency(product.discount_price, product.currency)}</Text>
+        <Text style={styles.price}>
+          {formatCurrency(product.discount_price, product.currency)}
+        </Text>
       </View>
     </Pressable>
   );

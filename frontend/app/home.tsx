@@ -516,7 +516,7 @@ export default function HomeScreen() {
               }
 
               if (tab === "cart") {
-                router.push("/cart" as never);
+                router.push("/shopping-cart" as never);
                 return;
               }
 
