@@ -197,6 +197,12 @@ export default function ReservationsScreen() {
                   key={reservation.id}
                   isCancelling={cancellingReservationId === reservation.id}
                   onCancel={() => void cancelActiveReservation(reservation.id)}
+                  onOpen={() =>
+                    router.push({
+                      pathname: "/reservation/[id]",
+                      params: { id: reservation.id },
+                    } as never)
+                  }
                   reservation={reservation}
                 />
               ))}
@@ -238,10 +244,12 @@ export default function ReservationsScreen() {
 function ReservationCard({
   isCancelling,
   onCancel,
+  onOpen,
   reservation,
 }: {
   isCancelling: boolean;
   onCancel: () => void;
+  onOpen: () => void;
   reservation: Reservation;
 }) {
   const total = reservation.items.reduce(
@@ -292,6 +300,11 @@ function ReservationCard({
         <Text style={styles.totalLabel}>Total rezervare</Text>
         <Text style={styles.totalValue}>{formatCurrency(total.toFixed(2), currency)}</Text>
       </View>
+
+      <Pressable onPress={onOpen} style={styles.detailsButton}>
+        <Feather color="#347949" name="file-text" size={16} />
+        <Text style={styles.detailsButtonText}>Vezi detalii</Text>
+      </Pressable>
 
       {reservation.status === "active" ? (
         <Pressable
@@ -688,6 +701,24 @@ const styles = StyleSheet.create({
   totalValue: {
     color: "#347949",
     fontSize: 17,
+    fontWeight: "900",
+  },
+  detailsButton: {
+    minHeight: 46,
+    marginTop: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#C7DDBD",
+    backgroundColor: "#F3FAEF",
+    paddingHorizontal: 14,
+  },
+  detailsButtonText: {
+    color: "#347949",
+    fontSize: 14,
     fontWeight: "900",
   },
   cancelButton: {
