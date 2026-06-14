@@ -253,6 +253,11 @@ export default function SupermarketProductsScreen() {
                 return;
               }
 
+              if (tab === "profile") {
+                router.push("/profile" as never);
+                return;
+              }
+
               router.replace("/home?view=map" as never);
             }}
           />

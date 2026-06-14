@@ -293,6 +293,11 @@ export default function SearchScreen() {
 
           if (tab === "cart") {
             router.push("/shopping-cart" as never);
+            return;
+          }
+
+          if (tab === "profile") {
+            router.push("/profile" as never);
           }
         }}
       />
