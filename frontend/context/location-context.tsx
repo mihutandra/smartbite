@@ -103,7 +103,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       if (!didSyncProfileLocation) {
         throw new Error("Nu am putut salva locatia in profil.");
       }
-    } else {
+    } else if (options?.forcePersist) {
       void syncProfileLocation(nextLocation, capturedAt, options);
     }
     return nextLocation;

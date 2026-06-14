@@ -38,7 +38,7 @@ export default function ProfileScreen() {
           return;
         }
 
-        setSavings(profileSavings.total_savings);
+        setSavings(String(profileSavings.total_savings));
         setSavingsCurrency(profileSavings.currency);
       } catch {
         // Savings are supplemental profile data; keep the default value if unavailable.
@@ -134,7 +134,7 @@ export default function ProfileScreen() {
                 icon="help-circle"
                 iconColor="#A65E34"
                 iconBackground="#FFF2E4"
-                label="Sterge Cont"
+                label="Sterge cont (in curand)"
                 onPress={() => undefined}
               />
             </View>

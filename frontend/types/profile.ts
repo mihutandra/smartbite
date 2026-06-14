@@ -1,4 +1,4 @@
 export type ProfileSavings = {
-  total_savings: string;
+  total_savings: string | number;
   currency: string;
 };

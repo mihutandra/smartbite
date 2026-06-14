@@ -11,6 +11,19 @@ export class ProfileServiceError extends Error {
 
 const PROFILE_REQUEST_TIMEOUT_MS = 15_000;
 
+function formatValidationPath(path: unknown) {
+  if (!Array.isArray(path) || path.length === 0) {
+    return "Camp invalid";
+  }
+
+  const cleanedPath = path
+    .filter((part) => part !== "body")
+    .map((part) => String(part))
+    .join(".");
+
+  return cleanedPath || "Camp invalid";
+}
+
 function extractErrorMessage(data: unknown, fallbackMessage: string) {
   if (typeof data === "string" && data.trim()) {
     return data;
@@ -24,6 +37,27 @@ function extractErrorMessage(data: unknown, fallbackMessage: string) {
 
   if (typeof detail === "string" && detail.trim()) {
     return detail;
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    const firstError = detail[0];
+
+    if (typeof firstError === "string" && firstError.trim()) {
+      return firstError;
+    }
+
+    if (typeof firstError === "object" && firstError !== null) {
+      const message = "msg" in firstError && typeof firstError.msg === "string" ? firstError.msg : null;
+      const path = "loc" in firstError ? formatValidationPath(firstError.loc) : null;
+
+      if (message && path) {
+        return `${path}: ${message}`;
+      }
+
+      if (message) {
+        return message;
+      }
+    }
   }
 
   return fallbackMessage;
