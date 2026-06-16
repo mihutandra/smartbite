@@ -520,6 +520,11 @@ export default function HomeScreen() {
                 return;
               }
 
+              if (tab === "profile") {
+                router.push("/profile" as never);
+                return;
+              }
+
               setViewMode(tab === "home" ? "list" : "map");
             }}
           />

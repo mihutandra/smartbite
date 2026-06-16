@@ -376,6 +376,11 @@ export default function ProductDetailsScreen() {
                 return;
               }
 
+              if (tab === "profile") {
+                router.push("/profile" as never);
+                return;
+              }
+
               if (typeof supermarketId === "string") {
                 router.replace(`/supermarket/${supermarketId}` as never);
                 return;

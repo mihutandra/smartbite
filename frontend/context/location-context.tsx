@@ -15,23 +15,69 @@ export type UserLocation = StoredUserLocation;
 type LocationContextValue = {
   error: string;
   isRequestingLocation: boolean;
-  requestUserLocation: () => Promise<UserLocation | null>;
+  requestUserLocation: (options?: RequestUserLocationOptions) => Promise<UserLocation | null>;
   status: LocationStatus;
   userLocation: UserLocation | null;
+};
+
+type RequestUserLocationOptions = {
+  waitForProfileSync?: boolean;
+};
+
+type SaveLocationOptions = {
+  forcePersist?: boolean;
+  waitForProfileSync?: boolean;
 };
 
 const LocationContext = createContext<LocationContextValue | undefined>(undefined);
 const LOCATION_PERSIST_INTERVAL_MS = 60_000;
 
 export function LocationProvider({ children }: { children: ReactNode }) {
-  const { status: authStatus, user } = useAuth();
+  const { status: authStatus, updateProfile, user } = useAuth();
   const [status, setStatus] = useState<LocationStatus>("idle");
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [error, setError] = useState("");
   const [hasHydratedLocation, setHasHydratedLocation] = useState(false);
   const lastPersistedLocationAtRef = useRef(0);
+  const lastSyncedProfileLocationAtRef = useRef(0);
 
-  const saveLocation = useCallback(async (position: Location.LocationObject, options?: { forcePersist?: boolean }) => {
+  const syncProfileLocation = useCallback(async (location: UserLocation, capturedAt: Date, options?: SaveLocationOptions) => {
+    if (
+      authStatus !== "authenticated" ||
+      (!options?.forcePersist &&
+        capturedAt.getTime() - lastSyncedProfileLocationAtRef.current < LOCATION_PERSIST_INTERVAL_MS)
+    ) {
+      return false;
+    }
+
+    let profileLocation: string | null = null;
+
+    try {
+      const geocodedAddresses = await Location.reverseGeocodeAsync({
+        latitude: location.latitude,
+        longitude: location.longitude,
+      });
+
+      profileLocation = formatProfileLocation(geocodedAddresses[0]);
+    } catch {
+      profileLocation = null;
+    }
+
+    try {
+      await updateProfile({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        ...(profileLocation ? { location: profileLocation } : {}),
+      });
+      lastSyncedProfileLocationAtRef.current = capturedAt.getTime();
+      return true;
+    } catch {
+      // Location should still be usable locally if profile sync fails.
+      return false;
+    }
+  }, [authStatus, updateProfile]);
+
+  const saveLocation = useCallback(async (position: Location.LocationObject, options?: SaveLocationOptions) => {
     const capturedAt = new Date();
     const nextLocation: UserLocation = {
       latitude: position.coords.latitude,
@@ -51,10 +97,19 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     setUserLocation(nextLocation);
     setStatus("granted");
     setError("");
-    return nextLocation;
-  }, []);
+    if (options?.waitForProfileSync) {
+      const didSyncProfileLocation = await syncProfileLocation(nextLocation, capturedAt, options);
 
-  const requestUserLocation = useCallback(async () => {
+      if (!didSyncProfileLocation) {
+        throw new Error("Nu am putut salva locatia in profil.");
+      }
+    } else if (options?.forcePersist) {
+      void syncProfileLocation(nextLocation, capturedAt, options);
+    }
+    return nextLocation;
+  }, [syncProfileLocation]);
+
+  const requestUserLocation = useCallback(async (options?: RequestUserLocationOptions) => {
     setStatus("requesting");
     setError("");
 
@@ -72,7 +127,10 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         accuracy: Location.Accuracy.Balanced,
       });
 
-      return await saveLocation(position, { forcePersist: true });
+      return await saveLocation(position, {
+        forcePersist: true,
+        waitForProfileSync: options?.waitForProfileSync,
+      });
     } catch (locationError) {
       const message = "Nu am putut detecta locatia curenta.";
 
@@ -89,6 +147,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       setError("");
       setHasHydratedLocation(false);
       lastPersistedLocationAtRef.current = 0;
+      lastSyncedProfileLocationAtRef.current = 0;
       void removeStoredUserLocation();
       return;
     }
@@ -111,6 +170,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         setStatus("granted");
         setHasHydratedLocation(true);
         lastPersistedLocationAtRef.current = Date.now();
+        lastSyncedProfileLocationAtRef.current = Date.now();
         return;
       }
 
@@ -127,6 +187,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         });
         setStatus("granted");
         lastPersistedLocationAtRef.current = Date.now();
+        lastSyncedProfileLocationAtRef.current = Date.now();
       }
 
       setHasHydratedLocation(true);
@@ -231,4 +292,19 @@ export function useLocation() {
   }
 
   return context;
+}
+
+function formatProfileLocation(address: Location.LocationGeocodedAddress | undefined) {
+  if (!address) {
+    return null;
+  }
+
+  const locality = address.city || address.subregion || address.region || address.district;
+  const country = address.country;
+
+  if (locality && country) {
+    return `${locality}, ${country}`;
+  }
+
+  return locality || country || null;
 }

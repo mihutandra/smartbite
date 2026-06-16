@@ -1,27 +1,32 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AuthServiceError,
+  deleteAccount as deleteAccountRequest,
   fetchCurrentUser,
   login,
   register,
 } from "../services/auth";
+import { ProfileServiceError, updateProfile as updateProfileRequest } from "../services/profile";
 import {
   getStoredAccessToken,
+  removeStoredUserLocation,
   removeStoredAccessToken,
   setStoredAccessToken,
 } from "../services/session-storage";
-import { type RegisterPayload, type UserProfile } from "../types/auth";
+import { type RegisterPayload, type UpdateProfilePayload, type UserProfile } from "../types/auth";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 type AuthContextValue = {
   accessToken: string | null;
   error: string;
+  deleteAccount: () => Promise<void>;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<void>;
   status: AuthStatus;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<UserProfile>;
   user: UserProfile | null;
 };
 
@@ -76,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  async function signIn(email: string, password: string) {
+  const signIn = useCallback(async (email: string, password: string) => {
     setError("");
     const loginResult = await login(email, password);
     const currentUser = await fetchCurrentUser(loginResult.access_token);
@@ -87,15 +92,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(currentUser);
     setError("");
     setStatus("authenticated");
-  }
+  }, []);
 
-  async function signUp(payload: RegisterPayload) {
+  const signUp = useCallback(async (payload: RegisterPayload) => {
     setError("");
     await register(payload);
     setError("");
-  }
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     // TODO: This currently performs only a local sign-out by clearing the stored token.
     // Call the backend logout endpoint too once that flow is ready to be implemented.
     await removeStoredAccessToken();
@@ -103,10 +108,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setError("");
     setStatus("unauthenticated");
-  }
+  }, []);
 
-  const value: AuthContextValue = {
+  const deleteAccount = useCallback(async () => {
+    if (!accessToken) {
+      throw new AuthServiceError("Trebuie sa fii autentificat pentru a sterge contul.");
+    }
+
+    setError("");
+    await deleteAccountRequest(accessToken);
+    await removeStoredAccessToken();
+    await removeStoredUserLocation();
+    setAccessToken(null);
+    setUser(null);
+    setError("");
+    setStatus("unauthenticated");
+  }, [accessToken]);
+
+  const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
+    if (!accessToken) {
+      throw new ProfileServiceError("Trebuie sa fii autentificat pentru a actualiza profilul.");
+    }
+
+    setError("");
+    const updatedUser = await updateProfileRequest(accessToken, payload);
+    setUser(updatedUser);
+    setError("");
+    return updatedUser;
+  }, [accessToken]);
+
+  const value = useMemo<AuthContextValue>(() => ({
     accessToken,
+    deleteAccount: async () => {
+      try {
+        await deleteAccount();
+      } catch (err) {
+        const message =
+          err instanceof AuthServiceError
+            ? err.message
+            : "A aparut o eroare neasteptata. Incearca din nou.";
+
+        setError(message);
+        throw err;
+      }
+    },
     error,
     isAuthenticated: status === "authenticated",
     signIn: async (email: string, password: string) => {
@@ -137,8 +182,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     status,
+    updateProfile: async (payload: UpdateProfilePayload) => {
+      try {
+        return await updateProfile(payload);
+      } catch (err) {
+        const message =
+          err instanceof ProfileServiceError || err instanceof AuthServiceError
+            ? err.message
+            : "A aparut o eroare neasteptata. Incearca din nou.";
+
+        setError(message);
+        throw err;
+      }
+    },
     user,
-  };
+  }), [accessToken, deleteAccount, error, signIn, signOut, signUp, status, updateProfile, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

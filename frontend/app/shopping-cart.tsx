@@ -298,6 +298,11 @@ export default function CartScreen() {
 
             if (tab === "search") {
               router.push("/search" as never);
+              return;
+            }
+
+            if (tab === "profile") {
+              router.push("/profile" as never);
             }
           }}
         />

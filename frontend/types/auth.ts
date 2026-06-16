@@ -24,3 +24,12 @@ export type RegisterPayload = {
 };
 
 export type RegisterResponse = UserProfile;
+
+export type UpdateProfilePayload = {
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  location?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
