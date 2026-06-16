@@ -28,6 +28,7 @@ export default function ReservationsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [cancellingReservationId, setCancellingReservationId] = useState("");
   const [error, setError] = useState("");
+  const [cancelError, setCancelError] = useState("");
 
   const loadReservations = useCallback(async () => {
     if (!accessToken) {
@@ -37,6 +38,7 @@ export default function ReservationsScreen() {
 
     setIsLoading(true);
     setError("");
+    setCancelError("");
 
     try {
       const response = await fetchMyReservations(accessToken);
@@ -75,7 +77,7 @@ export default function ReservationsScreen() {
     }
 
     setCancellingReservationId(reservationId);
-    setError("");
+    setCancelError("");
 
     try {
       const cancelledReservation = await cancelReservation(accessToken, reservationId);
@@ -85,7 +87,7 @@ export default function ReservationsScreen() {
         ),
       );
     } catch (cancelError) {
-      setError(
+      setCancelError(
         cancelError instanceof Error
           ? cancelError.message
           : "Nu am putut anula rezervarea.",
@@ -176,37 +178,48 @@ export default function ReservationsScreen() {
                 <Text style={styles.retryButtonText}>Reincearca</Text>
               </Pressable>
             </View>
-          ) : visibleReservations.length === 0 ? (
-            <View style={styles.feedbackCard}>
-              <Feather color="#4E8B5B" name="shopping-bag" size={28} />
-              <Text style={styles.feedbackTitle}>
-                {selectedView === "active"
-                  ? "Nu ai rezervari active"
-                  : "Nu ai rezervari anterioare"}
-              </Text>
-              <Text style={styles.feedbackText}>
-                {selectedView === "active"
-                  ? "Rezervarile confirmate vor aparea aici."
-                  : "Rezervarile finalizate sau anulate vor fi listate aici."}
-              </Text>
-            </View>
           ) : (
-            <View style={styles.reservationList}>
-              {visibleReservations.map((reservation) => (
-                <ReservationCard
-                  key={reservation.id}
-                  isCancelling={cancellingReservationId === reservation.id}
-                  onCancel={() => void cancelActiveReservation(reservation.id)}
-                  onOpen={() =>
-                    router.push({
-                      pathname: "/reservation/[id]",
-                      params: { id: reservation.id },
-                    } as never)
-                  }
-                  reservation={reservation}
-                />
-              ))}
-            </View>
+            <>
+              {cancelError ? (
+                <View style={styles.cancelErrorBanner}>
+                  <Feather color="#C4623B" name="alert-circle" size={18} />
+                  <Text style={styles.cancelErrorText}>{cancelError}</Text>
+                </View>
+              ) : null}
+
+              {visibleReservations.length === 0 ? (
+                <View style={styles.feedbackCard}>
+                  <Feather color="#4E8B5B" name="shopping-bag" size={28} />
+                  <Text style={styles.feedbackTitle}>
+                    {selectedView === "active"
+                      ? "Nu ai rezervari active"
+                      : "Nu ai rezervari anterioare"}
+                  </Text>
+                  <Text style={styles.feedbackText}>
+                    {selectedView === "active"
+                      ? "Rezervarile confirmate vor aparea aici."
+                      : "Rezervarile finalizate sau anulate vor fi listate aici."}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.reservationList}>
+                  {visibleReservations.map((reservation) => (
+                    <ReservationCard
+                      key={reservation.id}
+                      isCancelling={cancellingReservationId === reservation.id}
+                      onCancel={() => void cancelActiveReservation(reservation.id)}
+                      onOpen={() =>
+                        router.push({
+                          pathname: "/reservation/[id]",
+                          params: { id: reservation.id },
+                        } as never)
+                      }
+                      reservation={reservation}
+                    />
+                  ))}
+                </View>
+              )}
+            </>
           )}
         </ScrollView>
 
@@ -563,6 +576,26 @@ const styles = StyleSheet.create({
     color: "#FFF8F0",
     fontSize: 14,
     fontWeight: "900",
+  },
+  cancelErrorBanner: {
+    minHeight: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#E9B69E",
+    backgroundColor: "#FFF4EF",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+  },
+  cancelErrorText: {
+    flex: 1,
+    minWidth: 0,
+    color: "#8E3F28",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 18,
   },
   reservationList: {
     gap: 14,
