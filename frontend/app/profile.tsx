@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -23,6 +24,7 @@ export default function ProfileScreen() {
   const [savings, setSavings] = useState("0.00");
   const [savingsCurrency, setSavingsCurrency] = useState("RON");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isDeleteAccountModalVisible, setIsDeleteAccountModalVisible] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated" || !accessToken) {
@@ -67,18 +69,7 @@ export default function ProfileScreen() {
   }
 
   function confirmDeleteAccount() {
-    Alert.alert(
-      "Sterge contul?",
-      "Contul tau va fi sters si vei fi deconectat. Aceasta actiune nu poate fi anulata.",
-      [
-        { text: "Anuleaza", style: "cancel" },
-        {
-          text: "Sterge",
-          style: "destructive",
-          onPress: () => void handleDeleteAccount(),
-        },
-      ],
-    );
+    setIsDeleteAccountModalVisible(true);
   }
 
   async function handleDeleteAccount() {
@@ -87,6 +78,7 @@ export default function ProfileScreen() {
     try {
       await deleteAccount();
     } catch (error) {
+      setIsDeleteAccountModalVisible(false);
       Alert.alert(
         "Nu am putut sterge contul",
         error instanceof Error ? error.message : "Incearca din nou.",
@@ -201,6 +193,49 @@ export default function ProfileScreen() {
             }
           }}
         />
+
+        <Modal
+          animationType="fade"
+          transparent
+          visible={isDeleteAccountModalVisible}
+          onRequestClose={() => {
+            if (!isDeletingAccount) {
+              setIsDeleteAccountModalVisible(false);
+            }
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={styles.deleteIconWrap}>
+                <Feather color="#FFF8F0" name="trash-2" size={22} />
+              </View>
+              <Text style={styles.modalTitle}>Sterge contul?</Text>
+              <Text style={styles.modalText}>
+                Contul tau va fi sters si vei fi deconectat. Aceasta actiune nu poate fi anulata.
+              </Text>
+
+              <View style={styles.modalActions}>
+                <Pressable
+                  disabled={isDeletingAccount}
+                  onPress={() => setIsDeleteAccountModalVisible(false)}
+                  style={styles.modalSecondaryButton}
+                >
+                  <Text style={styles.modalSecondaryButtonText}>Anuleaza</Text>
+                </Pressable>
+
+                <Pressable
+                  disabled={isDeletingAccount}
+                  onPress={() => void handleDeleteAccount()}
+                  style={[styles.deletePrimaryButton, isDeletingAccount && styles.deletePrimaryButtonDisabled]}
+                >
+                  <Text style={styles.modalPrimaryButtonText}>
+                    {isDeletingAccount ? "Se sterge..." : "Sterge cont"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -463,5 +498,97 @@ const styles = StyleSheet.create({
     color: "#C19A8B",
     fontSize: 10,
     fontWeight: "800",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(53, 38, 28, 0.42)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 360,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: "#EDBE78",
+    backgroundColor: "#FFF9F2",
+    paddingHorizontal: 22,
+    paddingTop: 22,
+    paddingBottom: 20,
+    alignItems: "center",
+    shadowColor: "#A76731",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
+    elevation: 8,
+  },
+  deleteIconWrap: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#D66C2D",
+    shadowColor: "#D66C2D",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  modalTitle: {
+    marginTop: 16,
+    color: "#342B26",
+    fontSize: 22,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  modalText: {
+    marginTop: 10,
+    color: "#7A685C",
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  modalActions: {
+    marginTop: 22,
+    width: "100%",
+    gap: 10,
+  },
+  modalSecondaryButton: {
+    minHeight: 50,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#EDBE78",
+    backgroundColor: "#FFFDF8",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  modalSecondaryButtonText: {
+    color: "#A15D33",
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  deletePrimaryButton: {
+    minHeight: 52,
+    borderRadius: 16,
+    backgroundColor: "#D66C2D",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    shadowColor: "#D66C2D",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+  deletePrimaryButtonDisabled: {
+    opacity: 0.72,
+  },
+  modalPrimaryButtonText: {
+    color: "#FFF8F0",
+    fontSize: 15,
+    fontWeight: "900",
   },
 });
