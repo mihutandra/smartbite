@@ -17,13 +17,14 @@ type ProductCardProps = {
 export function ProductCard({ product, onPress }: ProductCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const discountPercentage = calculateDiscountPercentage(product);
+  const imageUri = product.product_proxy_image_url ?? product.product_image_url;
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.imageWrap}>
-        {product.product_image_url && !imageFailed ? (
+        {imageUri && !imageFailed ? (
           <Image
-            source={{ uri: product.product_image_url }}
+            source={{ uri: imageUri }}
             style={styles.image}
             resizeMode="cover"
             onError={() => setImageFailed(true)}

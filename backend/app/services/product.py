@@ -1,3 +1,6 @@
+import mimetypes
+from pathlib import Path
+from urllib.parse import urlparse
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from uuid import UUID
@@ -6,6 +9,14 @@ from app.exceptions.exceptions import AlreadyExists, NotFound
 from app.models.product import Product
 from app.repositories.product import ProductRepository
 from app.schemas.product import ProductCreate
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = BACKEND_DIR.parent
+FRONTEND_PUBLIC_DIR = (
+    (ROOT_DIR / "frontend" / "public")
+    if (ROOT_DIR / "frontend" / "public").exists()
+    else BACKEND_DIR / "frontend" / "public"
+)
 
 
 class ProductService:
@@ -35,6 +46,11 @@ class ProductService:
         if not product.image_url:
             raise NotFound(entity="Product image", identifier=str(product_id))
 
+        local_path = self._resolve_local_image_path(product.image_url)
+        if local_path is not None:
+            content_type = mimetypes.guess_type(local_path.name)[0] or "image/jpeg"
+            return local_path.read_bytes(), content_type
+
         request = Request(
             product.image_url,
             headers={
@@ -58,3 +74,26 @@ class ProductService:
                 status_code=502,
                 detail="Failed to fetch upstream image",
             ) from exc
+
+    def _resolve_local_image_path(self, image_url: str) -> Path | None:
+        parsed_url = urlparse(image_url)
+        if parsed_url.scheme in {"http", "https"}:
+            return None
+
+        image_path = image_url.strip()
+        if image_path.startswith("frontend/public/"):
+            root_candidate = ROOT_DIR / image_path
+            candidate = root_candidate if root_candidate.exists() else BACKEND_DIR / image_path
+        elif image_path.startswith("/products/"):
+            candidate = FRONTEND_PUBLIC_DIR / image_path.lstrip("/")
+        elif image_path.startswith("products/"):
+            candidate = FRONTEND_PUBLIC_DIR / image_path
+        else:
+            return None
+
+        public_dir = FRONTEND_PUBLIC_DIR.resolve()
+        resolved_candidate = candidate.resolve()
+        if not resolved_candidate.is_relative_to(public_dir) or not resolved_candidate.is_file():
+            raise NotFound(entity="Product image", identifier=image_url)
+
+        return resolved_candidate

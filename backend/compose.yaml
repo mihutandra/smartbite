@@ -22,6 +22,8 @@ services:
       - ./app:/base/app:ro
       - ./alembic:/base/alembic:ro
       - ./alembic.ini:/base/alembic.ini:ro
+      - ./seed:/base/seed:ro
+      - ../frontend/public:/base/frontend/public:ro
     # Reload flag to tell Uvicorn to hot-reload code
     # TODO: figure out how to automatically block this in production
     command: --reload
