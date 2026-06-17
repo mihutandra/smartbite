@@ -233,7 +233,10 @@ export default function SearchScreen() {
                 </View>
 
                 <View style={styles.productPreviewRow}>
-                  {group.products.map((product) => (
+                  {group.products.map((product) => {
+                    const imageUri = product.product_proxy_image_url ?? product.product_image_url;
+
+                    return (
                       <Pressable
                         key={product.id}
                         onPress={() =>
@@ -245,9 +248,9 @@ export default function SearchScreen() {
                         style={styles.productPreviewCard}
                       >
                         <View style={styles.productImageWrap}>
-                          {product.product_image_url ? (
+                          {imageUri ? (
                             <Image
-                              source={{ uri: product.product_image_url }}
+                              source={{ uri: imageUri }}
                               style={styles.productImage}
                               resizeMode="cover"
                             />
@@ -270,7 +273,8 @@ export default function SearchScreen() {
                           {formatCurrency(product.discount_price, product.currency)}
                         </Text>
                       </Pressable>
-                    ))}
+                    );
+                  })}
                 </View>
               </View>
             ))}

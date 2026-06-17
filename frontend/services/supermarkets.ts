@@ -365,7 +365,7 @@ export async function fetchAllSupermarketCatalogProducts(
         throw new SupermarketServiceError("Serverul a returnat un raspuns invalid.");
       }
 
-      products.push(...data.filter(isAvailableProduct));
+      products.push(...data.filter(isAvailableProduct).map(withProductProxyImageUrl));
 
       if (data.length < pageSize) {
         break;
