@@ -133,14 +133,14 @@ export default function ProfileScreen() {
             </View>
 
             <SectionLabel label="REZERVARILE MELE" />
-            <View style={styles.reservationPlaceholderCard}>
-              <View style={styles.reservationPlaceholderIcon}>
-                <Feather color="#FFFFFF" name="shopping-bag" size={18} />
-              </View>
-              <View style={styles.reservationPlaceholderTextBlock}>
-                <Text style={styles.reservationPlaceholderTitle}>Rezervarile mele</Text>
-                <Text style={styles.reservationPlaceholderText}>In curand</Text>
-              </View>
+            <View style={styles.cardGroup}>
+              <ProfileAction
+                icon="shopping-bag"
+                iconColor="#477D60"
+                iconBackground="#EAF4EE"
+                label="Rezervarile mele"
+                onPress={() => router.push("/reservations" as never)}
+              />
             </View>
 
             <SectionLabel label="SUPORT" />

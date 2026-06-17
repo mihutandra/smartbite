@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "../constants/api";
 import { type Reservation } from "../types/reservation";
+import { isReservationStatus } from "../utils/reservations";
 
 export class ReservationServiceError extends Error {
   constructor(message: string) {
@@ -76,6 +77,30 @@ function createConnectionError(error: unknown) {
   return new ReservationServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
 }
 
+function isReservation(data: unknown): data is Reservation {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  const reservation = data as Partial<Reservation>;
+
+  return (
+    typeof reservation.id === "string" &&
+    isReservationStatus(reservation.status) &&
+    Array.isArray(reservation.items) &&
+    typeof reservation.created_at === "string" &&
+    typeof reservation.updated_at === "string"
+  );
+}
+
+function validateReservation(data: unknown): Reservation {
+  if (!isReservation(data)) {
+    throw new ReservationServiceError("Serverul a returnat un raspuns invalid.");
+  }
+
+  return data;
+}
+
 export async function fetchMyReservations(accessToken: string): Promise<Reservation[]> {
   try {
     const response = await fetchWithTimeout(`${API_BASE_URL}/api/reservations/`, {
@@ -85,13 +110,57 @@ export async function fetchMyReservations(accessToken: string): Promise<Reservat
       },
     });
 
-    const data = await parseApiResponse<Reservation[]>(response);
+    const data = await parseApiResponse<unknown>(response);
 
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(data) || !data.every(isReservation)) {
       throw new ReservationServiceError("Serverul a returnat un raspuns invalid.");
     }
 
     return data;
+  } catch (error) {
+    if (error instanceof ReservationServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
+  }
+}
+
+export async function fetchReservationDetail(
+  accessToken: string,
+  reservationId: string,
+): Promise<Reservation> {
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/reservations/${reservationId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return validateReservation(await parseApiResponse<unknown>(response));
+  } catch (error) {
+    if (error instanceof ReservationServiceError) {
+      throw error;
+    }
+
+    throw createConnectionError(error);
+  }
+}
+
+export async function cancelReservation(
+  accessToken: string,
+  reservationId: string,
+): Promise<Reservation> {
+  try {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/reservations/${reservationId}/cancel`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return validateReservation(await parseApiResponse<unknown>(response));
   } catch (error) {
     if (error instanceof ReservationServiceError) {
       throw error;
