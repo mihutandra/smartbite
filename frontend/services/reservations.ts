@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "../constants/api";
 import { type Reservation } from "../types/reservation";
+import { isReservationStatus } from "../utils/reservations";
 
 export class ReservationServiceError extends Error {
   constructor(message: string) {
@@ -76,6 +77,30 @@ function createConnectionError(error: unknown) {
   return new ReservationServiceError(`Nu ne putem conecta la server la ${API_BASE_URL}.`);
 }
 
+function isReservation(data: unknown): data is Reservation {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  const reservation = data as Partial<Reservation>;
+
+  return (
+    typeof reservation.id === "string" &&
+    isReservationStatus(reservation.status) &&
+    Array.isArray(reservation.items) &&
+    typeof reservation.created_at === "string" &&
+    typeof reservation.updated_at === "string"
+  );
+}
+
+function validateReservation(data: unknown): Reservation {
+  if (!isReservation(data)) {
+    throw new ReservationServiceError("Serverul a returnat un raspuns invalid.");
+  }
+
+  return data;
+}
+
 export async function fetchMyReservations(accessToken: string): Promise<Reservation[]> {
   try {
     const response = await fetchWithTimeout(`${API_BASE_URL}/api/reservations/`, {
@@ -85,9 +110,9 @@ export async function fetchMyReservations(accessToken: string): Promise<Reservat
       },
     });
 
-    const data = await parseApiResponse<Reservation[]>(response);
+    const data = await parseApiResponse<unknown>(response);
 
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(data) || !data.every(isReservation)) {
       throw new ReservationServiceError("Serverul a returnat un raspuns invalid.");
     }
 
@@ -113,7 +138,7 @@ export async function fetchReservationDetail(
       },
     });
 
-    return await parseApiResponse<Reservation>(response);
+    return validateReservation(await parseApiResponse<unknown>(response));
   } catch (error) {
     if (error instanceof ReservationServiceError) {
       throw error;
@@ -135,7 +160,7 @@ export async function cancelReservation(
       },
     });
 
-    return await parseApiResponse<Reservation>(response);
+    return validateReservation(await parseApiResponse<unknown>(response));
   } catch (error) {
     if (error instanceof ReservationServiceError) {
       throw error;

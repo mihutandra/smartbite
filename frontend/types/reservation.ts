@@ -1,3 +1,5 @@
+export type ReservationStatus = "active" | "cancelled" | "completed" | "expired";
+
 export type ReservationItem = {
   id: string;
   supermarket_product_id: string;
@@ -14,7 +16,7 @@ export type ReservationItem = {
 
 export type Reservation = {
   id: string;
-  status: string;
+  status: ReservationStatus;
   items: ReservationItem[];
   created_at: string;
   updated_at: string;

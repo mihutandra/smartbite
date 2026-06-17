@@ -17,6 +17,12 @@ import { useAuth } from "../context/auth-context";
 import { cancelReservation, fetchMyReservations } from "../services/reservations";
 import { type Reservation, type ReservationItem } from "../types/reservation";
 import { formatCurrency } from "../utils/product_detail";
+import {
+  getReservationStatusLabel,
+  getReservationStatusTone,
+  toNumber,
+  type ReservationStatusTone,
+} from "../utils/reservations";
 
 type ReservationView = "active" | "history";
 
@@ -279,8 +285,15 @@ function ReservationCard({
           <Text style={styles.reservationCode}>{`#${reservation.id.slice(0, 8)}`}</Text>
           <Text style={styles.reservationDate}>{formatDate(reservation.created_at)}</Text>
         </View>
-        <View style={[styles.statusPill, getStatusStyle(reservation.status)]}>
-          <Text style={styles.statusText}>{getStatusLabel(reservation.status)}</Text>
+        <View
+          style={[
+            styles.statusPill,
+            getStatusStyle(getReservationStatusTone(reservation.status)),
+          ]}
+        >
+          <Text style={styles.statusText}>
+            {getReservationStatusLabel(reservation.status)}
+          </Text>
         </View>
       </View>
 
@@ -380,27 +393,12 @@ function getSupermarketLabel(reservation: Reservation) {
   return supermarketName;
 }
 
-function getStatusLabel(status: string) {
-  switch (status) {
-    case "active":
-      return "Activa";
-    case "cancelled":
-      return "Anulata";
-    case "completed":
-      return "Finalizata";
-    case "expired":
-      return "Expirata";
-    default:
-      return "Inactiva";
-  }
-}
-
-function getStatusStyle(status: string) {
-  if (status === "active") {
+function getStatusStyle(tone: ReservationStatusTone) {
+  if (tone === "active") {
     return styles.statusActive;
   }
 
-  if (status === "cancelled" || status === "expired") {
+  if (tone === "muted") {
     return styles.statusMuted;
   }
 
@@ -419,11 +417,6 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(date);
-}
-
-function toNumber(value: string | number | null | undefined) {
-  const numericValue = typeof value === "number" ? value : Number.parseFloat(value ?? "0");
-  return Number.isFinite(numericValue) ? numericValue : 0;
 }
 
 const styles = StyleSheet.create({
