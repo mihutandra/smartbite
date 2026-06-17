@@ -1,4 +1,5 @@
 import { type ReservationStatus } from "../types/reservation";
+import { API_BASE_URL } from "../constants/api";
 
 export type ReservationStatusTone = "active" | "complete" | "muted";
 
@@ -39,4 +40,11 @@ export function getReservationStatusTone(status: ReservationStatus): Reservation
 export function toNumber(value: string | number | null | undefined) {
   const numericValue = typeof value === "number" ? value : Number.parseFloat(value ?? "0");
   return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+export function getReservationProductImageUrl(
+  productId: string | null | undefined,
+  productImageUrl: string | null | undefined,
+) {
+  return productId ? `${API_BASE_URL}/api/products/${productId}/image` : productImageUrl;
 }

@@ -20,6 +20,7 @@ import { formatCurrency, formatShortDate } from "../../utils/product_detail";
 import {
   getReservationStatusLabel,
   getReservationStatusTone,
+  getReservationProductImageUrl,
   toNumber,
   type ReservationStatusTone,
 } from "../../utils/reservations";
@@ -231,6 +232,10 @@ function DetailRow({
 function ReservationProductCard({ item }: { item: ReservationItem }) {
   const total = toNumber(item.reserved_price) * item.quantity;
   const canOpenProduct = Boolean(item.supermarket_product_id);
+  const imageUrl = getReservationProductImageUrl(
+    item.product_id,
+    item.product_image_url,
+  );
 
   function openProduct() {
     if (!canOpenProduct) {
@@ -257,10 +262,10 @@ function ReservationProductCard({ item }: { item: ReservationItem }) {
         !canOpenProduct && styles.productCardDisabled,
       ]}
     >
-      {item.product_image_url ? (
+      {imageUrl ? (
         <Image
           resizeMode="cover"
-          source={{ uri: item.product_image_url }}
+          source={{ uri: imageUrl }}
           style={styles.productImage}
         />
       ) : (

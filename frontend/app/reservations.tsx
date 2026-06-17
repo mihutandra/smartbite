@@ -20,6 +20,7 @@ import { formatCurrency } from "../utils/product_detail";
 import {
   getReservationStatusLabel,
   getReservationStatusTone,
+  getReservationProductImageUrl,
   toNumber,
   type ReservationStatusTone,
 } from "../utils/reservations";
@@ -353,11 +354,16 @@ function ReservationCard({
 }
 
 function ReservationItemImage({ item }: { item: ReservationItem | undefined }) {
-  if (item?.product_image_url) {
+  const imageUrl = getReservationProductImageUrl(
+    item?.product_id,
+    item?.product_image_url,
+  );
+
+  if (imageUrl) {
     return (
       <Image
         resizeMode="cover"
-        source={{ uri: item.product_image_url }}
+        source={{ uri: imageUrl }}
         style={styles.previewImage}
       />
     );
