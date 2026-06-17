@@ -230,9 +230,33 @@ function DetailRow({
 
 function ReservationProductCard({ item }: { item: ReservationItem }) {
   const total = toNumber(item.reserved_price) * item.quantity;
+  const canOpenProduct = Boolean(item.supermarket_product_id);
+
+  function openProduct() {
+    if (!canOpenProduct) {
+      return;
+    }
+
+    router.push({
+      pathname: "/product/[id]",
+      params: {
+        id: item.supermarket_product_id,
+        ...(item.supermarket_id ? { supermarketId: item.supermarket_id } : {}),
+      },
+    } as never);
+  }
 
   return (
-    <View style={styles.productCard}>
+    <Pressable
+      accessibilityRole="button"
+      disabled={!canOpenProduct}
+      onPress={openProduct}
+      style={({ pressed }) => [
+        styles.productCard,
+        pressed && styles.productCardPressed,
+        !canOpenProduct && styles.productCardDisabled,
+      ]}
+    >
       {item.product_image_url ? (
         <Image
           resizeMode="cover"
@@ -265,7 +289,7 @@ function ReservationProductCard({ item }: { item: ReservationItem }) {
           {`${formatCurrency(item.reserved_price, item.currency)} / buc.`}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -515,6 +539,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 14,
     elevation: 4,
+  },
+  productCardPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.99 }],
+  },
+  productCardDisabled: {
+    opacity: 0.7,
   },
   productImage: {
     width: 86,
