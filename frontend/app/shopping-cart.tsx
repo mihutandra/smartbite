@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomNavBar } from "../components/BottomNavBar";
+import { API_BASE_URL } from "../constants/api";
 import { useAuth } from "../context/auth-context";
 import {
   confirmShoppingCart,
@@ -371,13 +372,16 @@ function CartItemCard({
   const maxQuantity = Math.max(1, item.stock_quantity ?? item.quantity);
   const canDecrease = item.quantity > 1;
   const canIncrease = item.quantity < maxQuantity;
+  const imageUri = item.product_id
+    ? `${API_BASE_URL}/api/products/${item.product_id}/image`
+    : item.product_image_url;
 
   return (
     <View style={styles.itemCard}>
       <Pressable disabled={isBusy} onPress={onOpen} style={styles.itemOpenArea}>
         <View style={styles.itemImageWrap}>
-          {item.product_image_url ? (
-            <Image source={{ uri: item.product_image_url }} resizeMode="cover" style={styles.itemImage} />
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} resizeMode="cover" style={styles.itemImage} />
           ) : (
             <View style={styles.itemImageFallback}>
               <Text style={styles.itemImageFallbackText}>

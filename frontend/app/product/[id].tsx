@@ -92,6 +92,7 @@ export default function ProductDetailsScreen() {
     () => (product ? calculateDiscountPercentage(product) : 0),
     [product],
   );
+  const productImageUri = product?.product_proxy_image_url ?? product?.product_image_url;
   const maxQuantity = Math.max(0, product?.stock_quantity ?? 0);
   const maxAddQuantity = accessToken ? Math.max(0, maxQuantity - existingCartQuantity) : maxQuantity;
   const isUnavailable = product?.is_available === false || maxQuantity < 1;
@@ -251,8 +252,8 @@ export default function ProductDetailsScreen() {
               </Pressable>
 
               <View style={styles.heroImageWrap}>
-                {product.product_image_url ? (
-                  <Image source={{ uri: product.product_image_url }} style={styles.heroImage} resizeMode="contain" />
+                {productImageUri ? (
+                  <Image source={{ uri: productImageUri }} style={styles.heroImage} resizeMode="contain" />
                 ) : (
                   <View style={styles.imageFallback}>
                     <Text style={styles.imageFallbackText}>
