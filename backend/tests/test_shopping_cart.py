@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
 
@@ -18,6 +19,24 @@ def _auth_headers(test_client, email: str, password: str) -> dict[str, str]:
     assert login_response.status_code == 200
     token = login_response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+def _create_reservation(test_client, headers: dict[str, str], supermarket_product_id: str, quantity: int = 1) -> str:
+    add_response = test_client.post(
+        "/api/shopping-cart/",
+        json={"supermarket_product_id": supermarket_product_id, "quantity": 1},
+        headers=headers,
+    )
+    assert add_response.status_code == 200
+
+    cart_item = test_client.get("/api/shopping-cart/", headers=headers).json()[0]
+    confirm_response = test_client.post(
+        "/api/shopping-cart/confirm",
+        json={"items": [{"cart_item_id": cart_item["id"], "quantity": quantity}]},
+        headers=headers,
+    )
+    assert confirm_response.status_code == 200
+    return confirm_response.json()["id"]
 
 
 def test_shopping_cart_requires_confirmation_to_replace_different_supermarket(test_client, db_session):
@@ -301,6 +320,54 @@ def test_cancel_reservation_requires_owner_and_active_status(test_client, db_ses
     )
     assert second_cancel_response.status_code == 409
     assert second_cancel_response.json()["code"] == "status_error"
+
+
+def test_cancelled_and_expired_reservations_are_listed_as_inactive(test_client, db_session):
+    data = seed_shopping_cart_flow_data(db_session)
+    headers = _auth_headers(test_client, data["email"], data["password"])
+
+    cancelled_reservation_id = _create_reservation(
+        test_client,
+        headers,
+        data["lidl_item_id"],
+    )
+    cancel_response = test_client.post(
+        f"/api/reservations/{cancelled_reservation_id}/cancel",
+        headers=headers,
+    )
+    assert cancel_response.status_code == 200
+    assert cancel_response.json()["status"] == "cancelled"
+
+    expired_reservation_id = _create_reservation(
+        test_client,
+        headers,
+        data["kaufland_item_id"],
+    )
+    expired_reservation = db_session.scalars(
+        select(Reservation).where(Reservation.id == UUID(expired_reservation_id))
+    ).one()
+    expired_reservation.created_at = datetime.now(timezone.utc) - timedelta(minutes=3)
+    db_session.commit()
+
+    expired_response = test_client.get(
+        f"/api/reservations/{expired_reservation_id}",
+        headers=headers,
+    )
+    assert expired_response.status_code == 200
+    assert expired_response.json()["status"] == "expired"
+
+    inactive_response = test_client.get("/api/reservations/inactive", headers=headers)
+
+    assert inactive_response.status_code == 200
+    inactive_reservations = inactive_response.json()
+    inactive_status_by_id = {
+        reservation["id"]: reservation["status"]
+        for reservation in inactive_reservations
+    }
+    assert inactive_status_by_id == {
+        cancelled_reservation_id: "cancelled",
+        expired_reservation_id: "expired",
+    }
 
 
 def test_user_can_have_multiple_active_reservations(test_client, db_session):
