@@ -20,6 +20,23 @@ def get_my_reservations(
     user_id = UUID(current_user["user_id"])
     return service.get_user_reservations(user_id=user_id, status=status)
 
+@router.get("/active", response_model=list[ReservationOut])
+def get_my_active_reservations(
+    current_user: dict = Depends(verify_jwt),
+    service: ReservationService = Depends(get_reservation_service),
+):
+    user_id = UUID(current_user["user_id"])
+    return service.get_user_reservations(user_id=user_id, status="active")
+
+
+@router.get("/inactive", response_model=list[ReservationOut])
+def get_my_inactive_reservations(
+    current_user: dict = Depends(verify_jwt),
+    service: ReservationService = Depends(get_reservation_service),
+):
+    user_id = UUID(current_user["user_id"])
+    return service.get_user_inactive_reservations(user_id=user_id)
+
 
 @router.get("/{reservation_id}", response_model=ReservationOut)
 def get_my_reservation(
