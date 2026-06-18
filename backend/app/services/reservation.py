@@ -9,7 +9,7 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.reservation import ReservationItemOut, ReservationOut, ReservationStatus
 from app.schemas.user import ProfileSavingsOut
 
-RESERVATION_EXPIRATION_WINDOW = timedelta(hours=2)
+RESERVATION_EXPIRATION_WINDOW = timedelta(minutes=2)
 class ReservationService:
     def __init__(
         self,
