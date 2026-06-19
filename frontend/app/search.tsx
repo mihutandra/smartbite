@@ -18,6 +18,7 @@ import { useAuth } from "../context/auth-context";
 import {
   fetchAllSupermarketCatalogProducts,
   fetchAllSupermarkets,
+  searchSupermarketProducts,
 } from "../services/supermarkets";
 import { type Supermarket, type SupermarketProduct } from "../types/supermarket";
 import { formatCurrency } from "../utils/product_detail";
@@ -35,8 +36,11 @@ export default function SearchScreen() {
   const [query, setQuery] = useState("");
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
   const [allProducts, setAllProducts] = useState<SupermarketProduct[]>([]);
+  const [searchedProducts, setSearchedProducts] = useState<SupermarketProduct[]>([]);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
     if (status !== "authenticated" || !user) {
@@ -83,6 +87,59 @@ export default function SearchScreen() {
     };
   }, [status, user]);
 
+  const normalizedQuery = useMemo(() => normalizeSearchValue(query), [query]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !user) {
+      return;
+    }
+
+    if (!normalizedQuery) {
+      setSearchedProducts([]);
+      setSearchError("");
+      setIsSearching(false);
+      return;
+    }
+
+    let isMounted = true;
+    const timeoutId = setTimeout(() => {
+      async function loadSearchResults() {
+        setIsSearching(true);
+        setSearchError("");
+
+        try {
+          const products = await searchSupermarketProducts(normalizedQuery);
+
+          if (!isMounted) {
+            return;
+          }
+
+          setSearchedProducts(products);
+        } catch (error) {
+          if (!isMounted) {
+            return;
+          }
+
+          setSearchedProducts([]);
+          setSearchError(
+            error instanceof Error ? error.message : "Nu am putut cauta produsele.",
+          );
+        } finally {
+          if (isMounted) {
+            setIsSearching(false);
+          }
+        }
+      }
+
+      void loadSearchResults();
+    }, 250);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [normalizedQuery, status, user]);
+
   const productsBySupermarket = useMemo(() => {
     const map = new Map<string, SupermarketProduct[]>();
 
@@ -96,8 +153,6 @@ export default function SearchScreen() {
   }, [allProducts]);
 
   const results = useMemo<SearchResultGroup[]>(() => {
-    const normalizedQuery = normalizeSearchValue(query);
-
     if (!normalizedQuery) {
       return supermarkets.map((supermarket) => ({
         supermarket,
@@ -105,34 +160,56 @@ export default function SearchScreen() {
       }));
     }
 
-    const matchedProducts = allProducts.filter((product) =>
-      [
-        product.product_name,
-        product.product_description,
-        product.product_brand,
-        product.category_name,
-        product.supermarket_name,
-      ].some((value) => matchesQuery(value, normalizedQuery)),
-    );
-
     const matchedProductsBySupermarket = new Map<string, SupermarketProduct[]>();
 
-    matchedProducts.forEach((product) => {
-      const currentProducts = matchedProductsBySupermarket.get(product.supermarket_id) ?? [];
-
-      if (currentProducts.length < PREVIEW_PRODUCT_COUNT) {
-        currentProducts.push(product);
+    searchedProducts.forEach((product) => {
+      if (!matchedProductsBySupermarket.has(product.supermarket_id)) {
+        matchedProductsBySupermarket.set(product.supermarket_id, [product]);
       }
-
-      matchedProductsBySupermarket.set(product.supermarket_id, currentProducts);
     });
+
+    const groupsFromProducts = supermarkets
+      .filter((supermarket) => matchedProductsBySupermarket.has(supermarket.id))
+      .map((supermarket) => ({
+        supermarket,
+        products: matchedProductsBySupermarket.get(supermarket.id) ?? [],
+      }));
+
+    const groupedSupermarketIds = new Set(groupsFromProducts.map((group) => group.supermarket.id));
+    const fallbackGroups = searchedProducts
+      .filter((product) => !groupedSupermarketIds.has(product.supermarket_id))
+      .reduce<SearchResultGroup[]>((groups, product) => {
+        const existingGroup = groups.find((group) => group.supermarket.id === product.supermarket_id);
+
+        if (existingGroup) {
+          return groups;
+        }
+
+        groups.push({
+          supermarket: {
+            id: product.supermarket_id,
+            name: product.supermarket_name ?? "Supermarket",
+            address: "",
+            latitude: 0,
+            longitude: 0,
+            phone_number: null,
+            email: null,
+            website: null,
+            logo_url: null,
+            opening_hours: null,
+          },
+          products: [product],
+        });
+
+        return groups;
+      }, []);
+
+    if (groupsFromProducts.length || fallbackGroups.length) {
+      return [...groupsFromProducts, ...fallbackGroups];
+    }
 
     return supermarkets
       .filter((supermarket) => {
-        if (matchedProductsBySupermarket.has(supermarket.id)) {
-          return true;
-        }
-
         return (
           matchesQuery(supermarket.name, normalizedQuery) ||
           matchesQuery(supermarket.address, normalizedQuery)
@@ -140,11 +217,9 @@ export default function SearchScreen() {
       })
       .map((supermarket) => ({
         supermarket,
-        products:
-          matchedProductsBySupermarket.get(supermarket.id) ??
-          (productsBySupermarket.get(supermarket.id) ?? []).slice(0, PREVIEW_PRODUCT_COUNT),
+        products: (productsBySupermarket.get(supermarket.id) ?? []).slice(0, PREVIEW_PRODUCT_COUNT),
       }));
-  }, [allProducts, productsBySupermarket, query, supermarkets]);
+  }, [normalizedQuery, productsBySupermarket, searchedProducts, supermarkets]);
 
   const resultCountLabel = useMemo(() => {
     const count = results.length;
@@ -191,15 +266,15 @@ export default function SearchScreen() {
       <View style={styles.body}>
         <View style={styles.resultsHeader}>
           <Text style={styles.resultsLabel}>{resultCountLabel}</Text>
-          {isBootstrapping ? (
+          {isBootstrapping || isSearching ? (
             <ActivityIndicator color="#4E8B5B" size="small" />
           ) : null}
         </View>
 
-        {loadError ? (
+        {loadError || searchError ? (
           <View style={styles.feedbackCard}>
             <Text style={styles.feedbackTitle}>Nu am putut incarca rezultatele</Text>
-            <Text style={styles.feedbackText}>{loadError}</Text>
+            <Text style={styles.feedbackText}>{loadError || searchError}</Text>
           </View>
         ) : (
           <ScrollView
@@ -477,10 +552,11 @@ const styles = StyleSheet.create({
   productPreviewRow: {
     marginTop: 18,
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 14,
   },
   productPreviewCard: {
-    flex: 1,
+    width: "47%",
     minWidth: 0,
     overflow: "hidden",
     borderRadius: 22,
